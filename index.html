@@ -9,190 +9,219 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap');
-        body { font-family: 'Kanit', sans-serif; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        #map { height: 350px; border-radius: 0.75rem; z-index: 1; }
-    </style>
+    <style> body { font-family: 'Kanit', sans-serif; } .tab-content { display: none; } .tab-content.active { display: block; } #map { height: 350px; border-radius: 0.75rem; z-index: 1; } </style>
 </head>
 <body class="bg-darkbg text-gray-100 pb-24">
 
     <header class="bg-cardbg border-b border-neutral-800 p-4 sticky top-0 z-50 flex justify-between items-center">
         <h1 id="siteName" class="text-xl font-bold tracking-wider text-primary">UNEX CLUB</h1>
-        <button onclick="checkOrder()" class="text-xs bg-neutral-800 px-3 py-1.5 rounded-full border border-neutral-700">ประวัติสั่งซื้อ</button>
+        <button onclick="profileAuth()" id="btn-auth" class="text-xs bg-neutral-800 px-3 py-1.5 rounded-full border border-neutral-700">เข้าสู่ระบบ / ลงทะเบียน</button>
     </header>
 
-    <!-- ตะกร้าลอย -->
-    <button onclick="viewCart()" id="cartBtn" class="hidden fixed bottom-20 right-4 bg-primary text-white p-4 rounded-full shadow-2xl z-50 flex items-center gap-2">
-        🛒 <span id="cartCount" class="font-bold">0</span>
-    </button>
+    <button onclick="viewCart()" id="cartBtn" class="hidden fixed bottom-20 right-4 bg-primary text-white p-4 rounded-full shadow-2xl z-50 flex items-center gap-2">🛒 <span id="cartCount" class="font-bold">0</span></button>
 
     <main class="max-w-md mx-auto p-4">
         
-        <!-- Events & Map Tab -->
-        <section id="tab-events" class="tab-content active space-y-4">
-            <h2 class="text-lg font-bold">📍 Upcoming Events</h2>
-            <div id="eventList" class="space-y-3">กำลังโหลด...</div>
+        <!-- Feed Tab -->
+        <section id="tab-feed" class="tab-content active space-y-4">
+            <h2 class="text-lg font-bold">📰 Community News</h2>
+            <div id="feedList" class="space-y-4">กำลังโหลด...</div>
+        </section>
+
+        <!-- Events Tab -->
+        <section id="tab-events" class="tab-content space-y-4">
+            <h2 class="text-lg font-bold">📍 Events & Meetups</h2>
+            <div id="eventList" class="space-y-3"></div>
             <div class="bg-cardbg p-3 rounded-xl border border-neutral-800"><div id="map"></div></div>
         </section>
 
         <!-- Shop Tab -->
         <section id="tab-shop" class="tab-content space-y-4">
             <h2 class="text-lg font-bold">🛒 Official Shop</h2>
-            <div id="shopList" class="grid grid-cols-2 gap-3">กำลังโหลด...</div>
+            <div id="shopList" class="grid grid-cols-2 gap-3"></div>
         </section>
 
     </main>
 
-    <!-- เมนูด้านล่าง -->
     <nav class="fixed bottom-0 w-full bg-cardbg border-t border-neutral-800 pb-safe z-40 flex justify-around p-2">
-        <button onclick="switchTab('events')" class="nav-btn text-primary text-xs w-1/2 p-2 font-bold">📅 Events</button>
-        <button onclick="switchTab('shop')" class="nav-btn text-neutral-500 text-xs w-1/2 p-2 font-bold">🛍️ Shop</button>
+        <button onclick="switchTab('feed')" class="nav-btn text-primary text-xs w-1/3 p-2 font-bold">📰 News</button>
+        <button onclick="switchTab('events')" class="nav-btn text-neutral-500 text-xs w-1/3 p-2 font-bold">📅 Events</button>
+        <button onclick="switchTab('shop')" class="nav-btn text-neutral-500 text-xs w-1/3 p-2 font-bold">🛍️ Shop</button>
     </nav>
 
     <script>
         const GAS_URL = 'https://script.google.com/macros/s/AKfycbwPZXAmJXrYHRg6h-IciW8TdfBTkOGNV1hxU85yvmyOsTGV3CpYS5g5rJQ3B6UJE-xaSw/exec';
-        let cart = {}, config = {}, map, marker;
+        let appData = {}, cart = {}, map, marker;
+        let userPhone = localStorage.getItem('unexPhone'), userName = localStorage.getItem('unexName');
 
         function switchTab(tab) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.getElementById(`tab-${tab}`).classList.add('active');
-            document.querySelectorAll('.nav-btn').forEach(btn => btn.className = 'nav-btn text-neutral-500 text-xs w-1/2 p-2 font-bold');
-            event.currentTarget.className = 'nav-btn text-primary text-xs w-1/2 p-2 font-bold';
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.className = 'nav-btn text-neutral-500 text-xs w-1/3 p-2 font-bold');
+            event.currentTarget.className = 'nav-btn text-primary text-xs w-1/3 p-2 font-bold';
             if(tab==='events' && map) setTimeout(()=>map.invalidateSize(), 100);
         }
 
         async function init() {
+            if(userName) document.getElementById('btn-auth').innerHTML = `👤 ${userName} <span onclick="logout()" class="text-red-500 ml-2">ออก</span>`;
             try {
-                const resConf = await fetch(`${GAS_URL}?action=getConfig`);
-                config = await resConf.json();
-                if(config.SiteName) document.getElementById('siteName').innerText = config.SiteName;
+                const res = await fetch(`${GAS_URL}?action=getAppData`);
+                appData = await res.json();
+                if(appData.config.SiteName) document.getElementById('siteName').innerText = appData.config.SiteName;
                 
-                // โหลด Events
-                const resEvt = await fetch(`${GAS_URL}?action=getEvents`);
-                const evts = await resEvt.json();
-                let evtHtml = '';
-                evts.forEach(e => { // แก้ไขบั๊ก undefined[cite: 9] ด้วยการเช็คข้อมูลและดึงจาก Array
-                    evtHtml += `<div class="bg-cardbg border border-neutral-800 rounded-xl p-3 flex gap-3 items-center cursor-pointer hover:bg-neutral-800" onclick="pinMap(${e[4]}, ${e[5]}, '${e[1]}')">
-                        ${e[6] ? `<img src="${e[6]}" class="w-20 h-20 rounded-lg object-cover">` : ''}
-                        <div>
-                            <span class="text-xs text-primary font-bold">📅 ${new Date(e[2]).toLocaleDateString('th-TH')}</span>
-                            <h3 class="font-semibold text-sm">${e[1] || 'ไม่มีชื่อ'}</h3>
-                            <p class="text-xs text-neutral-400">📍 ${e[3]}</p>
-                        </div>
-                    </div>`;
-                });
-                document.getElementById('eventList').innerHTML = evtHtml || '<p class="text-neutral-500">ไม่มีอีเวนต์</p>';
-                if(evts.length > 0 && evts[0][4]) initMap(evts[0][4], evts[0][5], evts[0][1]); // ปักหมุดงานล่าสุด
+                renderFeed();
+                renderEvents();
+                renderShop();
+            } catch(e) { console.log(e); }
+        }
 
-                // โหลด Shop
-                const resShop = await fetch(`${GAS_URL}?action=getShop`);
-                const shops = await resShop.json();
-                let shopHtml = '';
-                shops.forEach(s => { // แก้ไขบั๊ก undefined[cite: 6, 8]
-                    if(s[5] !== 'Active') return;
-                    shopHtml += `<div class="bg-cardbg border border-neutral-800 rounded-xl overflow-hidden flex flex-col justify-between h-56">
-                        ${s[4] ? `<img src="${s[4]}" class="h-28 w-full object-cover">` : '<div class="h-28 bg-neutral-800"></div>'}
-                        <div class="p-3 text-center">
-                            <h4 class="font-semibold text-xs truncate">${s[1]}</h4>
-                            <p class="text-primary font-bold text-sm my-1">฿${s[3]}</p>
-                            <button onclick="addCart('${s[0]}', '${s[1]}', ${s[3]})" class="bg-primary text-white text-xs w-full py-1.5 rounded">เพิ่มลงตะกร้า</button>
+        // --- Render UI ---
+        function renderFeed() {
+            let html = '';
+            appData.news.forEach(n => { // [ID, Title, Content, Img, Date]
+                let postComments = appData.comments.filter(c => String(c[1]) === String(n[0]));
+                html += `<div class="bg-cardbg border border-neutral-800 rounded-xl overflow-hidden">
+                    <div class="p-3 font-semibold text-sm border-b border-neutral-800">${n[1]} <span class="text-xs text-neutral-500 font-normal ml-2">${n[4]}</span></div>
+                    ${n[3] ? `<img src="${n[3]}" class="w-full object-cover">` : ''}
+                    <div class="p-3 space-y-2 text-sm">
+                        <p class="text-neutral-300">${n[2]}</p>
+                        <div class="border-t border-neutral-800 pt-2 space-y-1">
+                            ${postComments.map(c => `<div class="text-xs bg-neutral-900 p-2 rounded flex justify-between">
+                                <span><b class="text-primary">${c[3]}:</b> ${c[4]}</span>
+                                ${String(c[2]) === userPhone ? `<button onclick="editComment('${c[0]}', '${c[4]}')" class="text-neutral-500 hover:text-white">✏️</button>` : ''}
+                            </div>`).join('')}
                         </div>
-                    </div>`;
-                });
-                document.getElementById('shopList').innerHTML = shopHtml || '<p>ไม่มีสินค้า</p>';
+                        <div class="flex gap-2 pt-2">
+                            <input type="text" id="cmt-${n[0]}" placeholder="แสดงความคิดเห็น..." class="w-full bg-neutral-900 border border-neutral-800 rounded px-2 py-1 text-xs outline-none">
+                            <button onclick="postComment('${n[0]}')" class="bg-primary text-white text-xs px-3 py-1 rounded">ส่ง</button>
+                        </div>
+                    </div></div>`;
+            });
+            document.getElementById('feedList').innerHTML = html || '<p>ไม่มีข่าวสาร</p>';
+        }
 
-            } catch(e) { console.error(e); }
+        function renderEvents() {
+            let html = '';
+            appData.events.forEach(e => { // [ID, Title, Date, Loc, Lat, Lng, Img, Desc]
+                html += `<div class="bg-cardbg border border-neutral-800 rounded-xl p-3 flex gap-3 cursor-pointer" onclick="pinMap(${e[4]}, ${e[5]}, '${e[1]}')">
+                    ${e[6] ? `<img src="${e[6]}" class="w-24 h-24 rounded-lg object-cover">` : ''}
+                    <div class="flex-1">
+                        <span class="text-xs text-primary font-bold">📅 ${new Date(e[2]).toLocaleString('th-TH')}</span>
+                        <h3 class="font-semibold text-sm leading-tight my-1">${e[1]}</h3>
+                        <p class="text-xs text-neutral-400 line-clamp-2">${e[7] || ''}</p>
+                        <p class="text-xs text-neutral-500 mt-1">📍 ${e[3]}</p>
+                    </div></div>`;
+            });
+            document.getElementById('eventList').innerHTML = html || '<p>ไม่มีอีเวนต์</p>';
+            if(appData.events.length > 0 && appData.events[0][4]) initMap(appData.events[0][4], appData.events[0][5], appData.events[0][1]);
+        }
+
+        function renderShop() {
+            let html = '';
+            appData.shop.forEach(s => { 
+                if(s[5] !== 'Active') return;
+                html += `<div class="bg-cardbg border border-neutral-800 rounded-xl overflow-hidden flex flex-col justify-between h-64">
+                    ${s[4] ? `<img src="${s[4]}" class="h-32 w-full object-cover">` : ''}
+                    <div class="p-3 flex flex-col flex-1 justify-between">
+                        <div><h4 class="font-semibold text-xs line-clamp-2">${s[1]}</h4><p class="text-[10px] text-neutral-400 mt-1 line-clamp-2">${s[2]}</p></div>
+                        <div class="mt-2"><p class="text-primary font-bold text-sm mb-1">฿${s[3]}</p><button onclick="addCart('${s[0]}', '${s[1]}', ${s[3]})" class="bg-primary text-white text-xs w-full py-1.5 rounded">เพิ่มลงตะกร้า</button></div>
+                    </div></div>`;
+            }); document.getElementById('shopList').innerHTML = html || '<p>ไม่มีสินค้า</p>';
+        }
+
+        // --- ระบบ Authentication ---
+        async function profileAuth() {
+            if(userName) return checkOrder(); // ถ้าล็อกอินแล้วให้เปิดเช็คออเดอร์
+            
+            const { value: phone } = await Swal.fire({ title: 'เข้าสู่ระบบ / ตรวจสอบสิทธิ์', input: 'tel', inputPlaceholder: 'กรอกเบอร์โทรศัพท์ของคุณ' });
+            if (!phone) return;
+
+            Swal.fire({title:'กำลังตรวจสอบ...', didOpen:()=>Swal.showLoading()});
+            const res = await fetch(`${GAS_URL}?action=checkUser&phone=${phone}`);
+            const data = await res.json();
+            
+            if(data.status === 'success') {
+                localStorage.setItem('unexPhone', phone); localStorage.setItem('unexName', data.name);
+                userPhone = phone; userName = data.name;
+                Swal.fire('สำเร็จ', `ยินดีต้อนรับคุณ ${userName}`, 'success').then(()=>location.reload());
+            } else {
+                // ถ้าไม่เจอ ให้เปิดฟอร์มสมัคร
+                let brandOpts = appData.brands.map(b => `<option value="${b[1]}">${b[1]}</option>`).join('');
+                const { value: form } = await Swal.fire({
+                    title: 'ลงทะเบียนสมาชิกใหม่', html: `<input id="r-name" placeholder="ชื่อ-นามสกุล" class="swal2-input"><select id="r-brand" class="swal2-input"><option value="">เลือกแบรนด์รถ</option>${brandOpts}</select><input id="r-car" placeholder="รุ่นรถ - ทะเบียน" class="swal2-input">`,
+                    preConfirm: () => { return { name: v('r-name'), brand: v('r-brand'), car: v('r-car') } }
+                });
+                if(form) {
+                    await fetch(GAS_URL, {method:'POST', mode:'no-cors', body: JSON.stringify({action:'register', phone:phone, name:form.name, carData: `${form.brand} ${form.car}`})});
+                    localStorage.setItem('unexPhone', phone); localStorage.setItem('unexName', form.name);
+                    Swal.fire('สำเร็จ', 'ลงทะเบียนเรียบร้อย', 'success').then(()=>location.reload());
+                }
+            }
+        }
+        function logout() { localStorage.clear(); location.reload(); }
+        function checkAuth() { if(!userPhone) { profileAuth(); return false; } return true; }
+
+        // --- ระบบ Comments ---
+        async function postComment(newsId) {
+            if(!checkAuth()) return;
+            const text = v(`cmt-${newsId}`); if(!text) return;
+            document.getElementById(`cmt-${newsId}`).value = '';
+            appData.comments.push([new Date().getTime(), newsId, userPhone, userName, text, 'Just now']); renderFeed(); // อัปเดต UI ทันที
+            await fetch(GAS_URL, {method:'POST', mode:'no-cors', body: JSON.stringify({action:'addComment', newsId:newsId, phone:userPhone, name:userName, text:text})});
+        }
+        async function editComment(commentId, oldText) {
+            const { value: newText } = await Swal.fire({ title: 'แก้ไขข้อความ', input: 'text', inputValue: oldText });
+            if(newText && newText !== oldText) {
+                appData.comments.find(c => String(c[0])===String(commentId))[4] = newText; renderFeed();
+                await fetch(GAS_URL, {method:'POST', mode:'no-cors', body: JSON.stringify({action:'editComment', commentId:commentId, text:newText})});
+            }
         }
 
         // --- ระบบแผนที่ ---
-        function initMap(lat, lng, title) {
-            if(!map) { map = L.map('map').setView([lat, lng], 15); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map); }
-            pinMap(lat, lng, title);
-        }
-        function pinMap(lat, lng, title) {
-            if(!map || !lat || !lng) return;
-            if(marker) map.removeLayer(marker);
-            map.setView([lat, lng], 15);
-            marker = L.marker([lat, lng]).addTo(map).bindPopup(`<b>${title}</b>`).openPopup();
-        }
+        function initMap(lat, lng, title) { if(!map) { map = L.map('map').setView([lat, lng], 15); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map); } pinMap(lat, lng, title); }
+        function pinMap(lat, lng, title) { if(!map || !lat || !lng) return; if(marker) map.removeLayer(marker); map.setView([lat, lng], 15); marker = L.marker([lat, lng]).addTo(map).bindPopup(`<b>${title}</b>`).openPopup(); }
 
-        // --- ระบบตะกร้า & จำนวน ---
+        // --- ระบบตะกร้า (Cart) ---
         function addCart(id, name, price) {
+            if(!checkAuth()) return;
             if(cart[id]) cart[id].qty++; else cart[id] = { name, price, qty: 1 };
-            updateCartBtn();
-            Swal.fire({toast:true, position:'top-end', icon:'success', title:'เพิ่มสินค้าแล้ว', showConfirmButton:false, timer:1000});
+            let qty = Object.values(cart).reduce((s, i) => s + i.qty, 0); document.getElementById('cartCount').innerText = qty;
+            document.getElementById('cartBtn').style.display = qty > 0 ? 'flex' : 'none';
         }
-        function updateCartBtn() {
-            let totalQty = Object.values(cart).reduce((sum, i) => sum + i.qty, 0);
-            document.getElementById('cartCount').innerText = totalQty;
-            document.getElementById('cartBtn').style.display = totalQty > 0 ? 'flex' : 'none';
-        }
-        
         async function viewCart() {
-            let total = 0, html = `<div class="text-left text-sm max-h-60 overflow-y-auto space-y-2 mb-4">`;
+            let total = 0, html = `<div class="text-left text-sm max-h-60 overflow-y-auto mb-4 border-b pb-2">`;
             for(let id in cart) {
                 let item = cart[id]; total += (item.price * item.qty);
-                html += `<div class="flex justify-between items-center border-b pb-2">
-                    <div><b>${item.name}</b><br><span class="text-gray-500">฿${item.price}</span></div>
-                    <div class="flex items-center gap-2">
-                        <button onclick="cart['${id}'].qty--; if(cart['${id}'].qty<=0) delete cart['${id}']; Swal.close(); viewCart();" class="bg-gray-200 px-2 rounded">-</button>
-                        <span>${item.qty}</span>
-                        <button onclick="cart['${id}'].qty++; Swal.close(); viewCart();" class="bg-gray-200 px-2 rounded">+</button>
-                    </div>
-                </div>`;
+                html += `<div class="flex justify-between items-center pb-2"><div><b>${item.name}</b><br>฿${item.price}</div>
+                    <div class="flex items-center gap-2"><button onclick="cart['${id}'].qty--; if(cart['${id}'].qty<=0) delete cart['${id}']; Swal.close(); viewCart();" class="bg-gray-200 px-2 rounded text-black">-</button><span>${item.qty}</span><button onclick="cart['${id}'].qty++; Swal.close(); viewCart();" class="bg-gray-200 px-2 rounded text-black">+</button></div></div>`;
             }
-            html += `</div><h3 class="font-bold text-lg text-blue-600 mb-2">ยอดชำระ: ฿${total}</h3>`;
-            
-            // ดึงข้อมูลบัญชีจาก Settings
-            let payInfo = config.PromptPay ? `สแกนพร้อมเพย์ด้านล่าง หรือโอนเข้าบัญชี:<br><b class="text-red-500">${config.BankAccount || ''}</b><br><br><img src="https://promptpay.io/${config.PromptPay}/${total}.png" class="mx-auto w-40 rounded-lg shadow">` : 'กรุณาชำระเงินที่หน้างาน';
+            html += `</div><h3 class="font-bold text-lg text-primary mb-2">ยอดชำระ: ฿${total}</h3>`;
+            let payInfo = appData.config.PromptPay ? `สแกนพร้อมเพย์:<br><b class="text-red-500">${appData.config.BankAccount || ''}</b><br><img src="https://promptpay.io/${appData.config.PromptPay}/${total}.png" class="mx-auto w-40 rounded">` : 'ชำระที่หน้างาน';
 
-            const { value, isConfirmed } = await Swal.fire({
-                title: '🛒 ชำระเงิน', html: html + `<div class="text-xs text-gray-600 my-2">${payInfo}</div><input type="tel" id="cPhone" class="w-full border p-2 rounded mt-2" placeholder="เบอร์โทรศัพท์ (ใช้อ้างอิงออเดอร์)">`,
-                input: config.PromptPay ? 'file' : null, inputAttributes: { accept: 'image/*' }, showCancelButton: true, confirmButtonText: 'ยืนยันสั่งซื้อ',
-                preConfirm: () => {
-                    const phone = document.getElementById('cPhone').value;
-                    const file = config.PromptPay ? Swal.getInput().files[0] : null;
-                    if(!phone) Swal.showValidationMessage('กรุณาใส่เบอร์โทรศัพท์');
-                    if(config.PromptPay && !file) Swal.showValidationMessage('กรุณาแนบรูปสลิป');
-                    return { phone, file };
-                }
-            });
+            const { value, isConfirmed } = await Swal.fire({ title: '🛒 สั่งซื้อสินค้า', html: html + `<div class="text-xs text-gray-600 my-2">${payInfo}</div>`, input: appData.config.PromptPay ? 'file' : null, confirmButtonText: 'โอนเงินและสั่งซื้อ', showCancelButton: true, preConfirm: () => { return Swal.getInput()?.files[0]; } });
 
             if (isConfirmed) {
-                Swal.fire({ title: 'กำลังประมวลผล...', didOpen: () => Swal.showLoading() });
-                const processSend = (base64) => {
-                    fetch(GAS_URL, {
-                        method: 'POST', mode: 'no-cors', headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({ action: 'checkout', phone: value.phone, cart: cart, total: total, slipBase64: base64 })
-                    }).then(() => { cart = {}; updateCartBtn(); Swal.fire('สำเร็จ', 'ส่งออเดอร์เรียบร้อย รอแอดมินตรวจสอบ', 'success'); });
-                };
-                
-                if(value.file) {
-                    const reader = new FileReader();
-                    reader.onload = (e) => processSend(e.target.result);
-                    reader.readAsDataURL(value.file);
-                } else processSend('');
+                Swal.fire({title:'กำลังประมวลผล...', didOpen:()=>Swal.showLoading()});
+                const proc = (b64) => { fetch(GAS_URL, {method:'POST', mode:'no-cors', body: JSON.stringify({ action:'checkout', phone:userPhone, cart:cart, total:total, slipBase64:b64 })}).then(() => { cart = {}; document.getElementById('cartBtn').style.display='none'; Swal.fire('สำเร็จ', 'ส่งออเดอร์เรียบร้อย', 'success'); }); };
+                if(value) { const r = new FileReader(); r.onload = (e) => proc(e.target.result); r.readAsDataURL(value); } else proc('');
             }
         }
 
         async function checkOrder() {
-            const { value: phone } = await Swal.fire({ title: 'ตรวจสอบสถานะ', input: 'tel', inputPlaceholder: 'เบอร์โทรศัพท์' });
-            if (phone) {
-                Swal.fire({ title: 'กำลังค้นหา...', didOpen:()=>Swal.showLoading() });
-                const res = await fetch(`${GAS_URL}?action=checkOrder&phone=${phone}`);
-                const r = await res.json();
-                if(r.data && r.data.length > 0) {
-                    let html = r.data.map(o => `<div class="border p-3 rounded mb-2 text-left text-sm bg-gray-50 text-gray-800">
-                        <div class="flex justify-between font-bold border-b pb-1">ออเดอร์ ${o[0]} <span class="${o[5].includes('สำเร็จ')?'text-green-600':'text-yellow-600'}">${o[5]}</span></div>
-                        <div class="mt-1">ยอดรวม: ฿${o[3]}<br><span class="text-xs text-gray-500">${o[6]}</span></div>
-                    </div>`).join('');
-                    Swal.fire({ title: 'ประวัติของคุณ', html: html, confirmButtonText: 'ปิด' });
-                } else Swal.fire('ไม่พบข้อมูล', 'ไม่มีออเดอร์จากเบอร์นี้', 'info');
-            }
+            Swal.fire({title:'กำลังโหลด...', didOpen:()=>Swal.showLoading()});
+            const res = await fetch(`${GAS_URL}?action=checkUser&phone=${userPhone}`); // Re-verify
+            const resOrd = await fetch(`${GAS_URL}?action=getAppData`);
+            const app = await resOrd.json();
+            let myOrders = app.orders.filter(o => String(o[1]) === String(userPhone));
+            if(myOrders.length > 0) {
+                let html = myOrders.map(o => `<div class="border p-3 rounded mb-2 text-left text-sm bg-gray-50 text-gray-800">
+                    <div class="flex justify-between font-bold border-b pb-1">รหัส ${o[0]} <span class="${o[5].includes('สำเร็จ')?'text-green-600':'text-yellow-600'}">${o[5]}</span></div>
+                    <div class="mt-1">ยอดรวม: ฿${o[3]}<br><span class="text-xs text-gray-500">${o[6]}</span></div></div>`).join('');
+                Swal.fire({ title: 'ประวัติสั่งซื้อ', html: html });
+            } else Swal.fire('ข้อมูลส่วนตัว', `ชื่อ: ${userName}<br>เบอร์: ${userPhone}<br><br>ยังไม่มีประวัติการสั่งซื้อ`, 'info');
         }
+
+        function v(id) { return document.getElementById(id) ? document.getElementById(id).value : ''; }
         window.onload = init;
     </script>
 </body>
