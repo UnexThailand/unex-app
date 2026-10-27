@@ -3,96 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UNEX - System Admin</title>
+    <title>UNEX ADMIN CENTER</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap');
         body { font-family: 'Kanit', sans-serif; background-color: #f3f4f6; }
-        .section-tab { display: none; }
-        .section-tab.active { display: block; }
+        .tab-sec { display: none; }
+        .tab-sec.active { display: block; }
     </style>
 </head>
-<body class="flex h-screen overflow-hidden">
+<body class="flex h-screen overflow-hidden text-gray-800">
 
-    <!-- Sidebar -->
-    <aside class="w-64 bg-gray-900 text-white flex flex-col h-full shadow-2xl z-20 hidden md:flex">
-        <div class="p-6 text-2xl font-bold text-red-500 tracking-widest border-b border-gray-800">UNEX ADMIN</div>
-        <nav class="flex-1 p-4 space-y-2">
-            <button onclick="nav('settings')" id="btn-settings" class="w-full text-left p-3 rounded-lg bg-gray-800 text-red-400 font-medium transition">🎨 ปรับแต่งธีมแอป</button>
-            <button onclick="nav('news')" id="btn-news" class="w-full text-left p-3 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition">📰 ประกาศข่าวสาร</button>
-            <button onclick="nav('events')" id="btn-events" class="w-full text-left p-3 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition">📅 จัดการอีเวนต์</button>
-            <button onclick="nav('brands')" id="btn-brands" class="w-full text-left p-3 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition">🏎️ จัดการแบรนด์รถ</button>
-            <button onclick="nav('shop')" id="btn-shop" class="w-full text-left p-3 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition">🛒 ระบบสินค้า (Shop)</button>
+    <aside class="w-64 bg-gray-900 text-white flex flex-col h-full shadow-xl">
+        <div class="p-6 text-2xl font-bold text-red-500 border-b border-gray-800">UNEX ADMIN</div>
+        <nav class="p-4 space-y-2 flex-1">
+            <button onclick="nav('dash')" id="btn-dash" class="w-full text-left p-3 rounded-lg bg-gray-800 text-red-400">📊 รายการสั่งซื้อ</button>
+            <button onclick="nav('shop')" id="btn-shop" class="w-full text-left p-3 rounded-lg hover:bg-gray-800">🛒 สินค้า (Shop)</button>
+            <button onclick="nav('event')" id="btn-event" class="w-full text-left p-3 rounded-lg hover:bg-gray-800">📅 อีเวนต์ (Events)</button>
+            <button onclick="nav('set')" id="btn-set" class="w-full text-left p-3 rounded-lg hover:bg-gray-800">⚙️ ตั้งค่า (บัญชี/เว็บ)</button>
         </nav>
     </aside>
 
-    <!-- Main Content -->
-    <main class="flex-1 h-full overflow-y-auto bg-gray-100 p-8">
+    <main class="flex-1 overflow-y-auto p-8 bg-gray-100">
         
-        <!-- Section: Settings -->
-        <section id="sec-settings" class="section-tab active max-w-2xl mx-auto">
-            <h2 class="text-2xl font-bold text-gray-800 mb-6">🎨 ปรับแต่งหน้าตาแอป (Theme & Branding)</h2>
-            <form onsubmit="submitForm(event, 'admin_saveSettings')" class="bg-white p-6 rounded-2xl shadow-sm space-y-4">
-                <div><label class="block text-sm font-semibold text-gray-700 mb-1">ชื่อเว็บ / สโลแกน</label>
-                <input type="text" id="siteName" class="w-full border rounded-lg p-3 bg-gray-50 focus:ring-2 focus:ring-red-500 outline-none" placeholder="เช่น UNEX CLUB"></div>
-                
-                <div><label class="block text-sm font-semibold text-gray-700 mb-1">สีหลักของแอป (HEX Code)</label>
-                <input type="text" id="themeColor" class="w-full border rounded-lg p-3 bg-gray-50 focus:ring-2 focus:ring-red-500 outline-none" placeholder="#dc2626"></div>
-                
-                <div><label class="block text-sm font-semibold text-gray-700 mb-1">อัปโหลดโลโก้เว็บใหม่</label>
-                <input type="file" id="logoImg" accept="image/*" class="w-full border rounded-lg p-2 bg-gray-50 text-sm"></div>
-                
-                <button type="submit" class="w-full bg-red-600 text-white font-bold py-3 rounded-lg hover:bg-red-700">บันทึกการตั้งค่า</button>
-            </form>
+        <!-- ออเดอร์ -->
+        <section id="sec-dash" class="tab-sec active">
+            <h2 class="text-2xl font-bold mb-4">📊 ออเดอร์ & การชำระเงิน</h2>
+            <button onclick="loadData('getOrders')" class="mb-4 bg-blue-600 text-white px-4 py-2 rounded">รีเฟรชข้อมูล</button>
+            <div class="bg-white rounded-xl shadow p-4 overflow-x-auto">
+                <table class="w-full text-sm text-left"><thead class="border-b bg-gray-50"><tr><th class="p-3">รหัส</th><th class="p-3">เบอร์โทร</th><th class="p-3">ยอดรวม</th><th class="p-3">สถานะ</th><th class="p-3">สลิป/จัดการ</th></tr></thead><tbody id="orderTable"></tbody></table>
+            </div>
         </section>
 
-        <!-- Section: News -->
-        <section id="sec-news" class="section-tab max-w-2xl mx-auto">
-            <h2 class="text-2xl font-bold text-gray-800 mb-6">📰 โพสต์ประกาศข่าวสาร</h2>
-            <form onsubmit="submitForm(event, 'admin_addNews')" class="bg-white p-6 rounded-2xl shadow-sm space-y-4">
-                <input type="text" id="newsTitle" required placeholder="หัวข้อข่าวสาร" class="w-full border rounded-lg p-3 bg-gray-50">
-                <textarea id="newsContent" required placeholder="รายละเอียดเนื้อหาประกาศ..." class="w-full border rounded-lg p-3 bg-gray-50 h-32"></textarea>
-                <input type="file" id="newsImg" accept="image/*" class="w-full border rounded-lg p-2 bg-gray-50 text-sm">
-                <button type="submit" class="w-full bg-gray-800 text-white font-bold py-3 rounded-lg hover:bg-gray-900">โพสต์ข่าวสาร</button>
-            </form>
+        <!-- จัดการสินค้า -->
+        <section id="sec-shop" class="tab-sec">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-bold">🛒 จัดการสินค้า</h2>
+                <button onclick="openForm('shop')" class="bg-green-600 text-white px-4 py-2 rounded font-bold">+ เพิ่มสินค้าใหม่</button>
+            </div>
+            <div class="bg-white rounded-xl shadow p-4 overflow-x-auto">
+                <table class="w-full text-sm text-left"><thead class="border-b bg-gray-50"><tr><th class="p-3">รูป</th><th class="p-3">ชื่อสินค้า</th><th class="p-3">ราคา</th><th class="p-3">จัดการ</th></tr></thead><tbody id="shopTable"></tbody></table>
+            </div>
         </section>
 
-        <!-- Section: Events -->
-        <section id="sec-events" class="section-tab max-w-2xl mx-auto">
-            <h2 class="text-2xl font-bold text-gray-800 mb-6">📅 สร้างอีเวนต์ใหม่</h2>
-            <form onsubmit="submitForm(event, 'admin_addEvent')" class="bg-white p-6 rounded-2xl shadow-sm space-y-4">
-                <input type="text" id="evtTitle" required placeholder="ชื่องาน (เช่น UNEX Grand Meet 2026)" class="w-full border rounded-lg p-3 bg-gray-50">
-                <input type="datetime-local" id="evtDate" required class="w-full border rounded-lg p-3 bg-gray-50">
-                <input type="text" id="evtLocation" required placeholder="สถานที่จัดงาน (Location)" class="w-full border rounded-lg p-3 bg-gray-50">
-                <div><label class="block text-sm font-semibold text-gray-700 mb-1">ภาพหน้าปกอีเวนต์</label>
-                <input type="file" id="evtImg" accept="image/*" class="w-full border rounded-lg p-2 bg-gray-50 text-sm"></div>
-                <button type="submit" class="w-full bg-gray-800 text-white font-bold py-3 rounded-lg hover:bg-gray-900">สร้างอีเวนต์</button>
-            </form>
+        <!-- จัดการอีเวนต์ -->
+        <section id="sec-event" class="tab-sec">
+             <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-bold">📅 จัดการอีเวนต์</h2>
+                <button onclick="openForm('event')" class="bg-green-600 text-white px-4 py-2 rounded font-bold">+ เพิ่มอีเวนต์</button>
+            </div>
+            <div class="bg-white rounded-xl shadow p-4 overflow-x-auto">
+                <table class="w-full text-sm text-left"><thead class="border-b bg-gray-50"><tr><th class="p-3">วันที่</th><th class="p-3">ชื่องาน</th><th class="p-3">พิกัด (Lat,Lng)</th><th class="p-3">จัดการ</th></tr></thead><tbody id="eventTable"></tbody></table>
+            </div>
         </section>
 
-        <!-- Section: Brands -->
-        <section id="sec-brands" class="section-tab max-w-2xl mx-auto">
-            <h2 class="text-2xl font-bold text-gray-800 mb-6">🏎️ เพิ่มแบรนด์และรุ่นรถ</h2>
-            <form onsubmit="submitForm(event, 'admin_addBrand')" class="bg-white p-6 rounded-2xl shadow-sm space-y-4">
-                <input type="text" id="brName" required placeholder="ชื่อยี่ห้อ (เช่น BMW, Toyota)" class="w-full border rounded-lg p-3 bg-gray-50">
-                <input type="text" id="brModels" placeholder="รุ่นรถที่มีให้เลือก (คั่นด้วยคอมมา เช่น M3,M5,320d)" class="w-full border rounded-lg p-3 bg-gray-50">
-                <div><label class="block text-sm font-semibold text-gray-700 mb-1">โลโก้แบรนด์รถ</label>
-                <input type="file" id="brImg" accept="image/*" class="w-full border rounded-lg p-2 bg-gray-50 text-sm"></div>
-                <button type="submit" class="w-full bg-gray-800 text-white font-bold py-3 rounded-lg hover:bg-gray-900">เพิ่มฐานข้อมูลรถ</button>
-            </form>
-        </section>
-
-        <!-- Section: Shop -->
-        <section id="sec-shop" class="section-tab max-w-2xl mx-auto">
-            <h2 class="text-2xl font-bold text-gray-800 mb-6">🛒 เพิ่มสินค้าใหม่ (Shop)</h2>
-            <form onsubmit="submitForm(event, 'admin_addShopItem')" class="bg-white p-6 rounded-2xl shadow-sm space-y-4">
-                <input type="text" id="shopName" required placeholder="ชื่อสินค้า (เช่น เสื้อยืด UNEX)" class="w-full border rounded-lg p-3 bg-gray-50">
-                <textarea id="shopDesc" required placeholder="รายละเอียดสินค้า..." class="w-full border rounded-lg p-3 bg-gray-50 h-24"></textarea>
-                <input type="number" id="shopPrice" required placeholder="ราคา (บาท)" class="w-full border rounded-lg p-3 bg-gray-50">
-                <div><label class="block text-sm font-semibold text-gray-700 mb-1">รูปภาพสินค้า</label>
-                <input type="file" id="shopImg" required accept="image/*" class="w-full border rounded-lg p-2 bg-gray-50 text-sm"></div>
-                <button type="submit" class="w-full bg-gray-800 text-white font-bold py-3 rounded-lg hover:bg-gray-900">วางขายสินค้า</button>
+        <!-- ตั้งค่าระบบ -->
+        <section id="sec-set" class="tab-sec max-w-xl">
+            <h2 class="text-2xl font-bold mb-4">⚙️ ตั้งค่าระบบ & บัญชีรับเงิน</h2>
+            <form onsubmit="saveSettings(event)" class="bg-white p-6 rounded-xl shadow space-y-4">
+                <div><label class="block text-sm font-bold">ชื่อเว็บไซต์</label><input type="text" id="cfg-SiteName" class="w-full border p-2 rounded bg-gray-50"></div>
+                <div><label class="block text-sm font-bold">เบอร์ PromptPay (สำหรับการสร้าง QR)</label><input type="text" id="cfg-PromptPay" class="w-full border p-2 rounded bg-gray-50" placeholder="08XXXXXXXX หรือ เลขบัตรปชช."></div>
+                <div><label class="block text-sm font-bold">ชื่อธนาคาร และ เลขบัญชี (ไว้โชว์ให้ลูกค้าโอน)</label><textarea id="cfg-BankAccount" class="w-full border p-2 rounded bg-gray-50"></textarea></div>
+                <button type="submit" class="w-full bg-gray-900 text-white p-3 rounded font-bold">บันทึกการตั้งค่า</button>
             </form>
         </section>
 
@@ -100,85 +72,112 @@
 
     <script>
         const GAS_URL = 'https://script.google.com/macros/s/AKfycbwPZXAmJXrYHRg6h-IciW8TdfBTkOGNV1hxU85yvmyOsTGV3CpYS5g5rJQ3B6UJE-xaSw/exec';
-        let adminPwd = '';
+        let pwd = '';
 
-        // 1. ระบบยืนยันตัวตนแอดมิน
         window.onload = async () => {
-            const { value: pwd } = await Swal.fire({ title: 'Admin Login', input: 'password', allowOutsideClick: false });
-            if (pwd) adminPwd = pwd;
-        };
+            const { value } = await Swal.fire({ title: 'Admin Login', input: 'password', allowOutsideClick: false });
+            if (value) { pwd = value; initAdmin(); }
+        }
 
-        // 2. ระบบ Navigation
-        function nav(section) {
-            document.querySelectorAll('.section-tab').forEach(el => el.classList.remove('active'));
-            document.getElementById(`sec-${section}`).classList.add('active');
+        function nav(sec) {
+            document.querySelectorAll('.tab-sec').forEach(el => el.classList.remove('active'));
+            document.getElementById(`sec-${sec}`).classList.add('active');
+            ['dash','shop','event','set'].forEach(b => document.getElementById(`btn-${b}`).className = 'w-full text-left p-3 rounded-lg hover:bg-gray-800 text-white');
+            document.getElementById(`btn-${sec}`).className = 'w-full text-left p-3 rounded-lg bg-gray-800 text-red-400 font-bold';
+            if(sec==='dash') loadData('getOrders');
+            if(sec==='shop') loadData('getShop');
+            if(sec==='event') loadData('getEvents');
+        }
+
+        async function initAdmin() {
+            Swal.fire({title:'โหลดข้อมูล...', didOpen:()=>Swal.showLoading()});
+            try {
+                const res = await fetch(`${GAS_URL}?action=getConfig`);
+                const conf = await res.json();
+                document.getElementById('cfg-SiteName').value = conf.SiteName || '';
+                document.getElementById('cfg-PromptPay').value = conf.PromptPay || '';
+                document.getElementById('cfg-BankAccount').value = conf.BankAccount || '';
+                loadData('getOrders');
+            } catch(e) { Swal.fire('Error', 'เชื่อมต่อไม่ได้', 'error'); }
+        }
+
+        async function loadData(actionType) {
+            const res = await fetch(`${GAS_URL}?action=${actionType}`);
+            const data = await res.json();
             
-            // จัดการสีปุ่ม Sidebar
-            const btns = ['settings', 'news', 'events', 'brands', 'shop'];
-            btns.forEach(b => {
-                document.getElementById(`btn-${b}`).className = 'w-full text-left p-3 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition';
-            });
-            document.getElementById(`btn-${section}`).className = 'w-full text-left p-3 rounded-lg bg-gray-800 text-red-400 font-medium transition';
+            if(actionType === 'getOrders') {
+                let h=''; data.forEach(r => { // [OrderID, Phone, Items, Total, Slip, Status, Date]
+                    h+=`<tr class="border-b"><td class="p-3">${r[0]}</td><td class="p-3">${r[1]}<br><span class="text-xs text-gray-400">${r[6]}</span></td><td class="p-3">฿${r[3]}</td>
+                    <td class="p-3"><select onchange="updateOrderStatus('${r[0]}', this.value)" class="border rounded p-1 text-xs"><option value="${r[5]}" selected hidden>${r[5]}</option><option value="รอตรวจสอบ">รอตรวจสอบ</option><option value="ชำระเงินสำเร็จ">ชำระเงินสำเร็จ</option><option value="ยกเลิก">ยกเลิก</option></select></td>
+                    <td class="p-3 flex gap-2">${r[4].startsWith('http')?`<a href="${r[4]}" target="_blank" class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs">ดูสลิป</a>`:'-'}</td></tr>`;
+                }); document.getElementById('orderTable').innerHTML = h;
+            }
+            if(actionType === 'getShop') {
+                let h=''; data.forEach(r => { // [ID, Name, Desc, Price, Img, Status]
+                    h+=`<tr class="border-b"><td class="p-3">${r[4]?`<img src="${r[4]}" class="w-12 h-12 object-cover rounded">`:''}</td><td class="p-3 font-bold">${r[1]}</td><td class="p-3">฿${r[3]}</td>
+                    <td class="p-3"><button onclick="delData('ShopItems', '${r[0]}')" class="text-red-600 font-bold hover:underline">ลบ</button></td></tr>`;
+                }); document.getElementById('shopTable').innerHTML = h;
+            }
+            if(actionType === 'getEvents') {
+                let h=''; data.forEach(r => { // [ID, Title, Date, Loc, Lat, Lng, Img]
+                    h+=`<tr class="border-b"><td class="p-3">${new Date(r[2]).toLocaleDateString('th-TH')}</td><td class="p-3 font-bold">${r[1]}</td><td class="p-3 text-xs">${r[4]}, ${r[5]}</td>
+                    <td class="p-3"><button onclick="delData('Events', '${r[0]}')" class="text-red-600 font-bold hover:underline">ลบ</button></td></tr>`;
+                }); document.getElementById('eventTable').innerHTML = h;
+            }
+            Swal.close();
         }
 
-        // 3. ฟังก์ชันหลักสำหรับแปลงไฟล์และส่งข้อมูลไปยังเซิร์ฟเวอร์
-        async function submitForm(e, actionType) {
-            e.preventDefault();
-            Swal.fire({ title: 'กำลังประมวลผล...', text: 'กำลังอัปโหลดรูปภาพและบันทึกข้อมูล', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
-
-            let payload = { action: actionType, pwd: adminPwd };
-            let fileInput = null;
-
-            // รวบรวมข้อมูลตามประเภทที่แอดมินกำลังกดส่ง
-            if (actionType === 'admin_saveSettings') {
-                payload.siteName = document.getElementById('siteName').value;
-                payload.themeColor = document.getElementById('themeColor').value;
-                fileInput = document.getElementById('logoImg');
-            } else if (actionType === 'admin_addNews') {
-                payload.title = document.getElementById('newsTitle').value;
-                payload.content = document.getElementById('newsContent').value;
-                fileInput = document.getElementById('newsImg');
-            } else if (actionType === 'admin_addEvent') {
-                payload.title = document.getElementById('evtTitle').value;
-                payload.date = document.getElementById('evtDate').value;
-                payload.location = document.getElementById('evtLocation').value;
-                fileInput = document.getElementById('evtImg');
-            } else if (actionType === 'admin_addBrand') {
-                payload.brandName = document.getElementById('brName').value;
-                payload.models = document.getElementById('brModels').value;
-                fileInput = document.getElementById('brImg');
-            } else if (actionType === 'admin_addShopItem') {
-                payload.itemName = document.getElementById('shopName').value;
-                payload.desc = document.getElementById('shopDesc').value;
-                payload.price = document.getElementById('shopPrice').value;
-                fileInput = document.getElementById('shopImg');
+        // --- ระบบบันทึก (ฟอร์มเพิ่มข้อมูล) ---
+        async function openForm(type) {
+            let html = '', action = '';
+            if(type === 'shop') {
+                action = 'admin_saveShop';
+                html = `<input id="f1" class="swal2-input" placeholder="ชื่อสินค้า"><input id="f2" type="number" class="swal2-input" placeholder="ราคา (บาท)"><textarea id="f3" class="swal2-textarea" placeholder="รายละเอียด"></textarea><input id="file" type="file" class="swal2-file" accept="image/*">`;
+            } else if(type === 'event') {
+                action = 'admin_saveEvent';
+                html = `<input id="f1" class="swal2-input" placeholder="ชื่องาน"><input id="f2" type="datetime-local" class="swal2-input"><input id="f3" class="swal2-input" placeholder="ชื่อสถานที่"><div class="flex gap-2"><input id="f4" class="swal2-input w-1/2" placeholder="Latitude"><input id="f5" class="swal2-input w-1/2" placeholder="Longitude"></div><input id="file" type="file" class="swal2-file" accept="image/*">`;
             }
 
-            // ถ้ามีการแนบรูปภาพ ให้ทำการแปลงเป็น Base64 ก่อนส่ง
-            if (fileInput && fileInput.files.length > 0) {
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    payload.imageBase64 = event.target.result;
-                    sendData(payload, e.target);
-                };
-                reader.readAsDataURL(fileInput.files[0]);
-            } else {
-                sendData(payload, e.target); // ถ้าไม่มีรูป ก็ส่งข้อมูลเพียวๆ
+            const { value: formVals } = await Swal.fire({ title: 'เพิ่มข้อมูลใหม่', html: html, showCancelButton: true, confirmButtonText: 'บันทึก',
+                preConfirm: () => {
+                    const f1 = document.getElementById('f1').value; if(!f1) Swal.showValidationMessage('กรอกข้อมูลให้ครบ');
+                    return { f1:f1, f2:document.getElementById('f2').value, f3:document.getElementById('f3').value, f4:document.getElementById('f4')?.value, f5:document.getElementById('f5')?.value, file: document.getElementById('file').files[0] };
+                }
+            });
+
+            if (formVals) {
+                Swal.fire({title:'กำลังบันทึก...', didOpen:()=>Swal.showLoading()});
+                const payload = { pwd: pwd, action: action, name: formVals.f1, title: formVals.f1, price: formVals.f2, date: formVals.f2, desc: formVals.f3, location: formVals.f3, lat: formVals.f4, lng: formVals.f5 };
+                if (formVals.file) {
+                    const r = new FileReader(); r.onload = (e) => { payload.imageBase64 = e.target.result; sendAdminData(payload, type); }; r.readAsDataURL(formVals.file);
+                } else sendAdminData(payload, type);
             }
         }
 
-        // 4. ส่งข้อมูล HTTP POST
-        function sendData(payload, formElement) {
-            fetch(GAS_URL, {
-                method: 'POST', mode: 'no-cors',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            }).then(() => {
-                Swal.fire('สำเร็จ!', 'อัปเดตระบบและฐานข้อมูลเรียบร้อยแล้ว', 'success');
-                formElement.reset(); // ล้างแบบฟอร์มหลังส่งสำเร็จ
-            }).catch(() => {
-                Swal.fire('ข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อระบบหลังบ้านได้', 'error');
-            });
+        async function sendAdminData(payload, refreshType) {
+            await fetch(GAS_URL, { method: 'POST', mode: 'no-cors', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
+            Swal.fire('สำเร็จ', 'บันทึกข้อมูลแล้ว', 'success'); loadData(refreshType === 'shop' ? 'getShop' : 'getEvents');
+        }
+
+        async function saveSettings(e) {
+            e.preventDefault(); Swal.fire({title:'บันทึก...', didOpen:()=>Swal.showLoading()});
+            const p = { pwd: pwd, action: 'admin_saveSettings', settings: { 
+                SiteName: document.getElementById('cfg-SiteName').value, PromptPay: document.getElementById('cfg-PromptPay').value, BankAccount: document.getElementById('cfg-BankAccount').value 
+            }};
+            await fetch(GAS_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(p) }); Swal.fire('สำเร็จ', '', 'success');
+        }
+
+        async function updateOrderStatus(id, status) {
+            Swal.fire({toast:true, position:'top-end', icon:'info', title:'กำลังอัปเดต...', showConfirmButton:false});
+            await fetch(GAS_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ pwd:pwd, action: 'admin_updateOrder', orderId: id, status: status }) });
+            Swal.fire({toast:true, position:'top-end', icon:'success', title:'อัปเดตแล้ว', showConfirmButton:false, timer:1500});
+        }
+
+        async function delData(sheet, id) {
+            if((await Swal.fire({title: 'ยืนยันลบ?', icon:'warning', showCancelButton:true})).isConfirmed) {
+                await fetch(GAS_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ pwd:pwd, action: 'admin_delete', sheet: sheet, id: id }) });
+                loadData(sheet==='ShopItems' ? 'getShop' : 'getEvents');
+            }
         }
     </script>
 </body>
