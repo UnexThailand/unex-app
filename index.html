@@ -3,15 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title id="pageTitle">UNEX - Car Club & Gallery</title>
+    <title>UNEX CLUB</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = { darkMode: 'class', theme: { extend: { colors: { primary: '#dc2626', darkbg: '#0a0a0a', cardbg: '#171717' } } } }
-    </script>
+    <script>tailwind.config={darkMode:'class',theme:{extend:{colors:{primary:'#dc2626',darkbg:'#0a0a0a',cardbg:'#171717'}}}}</script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap');
         body { font-family: 'Kanit', sans-serif; }
@@ -22,183 +19,181 @@
 </head>
 <body class="bg-darkbg text-gray-100 pb-24">
 
-    <!-- Header -->
-    <header class="bg-cardbg border-b border-neutral-800 p-4 sticky top-0 z-50">
-        <div class="flex justify-between items-center max-w-md mx-auto">
-            <h1 id="siteName" class="text-xl font-bold tracking-wider text-primary">UNEX CLUB</h1>
-            <button onclick="openProfile()" class="text-sm bg-neutral-800 px-3 py-1.5 rounded-full border border-neutral-700">Garage / Profile</button>
-        </div>
+    <header class="bg-cardbg border-b border-neutral-800 p-4 sticky top-0 z-50 flex justify-between items-center">
+        <h1 id="siteName" class="text-xl font-bold tracking-wider text-primary">UNEX CLUB</h1>
+        <button onclick="checkOrder()" class="text-xs bg-neutral-800 px-3 py-1.5 rounded-full border border-neutral-700">ประวัติสั่งซื้อ</button>
     </header>
+
+    <!-- ตะกร้าลอย -->
+    <button onclick="viewCart()" id="cartBtn" class="hidden fixed bottom-20 right-4 bg-primary text-white p-4 rounded-full shadow-2xl z-50 flex items-center gap-2">
+        🛒 <span id="cartCount" class="font-bold">0</span>
+    </button>
 
     <main class="max-w-md mx-auto p-4">
         
-        <!-- Tab 1: Home / Feed (Instagram Style Community) -->
-        <section id="tab-home" class="tab-content active space-y-4">
-            <div class="flex justify-between items-center">
-                <h2 class="text-lg font-bold">Car Guy Feed</h2>
-                <button onclick="openNewPostModal()" class="bg-primary text-white px-3 py-1.5 rounded-lg text-sm font-semibold">+ โพสต์รูปรถ</button>
-            </div>
-            <div id="communityFeed" class="space-y-4">
-                <p class="text-center text-neutral-500 py-8">กำลังโหลดฟีด...</p>
-            </div>
+        <!-- Events & Map Tab -->
+        <section id="tab-events" class="tab-content active space-y-4">
+            <h2 class="text-lg font-bold">📍 Upcoming Events</h2>
+            <div id="eventList" class="space-y-3">กำลังโหลด...</div>
+            <div class="bg-cardbg p-3 rounded-xl border border-neutral-800"><div id="map"></div></div>
         </section>
 
-        <!-- Tab 2: Events & Meetups -->
-        <section id="tab-events" class="tab-content space-y-4">
-            <h2 class="text-lg font-bold">Upcoming Events</h2>
-            <div id="eventContainer" class="space-y-3"></div>
-            <div class="bg-cardbg p-4 rounded-xl border border-neutral-800 mt-6">
-                <h3 class="font-semibold mb-2">Location & Meeting Point</h3>
-                <div id="map"></div>
-            </div>
-        </section>
-
-        <!-- Tab 3: Register Car & Brands -->
-        <section id="tab-register" class="tab-content space-y-4">
-            <h2 class="text-lg font-bold">ลงทะเบียนเข้าร่วมมีตติ้ง</h2>
-            <form id="regForm" class="bg-cardbg border border-neutral-800 rounded-xl p-5 space-y-3">
-                <input type="text" id="regName" required placeholder="ชื่อ-นามสกุล" class="w-full bg-neutral-900 border border-neutral-800 rounded-lg p-3 outline-none focus:border-primary">
-                <input type="tel" id="regPhone" required placeholder="เบอร์โทรศัพท์" class="w-full bg-neutral-900 border border-neutral-800 rounded-lg p-3 outline-none focus:border-primary">
-                <select id="brandSelect" onchange="onBrandChange()" class="w-full bg-neutral-900 border border-neutral-800 rounded-lg p-3 outline-none focus:border-primary"></select>
-                <div id="modelContainer">
-                    <input type="text" id="carModel" required placeholder="รุ่นรถ (พิมพ์ระบุเองได้)" class="w-full bg-neutral-900 border border-neutral-800 rounded-lg p-3 outline-none focus:border-primary">
-                </div>
-                <input type="text" id="licensePlate" required placeholder="ทะเบียนรถ" class="w-full bg-neutral-900 border border-neutral-800 rounded-lg p-3 outline-none focus:border-primary">
-                <button type="submit" class="w-full bg-primary text-white font-semibold py-3 rounded-lg">ยืนยันการลงทะเบียน</button>
-            </form>
-        </section>
-
-        <!-- Tab 4: Shop -->
+        <!-- Shop Tab -->
         <section id="tab-shop" class="tab-content space-y-4">
-            <h2 class="text-lg font-bold">Official Merch & Parts</h2>
-            <div id="shopContainer" class="grid grid-cols-2 gap-3"></div>
+            <h2 class="text-lg font-bold">🛒 Official Shop</h2>
+            <div id="shopList" class="grid grid-cols-2 gap-3">กำลังโหลด...</div>
         </section>
 
     </main>
 
-    <!-- Bottom Navigation -->
-    <nav class="fixed bottom-0 w-full bg-cardbg border-t border-neutral-800 pb-safe z-40">
-        <div class="flex justify-around max-w-md mx-auto p-2">
-            <button onclick="switchTab('home')" class="nav-btn text-primary flex flex-col items-center text-xs"><svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>Feed</button>
-            <button onclick="switchTab('events')" class="nav-btn text-neutral-400 flex flex-col items-center text-xs"><svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>Events</button>
-            <button onclick="switchTab('register')" class="nav-btn text-neutral-400 flex flex-col items-center text-xs"><svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>Register</button>
-            <button onclick="switchTab('shop')" class="nav-btn text-neutral-400 flex flex-col items-center text-xs"><svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>Shop</button>
-        </div>
+    <!-- เมนูด้านล่าง -->
+    <nav class="fixed bottom-0 w-full bg-cardbg border-t border-neutral-800 pb-safe z-40 flex justify-around p-2">
+        <button onclick="switchTab('events')" class="nav-btn text-primary text-xs w-1/2 p-2 font-bold">📅 Events</button>
+        <button onclick="switchTab('shop')" class="nav-btn text-neutral-500 text-xs w-1/2 p-2 font-bold">🛍️ Shop</button>
     </nav>
 
     <script>
         const GAS_URL = 'https://script.google.com/macros/s/AKfycbwPZXAmJXrYHRg6h-IciW8TdfBTkOGNV1hxU85yvmyOsTGV3CpYS5g5rJQ3B6UJE-xaSw/exec';
-        let brandsData = [];
+        let cart = {}, config = {}, map, marker;
 
         function switchTab(tab) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.getElementById(`tab-${tab}`).classList.add('active');
-            document.querySelectorAll('.nav-btn').forEach(btn => btn.className = 'nav-btn text-neutral-400 flex flex-col items-center text-xs');
-            event.currentTarget.className = 'nav-btn text-primary flex flex-col items-center text-xs';
-            if(tab === 'events') setTimeout(() => map.invalidateSize(), 100);
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.className = 'nav-btn text-neutral-500 text-xs w-1/2 p-2 font-bold');
+            event.currentTarget.className = 'nav-btn text-primary text-xs w-1/2 p-2 font-bold';
+            if(tab==='events' && map) setTimeout(()=>map.invalidateSize(), 100);
         }
 
-        // โหลดข้อมูลพื้นฐานและ Config
-        async function initApp() {
+        async function init() {
             try {
-                const res = await fetch(`${GAS_URL}?action=getConfig`);
-                const config = await res.json();
-                if(config.SiteName) {
-                    document.getElementById('siteName').innerText = config.SiteName;
-                    document.getElementById('pageTitle').innerText = config.SiteName;
+                const resConf = await fetch(`${GAS_URL}?action=getConfig`);
+                config = await resConf.json();
+                if(config.SiteName) document.getElementById('siteName').innerText = config.SiteName;
+                
+                // โหลด Events
+                const resEvt = await fetch(`${GAS_URL}?action=getEvents`);
+                const evts = await resEvt.json();
+                let evtHtml = '';
+                evts.forEach(e => { // แก้ไขบั๊ก undefined[cite: 9] ด้วยการเช็คข้อมูลและดึงจาก Array
+                    evtHtml += `<div class="bg-cardbg border border-neutral-800 rounded-xl p-3 flex gap-3 items-center cursor-pointer hover:bg-neutral-800" onclick="pinMap(${e[4]}, ${e[5]}, '${e[1]}')">
+                        ${e[6] ? `<img src="${e[6]}" class="w-20 h-20 rounded-lg object-cover">` : ''}
+                        <div>
+                            <span class="text-xs text-primary font-bold">📅 ${new Date(e[2]).toLocaleDateString('th-TH')}</span>
+                            <h3 class="font-semibold text-sm">${e[1] || 'ไม่มีชื่อ'}</h3>
+                            <p class="text-xs text-neutral-400">📍 ${e[3]}</p>
+                        </div>
+                    </div>`;
+                });
+                document.getElementById('eventList').innerHTML = evtHtml || '<p class="text-neutral-500">ไม่มีอีเวนต์</p>';
+                if(evts.length > 0 && evts[0][4]) initMap(evts[0][4], evts[0][5], evts[0][1]); // ปักหมุดงานล่าสุด
+
+                // โหลด Shop
+                const resShop = await fetch(`${GAS_URL}?action=getShop`);
+                const shops = await resShop.json();
+                let shopHtml = '';
+                shops.forEach(s => { // แก้ไขบั๊ก undefined[cite: 6, 8]
+                    if(s[5] !== 'Active') return;
+                    shopHtml += `<div class="bg-cardbg border border-neutral-800 rounded-xl overflow-hidden flex flex-col justify-between h-56">
+                        ${s[4] ? `<img src="${s[4]}" class="h-28 w-full object-cover">` : '<div class="h-28 bg-neutral-800"></div>'}
+                        <div class="p-3 text-center">
+                            <h4 class="font-semibold text-xs truncate">${s[1]}</h4>
+                            <p class="text-primary font-bold text-sm my-1">฿${s[3]}</p>
+                            <button onclick="addCart('${s[0]}', '${s[1]}', ${s[3]})" class="bg-primary text-white text-xs w-full py-1.5 rounded">เพิ่มลงตะกร้า</button>
+                        </div>
+                    </div>`;
+                });
+                document.getElementById('shopList').innerHTML = shopHtml || '<p>ไม่มีสินค้า</p>';
+
+            } catch(e) { console.error(e); }
+        }
+
+        // --- ระบบแผนที่ ---
+        function initMap(lat, lng, title) {
+            if(!map) { map = L.map('map').setView([lat, lng], 15); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map); }
+            pinMap(lat, lng, title);
+        }
+        function pinMap(lat, lng, title) {
+            if(!map || !lat || !lng) return;
+            if(marker) map.removeLayer(marker);
+            map.setView([lat, lng], 15);
+            marker = L.marker([lat, lng]).addTo(map).bindPopup(`<b>${title}</b>`).openPopup();
+        }
+
+        // --- ระบบตะกร้า & จำนวน ---
+        function addCart(id, name, price) {
+            if(cart[id]) cart[id].qty++; else cart[id] = { name, price, qty: 1 };
+            updateCartBtn();
+            Swal.fire({toast:true, position:'top-end', icon:'success', title:'เพิ่มสินค้าแล้ว', showConfirmButton:false, timer:1000});
+        }
+        function updateCartBtn() {
+            let totalQty = Object.values(cart).reduce((sum, i) => sum + i.qty, 0);
+            document.getElementById('cartCount').innerText = totalQty;
+            document.getElementById('cartBtn').style.display = totalQty > 0 ? 'flex' : 'none';
+        }
+        
+        async function viewCart() {
+            let total = 0, html = `<div class="text-left text-sm max-h-60 overflow-y-auto space-y-2 mb-4">`;
+            for(let id in cart) {
+                let item = cart[id]; total += (item.price * item.qty);
+                html += `<div class="flex justify-between items-center border-b pb-2">
+                    <div><b>${item.name}</b><br><span class="text-gray-500">฿${item.price}</span></div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="cart['${id}'].qty--; if(cart['${id}'].qty<=0) delete cart['${id}']; Swal.close(); viewCart();" class="bg-gray-200 px-2 rounded">-</button>
+                        <span>${item.qty}</span>
+                        <button onclick="cart['${id}'].qty++; Swal.close(); viewCart();" class="bg-gray-200 px-2 rounded">+</button>
+                    </div>
+                </div>`;
+            }
+            html += `</div><h3 class="font-bold text-lg text-blue-600 mb-2">ยอดชำระ: ฿${total}</h3>`;
+            
+            // ดึงข้อมูลบัญชีจาก Settings
+            let payInfo = config.PromptPay ? `สแกนพร้อมเพย์ด้านล่าง หรือโอนเข้าบัญชี:<br><b class="text-red-500">${config.BankAccount || ''}</b><br><br><img src="https://promptpay.io/${config.PromptPay}/${total}.png" class="mx-auto w-40 rounded-lg shadow">` : 'กรุณาชำระเงินที่หน้างาน';
+
+            const { value, isConfirmed } = await Swal.fire({
+                title: '🛒 ชำระเงิน', html: html + `<div class="text-xs text-gray-600 my-2">${payInfo}</div><input type="tel" id="cPhone" class="w-full border p-2 rounded mt-2" placeholder="เบอร์โทรศัพท์ (ใช้อ้างอิงออเดอร์)">`,
+                input: config.PromptPay ? 'file' : null, inputAttributes: { accept: 'image/*' }, showCancelButton: true, confirmButtonText: 'ยืนยันสั่งซื้อ',
+                preConfirm: () => {
+                    const phone = document.getElementById('cPhone').value;
+                    const file = config.PromptPay ? Swal.getInput().files[0] : null;
+                    if(!phone) Swal.showValidationMessage('กรุณาใส่เบอร์โทรศัพท์');
+                    if(config.PromptPay && !file) Swal.showValidationMessage('กรุณาแนบรูปสลิป');
+                    return { phone, file };
                 }
-            } catch(e) {}
-            loadFeed();
-            loadEvents();
-            loadBrands();
-            loadShop();
-        }
-
-        async function loadFeed() {
-            const res = await fetch(`${GAS_URL}?action=getCommunity`);
-            const posts = await res.json();
-            let html = '';
-            posts.forEach(p => {
-                html += `<div class="bg-cardbg border border-neutral-800 rounded-xl overflow-hidden">
-                    <div class="p-3 font-semibold text-sm border-b border-neutral-800">${p.name}</div>
-                    ${p.image ? `<img src="${p.image}" class="w-full object-cover max-h-80">` : ''}
-                    <div class="p-3 space-y-2">
-                        <p class="text-sm text-neutral-300"><span class="font-semibold text-white mr-2">${p.name}</span>${p.caption}</p>
-                        <div class="border-t border-neutral-800 pt-2 space-y-1">
-                            ${p.comments.map(c => `<div class="text-xs"><span class="font-bold mr-1">${c.name}:</span>${c.comment}</div>`).join('')}
-                        </div>
-                        <div class="flex gap-2 pt-2">
-                            <input type="text" id="comment-${p.postId}" placeholder="แสดงความคิดเห็น..." class="w-full bg-neutral-900 border border-neutral-800 rounded px-2 py-1 text-xs outline-none">
-                            <button onclick="addComment('${p.postId}')" class="bg-neutral-800 text-xs px-3 py-1 rounded">ส่ง</button>
-                        </div>
-                    </div>
-                </div>`;
             });
-            document.getElementById('communityFeed').innerHTML = html || '<p class="text-center text-neutral-500">ยังไม่มีโพสต์</p>';
-        }
 
-        async function loadEvents() {
-            const res = await fetch(`${GAS_URL}?action=getEvents`);
-            const events = await res.json();
-            let html = '';
-            events.forEach(ev => {
-                html += `<div class="bg-cardbg border border-neutral-800 rounded-xl p-4 flex gap-3 items-center">
-                    ${ev.image ? `<img src="${ev.image}" class="w-20 h-20 rounded-lg object-cover">` : ''}
-                    <div>
-                        <span class="text-xs text-primary font-bold">📅 ${ev.date}</span>
-                        <h3 class="font-semibold">${ev.title}</h3>
-                        <p class="text-xs text-neutral-400">📍 ${ev.location}</p>
-                    </div>
-                </div>`;
-            });
-            document.getElementById('eventContainer').innerHTML = html || '<p class="text-neutral-500">ไม่มีอีเวนต์เร็วๆ นี้</p>';
-        }
-
-        async function loadBrands() {
-            const res = await fetch(`${GAS_URL}?action=getBrands`);
-            brandsData = await res.json();
-            let html = '<option value="">เลือกแบรนด์รถ</option>';
-            brandsData.forEach(b => html += `<option value="${b.name}">${b.name}</option>`);
-            html += '<option value="Other">อื่นๆ (พิมพ์ระบุเอง)</option>';
-            document.getElementById('brandSelect').innerHTML = html;
-        }
-
-        function onBrandChange() {
-            const val = document.getElementById('brandSelect').value;
-            const brand = brandsData.find(b => b.name === val);
-            const container = document.getElementById('modelContainer');
-            if(brand && brand.models.length > 0) {
-                let html = `<select id="carModel" class="w-full bg-neutral-900 border border-neutral-800 rounded-lg p-3 outline-none">`;
-                brand.models.forEach(m => html += `<option value="${m}">${m}</option>`);
-                html += `</select>`;
-                container.innerHTML = html;
-            } else {
-                container.innerHTML = `<input type="text" id="carModel" required placeholder="รุ่นรถ" class="w-full bg-neutral-900 border border-neutral-800 rounded-lg p-3 outline-none">`;
+            if (isConfirmed) {
+                Swal.fire({ title: 'กำลังประมวลผล...', didOpen: () => Swal.showLoading() });
+                const processSend = (base64) => {
+                    fetch(GAS_URL, {
+                        method: 'POST', mode: 'no-cors', headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({ action: 'checkout', phone: value.phone, cart: cart, total: total, slipBase64: base64 })
+                    }).then(() => { cart = {}; updateCartBtn(); Swal.fire('สำเร็จ', 'ส่งออเดอร์เรียบร้อย รอแอดมินตรวจสอบ', 'success'); });
+                };
+                
+                if(value.file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => processSend(e.target.result);
+                    reader.readAsDataURL(value.file);
+                } else processSend('');
             }
         }
 
-        async function loadShop() {
-            const res = await fetch(`${GAS_URL}?action=getShop`);
-            const items = await res.json();
-            let html = '';
-            items.forEach(i => {
-                html += `<div class="bg-cardbg border border-neutral-800 rounded-xl overflow-hidden flex flex-col justify-between">
-                    <img src="${i.imageUrl}" class="h-32 object-cover">
-                    <div class="p-3">
-                        <h4 class="font-semibold text-sm truncate">${i.name}</h4>
-                        <p class="text-primary font-bold text-sm mt-1">฿${i.price}</p>
-                    </div>
-                </div>`;
-            });
-            document.getElementById('shopContainer').innerHTML = html || '<p class="text-neutral-500 col-span-2">ไม่มีสินค้า</p>';
+        async function checkOrder() {
+            const { value: phone } = await Swal.fire({ title: 'ตรวจสอบสถานะ', input: 'tel', inputPlaceholder: 'เบอร์โทรศัพท์' });
+            if (phone) {
+                Swal.fire({ title: 'กำลังค้นหา...', didOpen:()=>Swal.showLoading() });
+                const res = await fetch(`${GAS_URL}?action=checkOrder&phone=${phone}`);
+                const r = await res.json();
+                if(r.data && r.data.length > 0) {
+                    let html = r.data.map(o => `<div class="border p-3 rounded mb-2 text-left text-sm bg-gray-50 text-gray-800">
+                        <div class="flex justify-between font-bold border-b pb-1">ออเดอร์ ${o[0]} <span class="${o[5].includes('สำเร็จ')?'text-green-600':'text-yellow-600'}">${o[5]}</span></div>
+                        <div class="mt-1">ยอดรวม: ฿${o[3]}<br><span class="text-xs text-gray-500">${o[6]}</span></div>
+                    </div>`).join('');
+                    Swal.fire({ title: 'ประวัติของคุณ', html: html, confirmButtonText: 'ปิด' });
+                } else Swal.fire('ไม่พบข้อมูล', 'ไม่มีออเดอร์จากเบอร์นี้', 'info');
+            }
         }
-
-        // Leaflet Map Setup
-        let map = L.map('map').setView([13.7563, 100.5018], 15);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-        L.marker([13.7563, 100.5018]).addTo(map).bindPopup('UNEX Meeting Point').openPopup();
-
-        window.onload = initApp;
+        window.onload = init;
     </script>
 </body>
 </html>
