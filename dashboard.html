@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>UNEX - Admin Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+</head>
+<body class="p-8 bg-gray-100">
+    <div class="max-w-4xl mx-auto">
+        <header class="flex justify-between bg-white p-6 rounded-2xl shadow-sm mb-6">
+            <h1 class="text-2xl font-bold">UNEX Analytics</h1>
+            <div class="flex gap-2">
+                <button onclick="openScanner()" class="bg-purple-100 text-purple-600 px-4 py-2 rounded-lg font-bold">📷 สแกน QR เข้างาน</button>
+                <button onclick="exportCSV()" class="bg-green-100 text-green-600 px-4 py-2 rounded-lg font-bold">📥 Export CSV</button>
+                <button onclick="fetchData()" class="bg-blue-100 text-blue-600 px-4 py-2 rounded-lg font-bold">🔄 รีเฟรช</button>
+            </div>
+        </header>
+
+        <div class="bg-white p-6 rounded-2xl shadow-sm">
+            <h2 class="text-lg font-semibold mb-4">จำนวนรถยนต์แยกตามแบรนด์</h2>
+            <canvas id="chart" class="w-full h-64"></canvas>
+        </div>
+    </div>
+
+    <!-- Scanner Modal -->
+    <div id="scannerModal" class="hidden fixed inset-0 bg-black bg-opacity-90 z-50 flex flex-col justify-center p-4">
+        <div class="bg-white p-4 rounded-xl mx-auto w-full max-w-sm">
+            <button onclick="closeScanner()" class="mb-4 text-red-500 font-bold w-full text-right">ปิดกล้อง ✖</button>
+            <div id="reader"></div>
+        </div>
+    </div>
+
+    <script>
+        const GAS_URL = 'https://script.google.com/macros/s/AKfycbwPZXAmJXrYHRg6h-IciW8TdfBTkOGNV1hxU85yvmyOsTGV3CpYS5g5rJQ3B6UJE-xaSw/exec';
+        let currentPassword = '';
+        let myChart = null;
+        let html5QrcodeScanner = null;
+
+        async function promptLogin() {
+            const { value: pwd } = await Swal.fire({ title: 'Admin Login', input: 'password', allowOutsideClick: false });
+            if (pwd) { currentPassword = pwd; fetchData(); }
+        }
+
+        async function fetchData() {
+            Swal.fire({ title: 'Loading...', didOpen: () => Swal.showLoading() });
+            const res = await fetch(`${GAS_URL}?pwd=${encodeURIComponent(currentPassword)}`);
+            const data = await res.json();
+            if (data.error) { Swal.fire('Error', 'รหัสผิด', 'error').then(promptLogin); return; }
+            
+            Swal.close();
+            const ctx = document.getElementById('chart').getContext('2d');
+            if(myChart) myChart.destroy();
+            myChart = new Chart(ctx, { type: 'bar', data: { labels: Object.keys(data), datasets: [{ label: 'คัน', data: Object.values(data), backgroundColor: '#2563eb' }] }});
+        }
+
+        async function exportCSV() {
+            const res = await fetch(`${GAS_URL}?pwd=${encodeURIComponent(currentPassword)}&action=export`);
+            const data = await res.json();
+            let csv = "\uFEFF" + data.map(r => r.map(c => `"${c}"`).join(",")).join("\n");
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(new Blob([csv], {type: 'text/csv;charset=utf-8;'}));
+            link.download = "UNEX_Export.csv";
+            link.click();
+        }
+
+        function openScanner() {
+            document.getElementById('scannerModal').classList.remove('hidden');
+            html5QrcodeScanner = new Html5Qrcode("reader");
+            html5QrcodeScanner.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, async (txt) => {
+                closeScanner();
+                Swal.fire({ title: 'ตรวจสอบ...', didOpen: () => Swal.showLoading() });
+                const qr = JSON.parse(txt);
+                const res = await fetch(`${GAS_URL}?pwd=${encodeURIComponent(currentPassword)}&action=checkin&ref=${qr.ref}`);
+                const result = await res.json();
+                Swal.fire(result.status === 'success' ? 'ผ่าน!' : 'ผิดพลาด', result.message, result.status);
+            });
+        }
+        function closeScanner() { if(html5QrcodeScanner) html5QrcodeScanner.stop(); document.getElementById('scannerModal').classList.add('hidden'); }
+        
+        window.onload = promptLogin;
+    </script>
+</body>
+</html>

@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UNEX - Unexceptional Car Thailand</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap');
+        body { font-family: 'Kanit', sans-serif; background-color: #f3f4f6; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        #map { height: 400px; border-radius: 0.5rem; z-index: 1; }
+        #qrcode img { margin: 0 auto; border: 10px solid white; border-radius: 8px; }
+    </style>
+</head>
+<body class="pb-20">
+
+    <header class="bg-white shadow-sm p-4 sticky top-0 z-50">
+        <div class="flex justify-between items-center max-w-md mx-auto">
+            <h1 class="text-2xl font-bold text-blue-600">UNEX</h1>
+        </div>
+    </header>
+
+    <!-- Floating Cart Button -->
+    <button id="cartBtn" onclick="viewCart()" class="hidden fixed bottom-20 right-4 bg-blue-600 text-white p-4 rounded-full shadow-lg z-50 flex items-center gap-2">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+        <span id="cartCount" class="font-bold">0</span>
+    </button>
+
+    <main class="max-w-md mx-auto p-4">
+        <!-- Tab: Register -->
+        <section id="tab-register" class="tab-content active">
+            <div class="bg-blue-600 text-white rounded-xl p-6 mb-6 shadow-md">
+                <h2 class="text-xl font-semibold">Join the Next Meet</h2>
+                <p class="text-sm opacity-90">ลงทะเบียนรถของคุณเพื่อรับ E-Ticket</p>
+            </div>
+            <form id="regForm" class="bg-white rounded-xl p-5 shadow-sm space-y-4">
+                <input type="text" id="name" required placeholder="ชื่อ-นามสกุล" class="w-full border rounded-lg p-3 outline-none">
+                <input type="tel" id="phone" required placeholder="เบอร์โทรศัพท์" class="w-full border rounded-lg p-3 outline-none">
+                <select id="carBrand" class="w-full border rounded-lg p-3 outline-none">
+                    <option value="BMW">BMW</option><option value="Volvo">Volvo</option>
+                    <option value="Toyota">Toyota</option><option value="Honda">Honda</option><option value="Other">อื่นๆ</option>
+                </select>
+                <input type="text" id="licensePlate" required placeholder="ทะเบียนรถ" class="w-full border rounded-lg p-3 outline-none">
+                <button type="submit" class="w-full bg-blue-600 text-white p-3 rounded-lg mt-2">ลงทะเบียนรถ</button>
+            </form>
+        </section>
+
+        <!-- Tab: Map -->
+        <section id="tab-map" class="tab-content">
+            <h2 class="text-xl font-bold mb-4">Location & Parking</h2>
+            <div class="bg-white p-3 rounded-xl shadow-sm"><div id="map"></div></div>
+        </section>
+
+        <!-- Tab: Shop -->
+        <section id="tab-shop" class="tab-content">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-gray-800">Official Shop</h2>
+                <button onclick="checkOrderStatus()" class="text-blue-600 text-sm font-medium bg-blue-50 px-3 py-1 rounded-full">ติดตามสถานะ</button>
+            </div>
+            <div id="shopContainer" class="space-y-4">
+                <p class="text-center text-gray-500 text-sm py-8">กำลังโหลดสินค้า...</p>
+            </div>
+        </section>
+
+        <!-- Tab: Ticket -->
+        <section id="tab-ticket" class="tab-content">
+            <h2 class="text-xl font-bold mb-4">My E-Ticket</h2>
+            <div class="bg-gradient-to-br from-blue-600 to-blue-800 rounded-xl p-6 text-white text-center shadow-lg">
+                <p class="text-sm opacity-80 mb-4" id="ticketStatus">กรุณาลงทะเบียนเพื่อรับ QR Code</p>
+                <div class="bg-white p-4 rounded-xl inline-block mx-auto min-h-[200px] flex items-center justify-center">
+                    <div id="qrcode" style="display:none;"></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Bottom Nav -->
+    <nav class="fixed bottom-0 w-full bg-white border-t pb-safe">
+        <div class="flex justify-around max-w-md mx-auto p-2">
+            <button onclick="switchTab('register')" class="text-blue-600 w-1/4 p-1 text-xs">Home</button>
+            <button onclick="switchTab('map')" class="text-gray-400 w-1/4 p-1 text-xs">Location</button>
+            <button onclick="switchTab('shop')" class="text-gray-400 w-1/4 p-1 text-xs">Shop</button>
+            <button onclick="switchTab('ticket')" class="text-gray-400 w-1/4 p-1 text-xs">My Ticket</button>
+        </div>
+    </nav>
+
+    <script>
+        // === 1. ตั้งค่าพื้นฐาน ===
+        const GAS_URL = 'https://script.google.com/macros/s/AKfycbwPZXAmJXrYHRg6h-IciW8TdfBTkOGNV1hxU85yvmyOsTGV3CpYS5g5rJQ3B6UJE-xaSw/exec'; // ใส่ URL จาก Google Apps Script ตรงนี้
+        let cart = [];
+        let ticketQR = new QRCode(document.getElementById("qrcode"), { width: 180, height: 180 });
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.getElementById(`tab-${tab}`).classList.add('active');
+            document.querySelectorAll('nav button').forEach(btn => btn.className = 'text-gray-400 w-1/4 p-1 text-xs');
+            event.currentTarget.className = 'text-blue-600 w-1/4 p-1 text-xs';
+            if(tab === 'map') setTimeout(() => map.invalidateSize(), 100);
+        }
+
+        let map = L.map('map').setView([13.7563, 100.5018], 15);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+        L.marker([13.7563, 100.5018]).addTo(map).bindPopup('UNEX Event').openPopup();
+
+        // === 2. สร้าง E-Ticket ===
+        function generateETicket(refCode) {
+            document.getElementById("qrcode").style.display = "block";
+            ticketQR.makeCode(JSON.stringify({ ref: refCode }));
+            document.getElementById("ticketStatus").innerText = `รหัสอ้างอิง: ${refCode}`;
+            switchTab('ticket');
+        }
+
+        // === 3. ลงทะเบียนรถ ===
+        document.getElementById('regForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const phone = document.getElementById('phone').value;
+            const payload = {
+                name: document.getElementById('name').value, phone: phone,
+                carBrand: document.getElementById('carBrand').value, licensePlate: document.getElementById('licensePlate').value
+            };
+            Swal.fire({ title: 'กำลังบันทึก...', didOpen: () => Swal.showLoading() });
+            fetch(GAS_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+            .then(() => {
+                Swal.fire('สำเร็จ', 'ลงทะเบียนเรียบร้อย', 'success').then(() => generateETicket(phone));
+            });
+        });
+
+        // === 4. ระบบร้านค้า & ตะกร้าสินค้า ===
+        async function fetchShopItems() {
+            try {
+                const res = await fetch(`${GAS_URL}?action=getShop`);
+                const items = await res.json();
+                let html = '';
+                items.forEach(i => {
+                    html += `<div class="bg-white rounded-xl shadow-sm flex border p-2 mb-2">
+                        <div class="w-1/3 bg-gray-100 flex items-center justify-center overflow-hidden h-20">${i.imageUrl ? `<img src="${i.imageUrl}" class="w-full h-full object-cover">` : ''}</div>
+                        <div class="w-2/3 pl-3 flex flex-col justify-between">
+                            <h3 class="font-semibold text-sm">${i.name}</h3>
+                            <div class="flex justify-between mt-1"><span class="font-bold text-blue-600">฿${i.price}</span>
+                            <button class="bg-blue-600 text-white px-3 py-1 rounded-full text-xs" onclick="addToCart('${i.name}', ${i.price})">ใส่ตะกร้า</button></div>
+                        </div></div>`;
+                });
+                document.getElementById('shopContainer').innerHTML = html || '<p>ไม่มีสินค้า</p>';
+            } catch (e) { document.getElementById('shopContainer').innerHTML = '<p>โหลดล้มเหลว</p>'; }
+        }
+        window.addEventListener('DOMContentLoaded', fetchShopItems);
+
+        function addToCart(name, price) {
+            cart.push({ name, price });
+            document.getElementById('cartCount').innerText = cart.length;
+            document.getElementById('cartBtn').classList.remove('hidden');
+        }
+
+        async function viewCart() {
+            let total = cart.reduce((sum, item) => sum + item.price, 0);
+            let html = cart.map((i, idx) => `<div class="flex justify-between text-sm pb-1">${i.name} <span>฿${i.price} <button onclick="cart.splice(${idx},1); Swal.close(); viewCart();" class="text-red-500">x</button></span></div>`).join('');
+            
+            const { value, isConfirmed } = await Swal.fire({
+                title: 'ชำระเงิน',
+                html: `<div class="mb-4">${html}</div><h3 class="font-bold text-lg">รวม ฿${total}</h3><br><img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=PromptPay:AdminBank:Amount${total}" class="mx-auto mb-2"><input type="tel" id="cPhone" class="w-full border p-2 rounded" placeholder="เบอร์โทรศัพท์">`,
+                input: 'file', inputAttributes: { accept: 'image/*' }, confirmButtonText: 'แนบสลิปและสั่งซื้อ', showCancelButton: true,
+                preConfirm: () => {
+                    const file = Swal.getInput().files[0];
+                    const phone = document.getElementById('cPhone').value;
+                    if(!phone || !file) Swal.showValidationMessage('ใส่เบอร์โทรและแนบรูปสลิป');
+                    return { file, phone };
+                }
+            });
+
+            if (isConfirmed) {
+                Swal.fire({ title: 'กำลังอัปโหลด...', didOpen: () => Swal.showLoading() });
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    fetch(GAS_URL, {
+                        method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'checkout', phone: value.phone, itemsSummary: cart.map(i=>i.name).join(', '), totalPrice: total, slipBase64: e.target.result })
+                    }).then(() => { cart = []; document.getElementById('cartBtn').classList.add('hidden'); Swal.fire('สำเร็จ', 'รอแอดมินตรวจสอบ', 'success'); });
+                };
+                reader.readAsDataURL(value.file);
+            }
+        }
+
+        // === 5. เช็คสถานะคำสั่งซื้อ ===
+        async function checkOrderStatus() {
+            const { value: phone } = await Swal.fire({ title: 'เช็คสถานะ', input: 'tel', inputPlaceholder: 'ใส่เบอร์โทรศัพท์' });
+            if (phone) {
+                Swal.fire({ title: 'กำลังค้นหา...', didOpen: () => Swal.showLoading() });
+                const res = await fetch(`${GAS_URL}?action=checkOrderStatus&phone=${phone}`);
+                const data = await res.json();
+                if (data.status === 'success') {
+                    let html = data.data.map(o => `<div class="border p-2 mb-2 text-sm text-left"><b>${o.status}</b><br>${o.items} (฿${o.total})</div>`).join('');
+                    Swal.fire('ประวัติ', html, 'info');
+                } else Swal.fire('ไม่พบข้อมูล', '', 'error');
+            }
+        }
+    </script>
+</body>
+</html>
