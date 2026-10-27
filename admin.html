@@ -2,77 +2,72 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>UNEX ADMIN CENTER</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <style>
-        body { font-family: 'Kanit', sans-serif; background-color: #f3f4f6; }
-        .tab-sec { display: none; }
-        .tab-sec.active { display: block; }
-    </style>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style> body { font-family: 'Kanit', sans-serif; background-color: #f3f4f6; } .tab-sec, .modal { display: none; } .tab-sec.active { display: block; } </style>
 </head>
 <body class="flex h-screen overflow-hidden text-gray-800">
 
     <aside class="w-64 bg-gray-900 text-white flex flex-col h-full shadow-xl">
         <div class="p-6 text-2xl font-bold text-red-500 border-b border-gray-800">UNEX ADMIN</div>
-        <nav class="p-4 space-y-2 flex-1">
-            <button onclick="nav('dash')" id="btn-dash" class="w-full text-left p-3 rounded-lg bg-gray-800 text-red-400">📊 รายการสั่งซื้อ</button>
-            <button onclick="nav('shop')" id="btn-shop" class="w-full text-left p-3 rounded-lg hover:bg-gray-800">🛒 สินค้า (Shop)</button>
+        <nav class="p-4 space-y-1 flex-1 overflow-y-auto text-sm">
+            <button onclick="nav('dash')" id="btn-dash" class="w-full text-left p-3 rounded-lg bg-gray-800 text-red-400">📊 ออเดอร์ (Orders)</button>
+            <button onclick="nav('news')" id="btn-news" class="w-full text-left p-3 rounded-lg hover:bg-gray-800">📰 ข่าวสาร (News)</button>
             <button onclick="nav('event')" id="btn-event" class="w-full text-left p-3 rounded-lg hover:bg-gray-800">📅 อีเวนต์ (Events)</button>
-            <button onclick="nav('set')" id="btn-set" class="w-full text-left p-3 rounded-lg hover:bg-gray-800">⚙️ ตั้งค่า (บัญชี/เว็บ)</button>
+            <button onclick="nav('shop')" id="btn-shop" class="w-full text-left p-3 rounded-lg hover:bg-gray-800">🛒 สินค้า (Shop)</button>
+            <button onclick="nav('brands')" id="btn-brands" class="w-full text-left p-3 rounded-lg hover:bg-gray-800">🏎️ ยี่ห้อรถ (Brands)</button>
+            <button onclick="nav('set')" id="btn-set" class="w-full text-left p-3 rounded-lg hover:bg-gray-800">⚙️ ตั้งค่าระบบ</button>
         </nav>
     </aside>
 
-    <main class="flex-1 overflow-y-auto p-8 bg-gray-100">
+    <main class="flex-1 overflow-y-auto p-8 bg-gray-100 relative">
+        <button onclick="initAdmin()" class="absolute top-4 right-8 bg-blue-600 text-white px-4 py-2 rounded text-sm font-bold shadow">🔄 รีเฟรชข้อมูล</button>
         
-        <!-- ออเดอร์ -->
-        <section id="sec-dash" class="tab-sec active">
-            <h2 class="text-2xl font-bold mb-4">📊 ออเดอร์ & การชำระเงิน</h2>
-            <button onclick="loadData('getOrders')" class="mb-4 bg-blue-600 text-white px-4 py-2 rounded">รีเฟรชข้อมูล</button>
-            <div class="bg-white rounded-xl shadow p-4 overflow-x-auto">
-                <table class="w-full text-sm text-left"><thead class="border-b bg-gray-50"><tr><th class="p-3">รหัส</th><th class="p-3">เบอร์โทร</th><th class="p-3">ยอดรวม</th><th class="p-3">สถานะ</th><th class="p-3">สลิป/จัดการ</th></tr></thead><tbody id="orderTable"></tbody></table>
-            </div>
-        </section>
+        <!-- Sections -->
+        <section id="sec-dash" class="tab-sec active"><h2 class="text-2xl font-bold mb-4">📊 ออเดอร์</h2><div class="bg-white rounded-xl shadow p-4"><table class="w-full text-sm text-left"><thead class="bg-gray-50"><tr><th class="p-2">รหัส</th><th class="p-2">เบอร์โทร</th><th class="p-2">สถานะ</th><th class="p-2">จัดการ</th></tr></thead><tbody id="tb-orders"></tbody></table></div></section>
+        
+        <section id="sec-news" class="tab-sec"><div class="flex justify-between mb-4"><h2 class="text-2xl font-bold">📰 ข่าวสาร</h2><button onclick="openForm('news')" class="bg-green-600 text-white px-4 py-2 rounded">+ โพสต์ข่าว</button></div><div class="bg-white rounded-xl shadow p-4"><table class="w-full text-sm text-left"><thead class="bg-gray-50"><tr><th class="p-2">หัวข้อ</th><th class="p-2">วันที่</th><th class="p-2">จัดการ</th></tr></thead><tbody id="tb-news"></tbody></table></div></section>
 
-        <!-- จัดการสินค้า -->
-        <section id="sec-shop" class="tab-sec">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-2xl font-bold">🛒 จัดการสินค้า</h2>
-                <button onclick="openForm('shop')" class="bg-green-600 text-white px-4 py-2 rounded font-bold">+ เพิ่มสินค้าใหม่</button>
-            </div>
-            <div class="bg-white rounded-xl shadow p-4 overflow-x-auto">
-                <table class="w-full text-sm text-left"><thead class="border-b bg-gray-50"><tr><th class="p-3">รูป</th><th class="p-3">ชื่อสินค้า</th><th class="p-3">ราคา</th><th class="p-3">จัดการ</th></tr></thead><tbody id="shopTable"></tbody></table>
-            </div>
-        </section>
+        <section id="sec-event" class="tab-sec"><div class="flex justify-between mb-4"><h2 class="text-2xl font-bold">📅 อีเวนต์</h2><button onclick="openForm('event')" class="bg-green-600 text-white px-4 py-2 rounded">+ สร้างอีเวนต์</button></div><div class="bg-white rounded-xl shadow p-4"><table class="w-full text-sm text-left"><thead class="bg-gray-50"><tr><th class="p-2">ชื่องาน</th><th class="p-2">วันที่</th><th class="p-2">พิกัด</th><th class="p-2">จัดการ</th></tr></thead><tbody id="tb-events"></tbody></table></div></section>
 
-        <!-- จัดการอีเวนต์ -->
-        <section id="sec-event" class="tab-sec">
-             <div class="flex justify-between items-center mb-4">
-                <h2 class="text-2xl font-bold">📅 จัดการอีเวนต์</h2>
-                <button onclick="openForm('event')" class="bg-green-600 text-white px-4 py-2 rounded font-bold">+ เพิ่มอีเวนต์</button>
-            </div>
-            <div class="bg-white rounded-xl shadow p-4 overflow-x-auto">
-                <table class="w-full text-sm text-left"><thead class="border-b bg-gray-50"><tr><th class="p-3">วันที่</th><th class="p-3">ชื่องาน</th><th class="p-3">พิกัด (Lat,Lng)</th><th class="p-3">จัดการ</th></tr></thead><tbody id="eventTable"></tbody></table>
-            </div>
-        </section>
+        <section id="sec-shop" class="tab-sec"><div class="flex justify-between mb-4"><h2 class="text-2xl font-bold">🛒 สินค้า</h2><button onclick="openForm('shop')" class="bg-green-600 text-white px-4 py-2 rounded">+ เพิ่มสินค้า</button></div><div class="bg-white rounded-xl shadow p-4"><table class="w-full text-sm text-left"><thead class="bg-gray-50"><tr><th class="p-2">ชื่อสินค้า</th><th class="p-2">ราคา</th><th class="p-2">จัดการ</th></tr></thead><tbody id="tb-shop"></tbody></table></div></section>
 
-        <!-- ตั้งค่าระบบ -->
-        <section id="sec-set" class="tab-sec max-w-xl">
-            <h2 class="text-2xl font-bold mb-4">⚙️ ตั้งค่าระบบ & บัญชีรับเงิน</h2>
+        <section id="sec-brands" class="tab-sec"><div class="flex justify-between mb-4"><h2 class="text-2xl font-bold">🏎️ ยี่ห้อรถ</h2><button onclick="openForm('brand')" class="bg-green-600 text-white px-4 py-2 rounded">+ เพิ่มยี่ห้อ</button></div><div class="bg-white rounded-xl shadow p-4"><table class="w-full text-sm text-left"><thead class="bg-gray-50"><tr><th class="p-2">ยี่ห้อ</th><th class="p-2">รุ่นที่มี</th><th class="p-2">จัดการ</th></tr></thead><tbody id="tb-brands"></tbody></table></div></section>
+
+        <section id="sec-set" class="tab-sec max-w-xl"><h2 class="text-2xl font-bold mb-4">⚙️ ตั้งค่าบัญชีและเว็บ</h2>
             <form onsubmit="saveSettings(event)" class="bg-white p-6 rounded-xl shadow space-y-4">
-                <div><label class="block text-sm font-bold">ชื่อเว็บไซต์</label><input type="text" id="cfg-SiteName" class="w-full border p-2 rounded bg-gray-50"></div>
-                <div><label class="block text-sm font-bold">เบอร์ PromptPay (สำหรับการสร้าง QR)</label><input type="text" id="cfg-PromptPay" class="w-full border p-2 rounded bg-gray-50" placeholder="08XXXXXXXX หรือ เลขบัตรปชช."></div>
-                <div><label class="block text-sm font-bold">ชื่อธนาคาร และ เลขบัญชี (ไว้โชว์ให้ลูกค้าโอน)</label><textarea id="cfg-BankAccount" class="w-full border p-2 rounded bg-gray-50"></textarea></div>
-                <button type="submit" class="w-full bg-gray-900 text-white p-3 rounded font-bold">บันทึกการตั้งค่า</button>
+                <input type="text" id="cfg-SiteName" placeholder="ชื่อเว็บไซต์" class="w-full border p-2 rounded">
+                <input type="text" id="cfg-PromptPay" placeholder="เบอร์ PromptPay" class="w-full border p-2 rounded">
+                <textarea id="cfg-BankAccount" placeholder="เลขบัญชีธนาคาร (โชว์ให้ลูกค้า)" class="w-full border p-2 rounded"></textarea>
+                <button type="submit" class="w-full bg-gray-900 text-white p-3 rounded font-bold">บันทึก</button>
             </form>
         </section>
 
     </main>
 
+    <!-- Native HTML Modal สำหรับสร้างข้อมูลต่างๆ (รองรับแผนที่) -->
+    <div id="formModal" class="modal fixed inset-0 bg-black bg-opacity-70 z-50 flex justify-center items-center p-4" style="display:none;">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg p-6 max-h-screen overflow-y-auto">
+            <h3 id="modalTitle" class="text-xl font-bold mb-4 border-b pb-2">ฟอร์มข้อมูล</h3>
+            <form id="dataForm" onsubmit="submitForm(event)" class="space-y-3">
+                <input type="hidden" id="f-type">
+                <input type="hidden" id="f-id">
+                <div id="dynamicInputs" class="space-y-3"></div>
+                <input type="file" id="f-img" accept="image/*" class="w-full border p-2 text-sm rounded bg-gray-50">
+                <div class="flex gap-2 pt-4">
+                    <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded flex-1 font-bold">บันทึก</button>
+                    <button type="button" onclick="closeForm()" class="bg-gray-400 text-white px-4 py-2 rounded">ยกเลิก</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
         const GAS_URL = 'https://script.google.com/macros/s/AKfycbwPZXAmJXrYHRg6h-IciW8TdfBTkOGNV1hxU85yvmyOsTGV3CpYS5g5rJQ3B6UJE-xaSw/exec';
-        let pwd = '';
+        let pwd = '', adminData = {}, mapPicker, markerPicker;
 
         window.onload = async () => {
             const { value } = await Swal.fire({ title: 'Admin Login', input: 'password', allowOutsideClick: false });
@@ -82,103 +77,135 @@
         function nav(sec) {
             document.querySelectorAll('.tab-sec').forEach(el => el.classList.remove('active'));
             document.getElementById(`sec-${sec}`).classList.add('active');
-            ['dash','shop','event','set'].forEach(b => document.getElementById(`btn-${b}`).className = 'w-full text-left p-3 rounded-lg hover:bg-gray-800 text-white');
+            ['dash','news','event','shop','brands','set'].forEach(b => document.getElementById(`btn-${b}`).className = 'w-full text-left p-3 rounded-lg hover:bg-gray-800 text-white');
             document.getElementById(`btn-${sec}`).className = 'w-full text-left p-3 rounded-lg bg-gray-800 text-red-400 font-bold';
-            if(sec==='dash') loadData('getOrders');
-            if(sec==='shop') loadData('getShop');
-            if(sec==='event') loadData('getEvents');
         }
 
         async function initAdmin() {
             Swal.fire({title:'โหลดข้อมูล...', didOpen:()=>Swal.showLoading()});
             try {
-                const res = await fetch(`${GAS_URL}?action=getConfig`);
-                const conf = await res.json();
-                document.getElementById('cfg-SiteName').value = conf.SiteName || '';
-                document.getElementById('cfg-PromptPay').value = conf.PromptPay || '';
-                document.getElementById('cfg-BankAccount').value = conf.BankAccount || '';
-                loadData('getOrders');
-            } catch(e) { Swal.fire('Error', 'เชื่อมต่อไม่ได้', 'error'); }
+                const res = await fetch(`${GAS_URL}?action=getAdminData&pwd=${pwd}`);
+                adminData = await res.json();
+                if(adminData.error) return Swal.fire('Error', 'รหัสผิด', 'error');
+                
+                document.getElementById('cfg-SiteName').value = adminData.config.SiteName || '';
+                document.getElementById('cfg-PromptPay').value = adminData.config.PromptPay || '';
+                document.getElementById('cfg-BankAccount').value = adminData.config.BankAccount || '';
+                renderTables();
+                Swal.close();
+            } catch(e) { Swal.fire('Error', 'Network', 'error'); }
         }
 
-        async function loadData(actionType) {
-            const res = await fetch(`${GAS_URL}?action=${actionType}`);
-            const data = await res.json();
+        function renderTables() {
+            // Orders
+            document.getElementById('tb-orders').innerHTML = adminData.orders.map(r => `<tr><td class="p-2">${r[0]}<br><span class="text-xs text-blue-600">฿${r[3]}</span></td><td class="p-2">${r[1]}</td>
+                <td class="p-2"><select onchange="updateRow('admin_updateOrder','${r[0]}',this.value)" class="border rounded text-xs"><option hidden>${r[5]}</option><option value="รอตรวจสอบ">รอตรวจสอบ</option><option value="สำเร็จ">สำเร็จ</option></select></td>
+                <td class="p-2">${r[4].includes('http')?`<a href="${r[4]}" target="_blank" class="text-blue-500 underline text-xs">สลิป</a>`:''}</td></tr>`).join('');
             
-            if(actionType === 'getOrders') {
-                let h=''; data.forEach(r => { // [OrderID, Phone, Items, Total, Slip, Status, Date]
-                    h+=`<tr class="border-b"><td class="p-3">${r[0]}</td><td class="p-3">${r[1]}<br><span class="text-xs text-gray-400">${r[6]}</span></td><td class="p-3">฿${r[3]}</td>
-                    <td class="p-3"><select onchange="updateOrderStatus('${r[0]}', this.value)" class="border rounded p-1 text-xs"><option value="${r[5]}" selected hidden>${r[5]}</option><option value="รอตรวจสอบ">รอตรวจสอบ</option><option value="ชำระเงินสำเร็จ">ชำระเงินสำเร็จ</option><option value="ยกเลิก">ยกเลิก</option></select></td>
-                    <td class="p-3 flex gap-2">${r[4].startsWith('http')?`<a href="${r[4]}" target="_blank" class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs">ดูสลิป</a>`:'-'}</td></tr>`;
-                }); document.getElementById('orderTable').innerHTML = h;
-            }
-            if(actionType === 'getShop') {
-                let h=''; data.forEach(r => { // [ID, Name, Desc, Price, Img, Status]
-                    h+=`<tr class="border-b"><td class="p-3">${r[4]?`<img src="${r[4]}" class="w-12 h-12 object-cover rounded">`:''}</td><td class="p-3 font-bold">${r[1]}</td><td class="p-3">฿${r[3]}</td>
-                    <td class="p-3"><button onclick="delData('ShopItems', '${r[0]}')" class="text-red-600 font-bold hover:underline">ลบ</button></td></tr>`;
-                }); document.getElementById('shopTable').innerHTML = h;
-            }
-            if(actionType === 'getEvents') {
-                let h=''; data.forEach(r => { // [ID, Title, Date, Loc, Lat, Lng, Img]
-                    h+=`<tr class="border-b"><td class="p-3">${new Date(r[2]).toLocaleDateString('th-TH')}</td><td class="p-3 font-bold">${r[1]}</td><td class="p-3 text-xs">${r[4]}, ${r[5]}</td>
-                    <td class="p-3"><button onclick="delData('Events', '${r[0]}')" class="text-red-600 font-bold hover:underline">ลบ</button></td></tr>`;
-                }); document.getElementById('eventTable').innerHTML = h;
-            }
-            Swal.close();
+            // News
+            document.getElementById('tb-news').innerHTML = adminData.news.map(r => `<tr><td class="p-2">${r[1]}</td><td class="p-2">${r[4]}</td><td class="p-2"><button onclick="del('News','${r[0]}')" class="text-red-600 hover:underline">ลบ</button></td></tr>`).join('');
+            
+            // Events
+            document.getElementById('tb-events').innerHTML = adminData.events.map(r => `<tr><td class="p-2">${r[1]}</td><td class="p-2">${new Date(r[2]).toLocaleDateString()}</td><td class="p-2 text-xs">${r[4]},${r[5]}</td><td class="p-2"><button onclick="del('Events','${r[0]}')" class="text-red-600 hover:underline">ลบ</button></td></tr>`).join('');
+            
+            // Shop
+            document.getElementById('tb-shop').innerHTML = adminData.shop.map(r => `<tr><td class="p-2">${r[1]}</td><td class="p-2">฿${r[3]}</td><td class="p-2"><button onclick="del('ShopItems','${r[0]}')" class="text-red-600 hover:underline">ลบ</button></td></tr>`).join('');
+            
+            // Brands
+            document.getElementById('tb-brands').innerHTML = adminData.brands.map(r => `<tr><td class="p-2 font-bold">${r[1]}</td><td class="p-2 text-xs">${r[2]}</td><td class="p-2"><button onclick="del('Brands','${r[0]}')" class="text-red-600 hover:underline">ลบ</button></td></tr>`).join('');
         }
 
-        // --- ระบบบันทึก (ฟอร์มเพิ่มข้อมูล) ---
-        async function openForm(type) {
-            let html = '', action = '';
-            if(type === 'shop') {
-                action = 'admin_saveShop';
-                html = `<input id="f1" class="swal2-input" placeholder="ชื่อสินค้า"><input id="f2" type="number" class="swal2-input" placeholder="ราคา (บาท)"><textarea id="f3" class="swal2-textarea" placeholder="รายละเอียด"></textarea><input id="file" type="file" class="swal2-file" accept="image/*">`;
+        // --- ระบบ Form Modal ---
+        function openForm(type) {
+            document.getElementById('dataForm').reset();
+            document.getElementById('f-type').value = type;
+            document.getElementById('f-id').value = '';
+            let html = '';
+            
+            if(type === 'news') {
+                document.getElementById('modalTitle').innerText = '📰 โพสต์ข่าวสาร';
+                html = `<input id="f1" placeholder="หัวข้อข่าว" required class="w-full border p-2 rounded"><textarea id="f2" placeholder="เนื้อหาข่าว..." required class="w-full border p-2 rounded h-24"></textarea>`;
+            } else if(type === 'shop') {
+                document.getElementById('modalTitle').innerText = '🛒 เพิ่มสินค้า';
+                html = `<input id="f1" placeholder="ชื่อสินค้า" required class="w-full border p-2 rounded"><input id="f2" type="number" placeholder="ราคา" required class="w-full border p-2 rounded"><textarea id="f3" placeholder="รายละเอียด" class="w-full border p-2 rounded h-20"></textarea>`;
+            } else if(type === 'brand') {
+                document.getElementById('modalTitle').innerText = '🏎️ เพิ่มยี่ห้อรถ';
+                html = `<input id="f1" placeholder="ชื่อยี่ห้อ (เช่น BMW)" required class="w-full border p-2 rounded"><input id="f2" placeholder="รุ่น (คั่นด้วยคอมมา เช่น M3,320d)" class="w-full border p-2 rounded">`;
             } else if(type === 'event') {
-                action = 'admin_saveEvent';
-                html = `<input id="f1" class="swal2-input" placeholder="ชื่องาน"><input id="f2" type="datetime-local" class="swal2-input"><input id="f3" class="swal2-input" placeholder="ชื่อสถานที่"><div class="flex gap-2"><input id="f4" class="swal2-input w-1/2" placeholder="Latitude"><input id="f5" class="swal2-input w-1/2" placeholder="Longitude"></div><input id="file" type="file" class="swal2-file" accept="image/*">`;
+                document.getElementById('modalTitle').innerText = '📅 สร้างอีเวนต์';
+                html = `<input id="f1" placeholder="ชื่องาน" required class="w-full border p-2 rounded"><input id="f2" type="datetime-local" required class="w-full border p-2 rounded">
+                <textarea id="f3" placeholder="รายละเอียดอีเวนต์" class="w-full border p-2 rounded h-16"></textarea>
+                <input id="f4" placeholder="ชื่อสถานที่ (เช่น ลานจอดรถ B)" required class="w-full border p-2 rounded">
+                <p class="text-xs font-bold text-red-500 mt-2">📍 คลิกบนแผนที่เพื่อปักหมุด</p>
+                <div id="mapPicker" class="w-full h-48 rounded border"></div>
+                <div class="flex gap-2"><input id="f5" placeholder="Lat" readonly class="w-1/2 border p-2 rounded text-xs bg-gray-100"><input id="f6" placeholder="Lng" readonly class="w-1/2 border p-2 rounded text-xs bg-gray-100"></div>`;
             }
-
-            const { value: formVals } = await Swal.fire({ title: 'เพิ่มข้อมูลใหม่', html: html, showCancelButton: true, confirmButtonText: 'บันทึก',
-                preConfirm: () => {
-                    const f1 = document.getElementById('f1').value; if(!f1) Swal.showValidationMessage('กรอกข้อมูลให้ครบ');
-                    return { f1:f1, f2:document.getElementById('f2').value, f3:document.getElementById('f3').value, f4:document.getElementById('f4')?.value, f5:document.getElementById('f5')?.value, file: document.getElementById('file').files[0] };
-                }
-            });
-
-            if (formVals) {
-                Swal.fire({title:'กำลังบันทึก...', didOpen:()=>Swal.showLoading()});
-                const payload = { pwd: pwd, action: action, name: formVals.f1, title: formVals.f1, price: formVals.f2, date: formVals.f2, desc: formVals.f3, location: formVals.f3, lat: formVals.f4, lng: formVals.f5 };
-                if (formVals.file) {
-                    const r = new FileReader(); r.onload = (e) => { payload.imageBase64 = e.target.result; sendAdminData(payload, type); }; r.readAsDataURL(formVals.file);
-                } else sendAdminData(payload, type);
+            
+            document.getElementById('dynamicInputs').innerHTML = html;
+            document.getElementById('formModal').style.display = 'flex';
+            
+            // โหลดแผนที่ถ้าเป็น Event
+            if(type === 'event') {
+                setTimeout(() => {
+                    if(!mapPicker) {
+                        mapPicker = L.map('mapPicker').setView([13.75, 100.5], 10);
+                        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapPicker);
+                        mapPicker.on('click', (e) => {
+                            if(markerPicker) mapPicker.removeLayer(markerPicker);
+                            markerPicker = L.marker(e.latlng).addTo(mapPicker);
+                            document.getElementById('f5').value = e.latlng.lat.toFixed(6);
+                            document.getElementById('f6').value = e.latlng.lng.toFixed(6);
+                        });
+                    }
+                    mapPicker.invalidateSize();
+                }, 200);
             }
         }
+        function closeForm() { document.getElementById('formModal').style.display = 'none'; }
 
-        async function sendAdminData(payload, refreshType) {
+        async function submitForm(e) {
+            e.preventDefault();
+            Swal.fire({title:'บันทึก...', didOpen:()=>Swal.showLoading()});
+            let type = document.getElementById('f-type').value;
+            let payload = { pwd: pwd, id: document.getElementById('f-id').value };
+            
+            if(type==='news') { payload.action = 'admin_saveNews'; payload.title=v('f1'); payload.content=v('f2'); }
+            if(type==='shop') { payload.action = 'admin_saveShop'; payload.name=v('f1'); payload.price=v('f2'); payload.desc=v('f3'); }
+            if(type==='brand'){ payload.action = 'admin_saveBrand'; payload.brandName=v('f1'); payload.models=v('f2'); }
+            if(type==='event'){ 
+                payload.action = 'admin_saveEvent'; payload.title=v('f1'); payload.date=v('f2'); 
+                payload.desc=v('f3'); payload.location=v('f4'); payload.lat=v('f5'); payload.lng=v('f6'); 
+                if(!payload.lat) return Swal.fire('แจ้งเตือน', 'กรุณาคลิกปักหมุดบนแผนที่', 'warning');
+            }
+
+            const file = document.getElementById('f-img').files[0];
+            if(file) {
+                const reader = new FileReader();
+                reader.onload = (ev) => { payload.imgBase64 = ev.target.result; sendAPI(payload); };
+                reader.readAsDataURL(file);
+            } else sendAPI(payload);
+        }
+
+        async function sendAPI(payload) {
             await fetch(GAS_URL, { method: 'POST', mode: 'no-cors', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
-            Swal.fire('สำเร็จ', 'บันทึกข้อมูลแล้ว', 'success'); loadData(refreshType === 'shop' ? 'getShop' : 'getEvents');
+            closeForm(); initAdmin(); // โหลดข้อมูลใหม่ทั้งหมดมาอัปเดตหน้าจอ
+            Swal.fire({toast:true, position:'top-end', icon:'success', title:'บันทึกสำเร็จ', showConfirmButton:false, timer:1500});
         }
-
+        
         async function saveSettings(e) {
             e.preventDefault(); Swal.fire({title:'บันทึก...', didOpen:()=>Swal.showLoading()});
-            const p = { pwd: pwd, action: 'admin_saveSettings', settings: { 
-                SiteName: document.getElementById('cfg-SiteName').value, PromptPay: document.getElementById('cfg-PromptPay').value, BankAccount: document.getElementById('cfg-BankAccount').value 
-            }};
-            await fetch(GAS_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(p) }); Swal.fire('สำเร็จ', '', 'success');
+            await fetch(GAS_URL, { method:'POST', mode:'no-cors', body: JSON.stringify({ pwd:pwd, action: 'admin_saveSettings', settings: { 
+                SiteName: v('cfg-SiteName'), PromptPay: v('cfg-PromptPay'), BankAccount: v('cfg-BankAccount') 
+            }})}); initAdmin(); Swal.fire('สำเร็จ', '', 'success');
         }
 
-        async function updateOrderStatus(id, status) {
-            Swal.fire({toast:true, position:'top-end', icon:'info', title:'กำลังอัปเดต...', showConfirmButton:false});
-            await fetch(GAS_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ pwd:pwd, action: 'admin_updateOrder', orderId: id, status: status }) });
-            Swal.fire({toast:true, position:'top-end', icon:'success', title:'อัปเดตแล้ว', showConfirmButton:false, timer:1500});
-        }
-
-        async function delData(sheet, id) {
-            if((await Swal.fire({title: 'ยืนยันลบ?', icon:'warning', showCancelButton:true})).isConfirmed) {
-                await fetch(GAS_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ pwd:pwd, action: 'admin_delete', sheet: sheet, id: id }) });
-                loadData(sheet==='ShopItems' ? 'getShop' : 'getEvents');
+        async function updateRow(action, id, val) { await fetch(GAS_URL, {method:'POST', mode:'no-cors', body: JSON.stringify({pwd:pwd, action:action, id:id, status:val})}); }
+        async function del(sheet, id) {
+            if((await Swal.fire({title: 'ยืนยันการลบ?', icon:'warning', showCancelButton:true})).isConfirmed) {
+                await fetch(GAS_URL, { method:'POST', mode:'no-cors', body: JSON.stringify({pwd:pwd, action:'admin_delete', sheet:sheet, id:id}) }); initAdmin();
             }
         }
+        function v(id) { return document.getElementById(id) ? document.getElementById(id).value : ''; }
     </script>
 </body>
 </html>
