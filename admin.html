@@ -15,6 +15,7 @@
         <div class="p-6 text-2xl font-bold text-red-500 border-b border-gray-800">UNEX ADMIN</div>
         <nav class="p-4 space-y-1 flex-1 overflow-y-auto text-sm">
             <button onclick="nav('dash')" id="btn-dash" class="w-full text-left p-3 rounded-lg bg-gray-800 text-red-400">📊 ออเดอร์ (Orders)</button>
+            <button onclick="nav('users')" id="btn-users" class="w-full text-left p-3 rounded-lg hover:bg-gray-800">👥 จัดการผู้ใช้ (Users)</button>
             <button onclick="nav('news')" id="btn-news" class="w-full text-left p-3 rounded-lg hover:bg-gray-800">📰 ข่าวสาร (News)</button>
             <button onclick="nav('event')" id="btn-event" class="w-full text-left p-3 rounded-lg hover:bg-gray-800">📅 อีเวนต์ (Events)</button>
             <button onclick="nav('shop')" id="btn-shop" class="w-full text-left p-3 rounded-lg hover:bg-gray-800">🛒 สินค้า (Shop)</button>
@@ -28,6 +29,8 @@
         
         <section id="sec-dash" class="tab-sec active"><h2 class="text-2xl font-bold mb-4">📊 ออเดอร์</h2><div class="bg-white rounded-xl shadow p-4"><table class="w-full text-sm text-left"><thead class="bg-gray-50"><tr><th class="p-2">รหัส</th><th class="p-2">เบอร์โทร</th><th class="p-2">สถานะ</th><th class="p-2">จัดการ</th></tr></thead><tbody id="tb-orders"></tbody></table></div></section>
         
+        <section id="sec-users" class="tab-sec"><div class="flex justify-between mb-4"><h2 class="text-2xl font-bold">👥 จัดการผู้ใช้</h2><button onclick="openForm('user')" class="bg-green-600 text-white px-4 py-2 rounded">+ เพิ่มผู้ใช้</button></div><div class="bg-white rounded-xl shadow p-4"><table class="w-full text-sm text-left"><thead class="bg-gray-50"><tr><th class="p-2">เบอร์โทร (ID)</th><th class="p-2">ชื่อ-นามสกุล</th><th class="p-2">ข้อมูลรถ</th><th class="p-2">จัดการ</th></tr></thead><tbody id="tb-users"></tbody></table></div></section>
+
         <section id="sec-news" class="tab-sec"><div class="flex justify-between mb-4"><h2 class="text-2xl font-bold">📰 ข่าวสาร</h2><button onclick="openForm('news')" class="bg-green-600 text-white px-4 py-2 rounded">+ โพสต์ข่าว</button></div><div class="bg-white rounded-xl shadow p-4"><table class="w-full text-sm text-left"><thead class="bg-gray-50"><tr><th class="p-2">หัวข้อ</th><th class="p-2">วันที่</th><th class="p-2">จัดการ</th></tr></thead><tbody id="tb-news"></tbody></table></div></section>
 
         <section id="sec-event" class="tab-sec"><div class="flex justify-between mb-4"><h2 class="text-2xl font-bold">📅 อีเวนต์</h2><button onclick="openForm('event')" class="bg-green-600 text-white px-4 py-2 rounded">+ สร้างอีเวนต์</button></div><div class="bg-white rounded-xl shadow p-4"><table class="w-full text-sm text-left"><thead class="bg-gray-50"><tr><th class="p-2">ชื่องาน</th><th class="p-2">วันที่</th><th class="p-2">พิกัด</th><th class="p-2">จัดการ</th></tr></thead><tbody id="tb-events"></tbody></table></div></section>
@@ -54,10 +57,12 @@
             <form id="dataForm" onsubmit="submitForm(event)" class="space-y-3">
                 <input type="hidden" id="f-type">
                 <input type="hidden" id="f-id">
-                <input type="hidden" id="f-oldImg"> <!-- เก็บลิงก์รูปเก่าเวลาแก้ไข -->
+                <input type="hidden" id="f-oldImg"> 
                 <div id="dynamicInputs" class="space-y-3"></div>
-                <label class="block text-xs font-bold text-gray-500">อัปโหลดรูปใหม่ (เว้นว่างไว้ถ้าใช้รูปเดิม)</label>
-                <input type="file" id="f-img" accept="image/*" class="w-full border p-2 text-sm rounded bg-gray-50">
+                <div id="imgUploadContainer">
+                    <label class="block text-xs font-bold text-gray-500">อัปโหลดรูปใหม่ (เว้นว่างไว้ถ้าใช้รูปเดิม)</label>
+                    <input type="file" id="f-img" accept="image/*" class="w-full border p-2 text-sm rounded bg-gray-50">
+                </div>
                 <div class="flex gap-2 pt-4">
                     <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded flex-1 font-bold">บันทึก</button>
                     <button type="button" onclick="closeForm()" class="bg-gray-400 text-white px-4 py-2 rounded">ยกเลิก</button>
@@ -78,7 +83,7 @@
         function nav(sec) {
             document.querySelectorAll('.tab-sec').forEach(el => el.classList.remove('active'));
             document.getElementById(`sec-${sec}`).classList.add('active');
-            ['dash','news','event','shop','brands','set'].forEach(b => document.getElementById(`btn-${b}`).className = 'w-full text-left p-3 rounded-lg hover:bg-gray-800 text-white');
+            ['dash','users','news','event','shop','brands','set'].forEach(b => document.getElementById(`btn-${b}`).className = 'w-full text-left p-3 rounded-lg hover:bg-gray-800 text-white');
             document.getElementById(`btn-${sec}`).className = 'w-full text-left p-3 rounded-lg bg-gray-800 text-red-400 font-bold';
         }
 
@@ -100,19 +105,22 @@
         function renderTables() {
             // Orders
             document.getElementById('tb-orders').innerHTML = adminData.orders.map(r => `<tr><td class="p-2">${r[0]}<br><span class="text-xs text-blue-600">฿${r[3]}</span></td><td class="p-2">${r[1]}</td>
-                <td class="p-2"><select onchange="updateRow('admin_updateOrder','${r[0]}',this.value)" class="border rounded text-xs"><option hidden>${r[5]}</option><option value="รอตรวจสอบ">รอตรวจสอบ</option><option value="สำเร็จ">สำเร็จ</option></select></td>
+                <td class="p-2"><select onchange="updateRow('admin_updateOrder','${r[0]}',this.value)" class="border rounded text-xs"><option hidden>${r[5]}</option><option value="รอตรวจสอบ">รอตรวจสอบ</option><option value="สำเร็จ">สำเร็จ</option><option value="ยกเลิก">ยกเลิก</option></select></td>
                 <td class="p-2">${r[4].includes('http')?`<a href="${r[4]}" target="_blank" class="text-blue-500 underline text-xs">สลิป</a>`:''}</td></tr>`).join('');
             
-            // News (เพิ่มปุ่มแก้ไข)
+            // Users
+            document.getElementById('tb-users').innerHTML = adminData.users.map(r => `<tr><td class="p-2 font-bold">${r[0]}</td><td class="p-2">${r[1]}</td><td class="p-2 text-xs">${r[2]||'-'}</td><td class="p-2"><button onclick="editData('user','${r[0]}')" class="text-blue-600 hover:underline mr-2">แก้ไข</button><button onclick="del('Registrations','${r[0]}')" class="text-red-600 hover:underline">ลบ</button></td></tr>`).join('');
+
+            // News
             document.getElementById('tb-news').innerHTML = adminData.news.map(r => `<tr><td class="p-2">${r[1]}</td><td class="p-2">${r[4]}</td><td class="p-2"><button onclick="editData('news','${r[0]}')" class="text-blue-600 hover:underline mr-2">แก้ไข</button><button onclick="del('News','${r[0]}')" class="text-red-600 hover:underline">ลบ</button></td></tr>`).join('');
             
-            // Events (เพิ่มปุ่มแก้ไข)
+            // Events
             document.getElementById('tb-events').innerHTML = adminData.events.map(r => `<tr><td class="p-2">${r[1]}</td><td class="p-2">${new Date(r[2]).toLocaleDateString()}</td><td class="p-2 text-xs">${r[4]},${r[5]}</td><td class="p-2"><button onclick="editData('event','${r[0]}')" class="text-blue-600 hover:underline mr-2">แก้ไข</button><button onclick="del('Events','${r[0]}')" class="text-red-600 hover:underline">ลบ</button></td></tr>`).join('');
             
-            // Shop (เพิ่มปุ่มแก้ไข)
+            // Shop
             document.getElementById('tb-shop').innerHTML = adminData.shop.map(r => `<tr><td class="p-2">${r[1]}</td><td class="p-2">฿${r[3]}</td><td class="p-2"><button onclick="editData('shop','${r[0]}')" class="text-blue-600 hover:underline mr-2">แก้ไข</button><button onclick="del('ShopItems','${r[0]}')" class="text-red-600 hover:underline">ลบ</button></td></tr>`).join('');
             
-            // Brands (เพิ่มปุ่มแก้ไข)
+            // Brands
             document.getElementById('tb-brands').innerHTML = adminData.brands.map(r => `<tr><td class="p-2 font-bold">${r[1]}</td><td class="p-2 text-xs">${r[2]}</td><td class="p-2"><button onclick="editData('brand','${r[0]}')" class="text-blue-600 hover:underline mr-2">แก้ไข</button><button onclick="del('Brands','${r[0]}')" class="text-red-600 hover:underline">ลบ</button></td></tr>`).join('');
         }
 
@@ -121,9 +129,14 @@
             document.getElementById('f-type').value = type;
             document.getElementById('f-id').value = '';
             document.getElementById('f-oldImg').value = '';
+            document.getElementById('imgUploadContainer').style.display = 'block'; // แสดงช่องอัปโหลดรูปตามปกติ
             let html = '';
             
-            if(type === 'news') {
+            if(type === 'user') {
+                document.getElementById('modalTitle').innerText = '👥 เพิ่ม/แก้ไขผู้ใช้';
+                document.getElementById('imgUploadContainer').style.display = 'none'; // ซ่อนช่องอัปโหลดรูปสำหรับ User
+                html = `<input id="f1" type="tel" placeholder="เบอร์โทรศัพท์ (ห้ามซ้ำ)" required class="w-full border p-2 rounded"><input id="f2" placeholder="ชื่อ-นามสกุล" required class="w-full border p-2 rounded"><input id="f3" placeholder="ข้อมูลรถ (เช่น BMW 320d - 1กข1234)" required class="w-full border p-2 rounded">`;
+            } else if(type === 'news') {
                 document.getElementById('modalTitle').innerText = '📰 โพสต์ข่าวสาร';
                 html = `<input id="f1" placeholder="หัวข้อข่าว" required class="w-full border p-2 rounded"><textarea id="f2" placeholder="เนื้อหาข่าว..." required class="w-full border p-2 rounded h-24"></textarea>`;
             } else if(type === 'shop') {
@@ -158,12 +171,14 @@
         }
         function closeForm() { document.getElementById('formModal').style.display = 'none'; }
 
-        // ฟังก์ชันใหม่: ดึงข้อมูลเก่ามาใส่ฟอร์มแก้ไข
         function editData(type, id) {
             openForm(type);
             document.getElementById('f-id').value = id;
             document.getElementById('modalTitle').innerText = '✏️ แก้ไขข้อมูล';
-            if(type==='news') {
+            if(type==='user') {
+                let r = adminData.users.find(x => String(x[0])===String(id));
+                vSet('f1', r[0]); vSet('f2', r[1]); vSet('f3', r[2]);
+            } else if(type==='news') {
                 let r = adminData.news.find(x => String(x[0])===String(id));
                 vSet('f1', r[1]); vSet('f2', r[2]); vSet('f-oldImg', r[3]);
             } else if (type==='shop') {
@@ -193,17 +208,18 @@
             let type = document.getElementById('f-type').value;
             let payload = { pwd: pwd, id: document.getElementById('f-id').value, oldImg: document.getElementById('f-oldImg').value };
             
-            if(type==='news') { payload.action = 'admin_saveNews'; payload.title=v('f1'); payload.content=v('f2'); }
-            if(type==='shop') { payload.action = 'admin_saveShop'; payload.name=v('f1'); payload.price=v('f2'); payload.desc=v('f3'); }
-            if(type==='brand'){ payload.action = 'admin_saveBrand'; payload.brandName=v('f1'); payload.models=v('f2'); }
-            if(type==='event'){ 
+            if(type==='user')  { payload.action = 'admin_saveUser'; payload.phone=v('f1'); payload.name=v('f2'); payload.carData=v('f3'); }
+            if(type==='news')  { payload.action = 'admin_saveNews'; payload.title=v('f1'); payload.content=v('f2'); }
+            if(type==='shop')  { payload.action = 'admin_saveShop'; payload.name=v('f1'); payload.price=v('f2'); payload.desc=v('f3'); }
+            if(type==='brand') { payload.action = 'admin_saveBrand'; payload.brandName=v('f1'); payload.models=v('f2'); }
+            if(type==='event') { 
                 payload.action = 'admin_saveEvent'; payload.title=v('f1'); payload.date=v('f2'); 
                 payload.desc=v('f3'); payload.location=v('f4'); payload.lat=v('f5'); payload.lng=v('f6'); 
                 if(!payload.lat) return Swal.fire('แจ้งเตือน', 'กรุณาคลิกปักหมุดบนแผนที่', 'warning');
             }
 
             const file = document.getElementById('f-img').files[0];
-            if(file) {
+            if(file && type !== 'user') {
                 const reader = new FileReader();
                 reader.onload = (ev) => { payload.imgBase64 = ev.target.result; sendAPI(payload); };
                 reader.readAsDataURL(file);
