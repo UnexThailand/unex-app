@@ -28,7 +28,7 @@
             <div id="feedList" class="space-y-4">กำลังโหลด...</div>
         </section>
 
-        <!-- Tab 2: Members & Garage (ใหม่ล่าสุด!) -->
+        <!-- Tab 2: Members & Garage (ระบบใหม่) -->
         <section id="tab-members" class="tab-content space-y-4">
             <h2 class="text-lg font-bold">👥 Members & Garage</h2>
             <input type="text" id="search-members" onkeyup="renderMembers()" placeholder="🔍 ค้นหาชื่อ, ยี่ห้อ, รุ่นรถ, ของแต่ง..." class="w-full bg-neutral-900 border border-neutral-800 rounded-lg p-2.5 text-sm text-white outline-none focus:border-primary transition-colors shadow-inner">
@@ -38,18 +38,18 @@
         <!-- Tab 3: Events -->
         <section id="tab-events" class="tab-content space-y-4">
             <h2 class="text-lg font-bold">📍 Events & Meetups</h2>
-            <div id="eventList" class="space-y-3"></div>
+            <div id="eventList" class="space-y-3">กำลังโหลด...</div>
             <div class="bg-cardbg p-3 rounded-xl border border-neutral-800"><div id="map"></div></div>
         </section>
 
         <!-- Tab 4: Shop -->
         <section id="tab-shop" class="tab-content space-y-4">
             <h2 class="text-lg font-bold">🛒 Official Shop</h2>
-            <div id="shopList" class="grid grid-cols-2 gap-3"></div>
+            <div id="shopList" class="grid grid-cols-2 gap-3">กำลังโหลด...</div>
         </section>
     </main>
 
-    <!-- Navigation Bar ปรับเป็น 4 เมนู -->
+    <!-- Navigation Bar 4 เมนู -->
     <nav class="fixed bottom-0 w-full bg-cardbg border-t border-neutral-800 pb-safe z-40 flex justify-around p-1">
         <button onclick="switchTab('feed')" class="nav-btn text-primary text-[10px] w-1/4 p-2 font-bold flex flex-col items-center gap-1"><span class="text-lg">📰</span>News</button>
         <button onclick="switchTab('members')" class="nav-btn text-neutral-500 text-[10px] w-1/4 p-2 font-bold flex flex-col items-center gap-1"><span class="text-lg">👥</span>Members</button>
@@ -101,8 +101,9 @@
                 appData = await res.json();
                 if(appData.config.SiteName) document.getElementById('siteName').innerText = appData.config.SiteName;
                 
+                // ดึงข้อมูลโปรไฟล์อัปเดตล่าสุด
                 if(userPhone && appData.users) {
-                    let myProfile = appData.users.find(u => String(u[0]).replace(/'/g, '') === String(userPhone).replace(/'/g, ''));
+                    let myProfile = appData.users.find(u => String(u[0]||'').replace(/'/g, '') === String(userPhone).replace(/'/g, ''));
                     if(myProfile) {
                         userName = myProfile[1]; 
                         userImg = myProfile[3] || '';
@@ -112,11 +113,12 @@
                     }
                 }
 
+                // โหลดข้อมูลให้ครบทุกแท็บ
                 renderFeed(); 
-                renderMembers(); // โหลดหน้ารายชื่อสมาชิก
+                renderMembers();
                 renderEvents(); 
                 renderShop();
-            } catch(e) { console.log(e); }
+            } catch(e) { console.log("Init Error:", e); }
         }
 
         function renderAuthUI() {
@@ -134,33 +136,34 @@
             }
         }
 
-        // --- ระบบค้นหาสำหรับหน้า Feed ---
         function renderFeed() {
             let search = v('search-news').toLowerCase();
             let html = '';
             
-            // กรองข้อมูลข่าวสารตามคำค้นหา (ค้นจากหัวข้อ หรือ เนื้อหา)
+            // ใช้ (appData.news || []) เพื่อป้องกัน Error หากไม่มีข้อมูลข่าว
             let filteredNews = (appData.news || []).filter(n => 
-                n[1].toLowerCase().includes(search) || (n[2] || '').toLowerCase().includes(search)
+                String(n[1]||'').toLowerCase().includes(search) || String(n[2]||'').toLowerCase().includes(search)
             );
 
             filteredNews.forEach(n => { 
-                let postComments = appData.comments.filter(c => String(c[1]) === String(n[0]));
-                let imgHtml = (n[3] && n[3].trim() !== '') ? `<img src="${fixImg(n[3])}" class="w-full object-cover max-h-96">` : '';
+                let postComments = (appData.comments || []).filter(c => String(c[1]) === String(n[0]));
+                let imgHtml = (n[3] && String(n[3]).trim() !== '') ? `<img src="${fixImg(n[3])}" class="w-full object-cover max-h-96">` : '';
                 html += `<div class="bg-cardbg border border-neutral-800 rounded-xl overflow-hidden">
-                    <div class="p-3 font-semibold text-sm border-b border-neutral-800">${n[1]} <span class="text-xs text-neutral-500 font-normal ml-2">${n[4]}</span></div>
+                    <div class="p-3 font-semibold text-sm border-b border-neutral-800">${n[1]||''} <span class="text-xs text-neutral-500 font-normal ml-2">${n[4]||''}</span></div>
                     ${imgHtml}
                     <div class="p-3 space-y-2 text-sm">
-                        <p class="text-neutral-300 line-clamp-3">${n[2]}</p>
+                        <p class="text-neutral-300 line-clamp-3">${n[2]||''}</p>
                         <button onclick="readMore('news', '${n[0]}')" class="text-primary text-xs underline">อ่านเพิ่มเติม</button>
                         <div class="border-t border-neutral-800 pt-2 space-y-1">
                             ${postComments.map(c => {
                                 let cImg = c[6] ? `<img src="${fixImg(c[6])}" class="w-5 h-5 rounded-full object-cover">` : `<div class="w-5 h-5 rounded-full bg-neutral-700 flex items-center justify-center text-[10px]">👤</div>`;
+                                let cleanCPhone = String(c[2]||'').replace(/'/g, '');
+                                let cleanUserPhone = String(userPhone||'').replace(/'/g, '');
                                 return `<div class="text-xs bg-neutral-900 p-2 rounded flex justify-between items-center">
-                                    <div class="flex items-center gap-2 cursor-pointer" onclick="viewUserProfile('${String(c[2]).replace(/'/g,'')}', '${c[3]}', '${c[6]||''}')">
+                                    <div class="flex items-center gap-2 cursor-pointer" onclick="viewUserProfile('${cleanCPhone}', '${c[3]}', '${c[6]||''}')">
                                         ${cImg}<span><b class="text-primary">${c[3]}:</b> ${c[4]}</span>
                                     </div>
-                                    ${String(c[2]).replace(/'/g,'') === String(userPhone).replace(/'/g,'') ? `<button onclick="editComment('${c[0]}', '${c[4]}')" class="text-neutral-500 hover:text-white">✏️</button>` : ''}
+                                    ${cleanCPhone === cleanUserPhone ? `<button onclick="editComment('${c[0]}', '${c[4]}')" class="text-neutral-500 hover:text-white">✏️</button>` : ''}
                                 </div>`;
                             }).join('')}
                         </div>
@@ -170,43 +173,41 @@
                         </div>
                     </div></div>`;
             });
-            document.getElementById('feedList').innerHTML = html || '<p class="text-center text-sm text-neutral-500 py-4">ไม่พบข่าวสารที่ค้นหา</p>';
+            document.getElementById('feedList').innerHTML = html || '<p class="text-center text-sm text-neutral-500 py-4">ไม่พบข่าวสาร</p>';
         }
 
-        // --- ระบบค้นหาสมาชิกและโรงรถ (ฟังก์ชันใหม่ล่าสุด) ---
+        // --- ระบบค้นหาสมาชิกและโรงรถ ---
         function renderMembers() {
             let search = v('search-members').toLowerCase();
             let html = '';
             
-            // กรองข้อมูลสมาชิก (ค้นจากชื่อ, รถที่กรอกตอนสมัคร, หรือรถในโรงรถ)
             let filteredUsers = (appData.users || []).filter(u => {
-                let nameMatch = u[1] && u[1].toLowerCase().includes(search);
-                let regCarMatch = u[2] && u[2].toLowerCase().includes(search);
+                let nameMatch = String(u[1] || '').toLowerCase().includes(search);
+                let regCarMatch = String(u[2] || '').toLowerCase().includes(search);
                 
-                // ค้นหาลึกเข้าไปถึงข้อมูลรถในโรงรถ
-                let myCars = (appData.garage || []).filter(car => String(car[1]).replace(/'/g,'') === String(u[0]).replace(/'/g,''));
+                let myCars = (appData.garage || []).filter(car => String(car[1]||'').replace(/'/g,'') === String(u[0]||'').replace(/'/g,''));
                 let garageMatch = myCars.some(car => 
-                    (car[2] && car[2].toLowerCase().includes(search)) || 
-                    (car[3] && car[3].toLowerCase().includes(search)) ||
-                    (car[6] && car[6].toLowerCase().includes(search))
+                    String(car[2] || '').toLowerCase().includes(search) || 
+                    String(car[3] || '').toLowerCase().includes(search) ||
+                    String(car[6] || '').toLowerCase().includes(search)
                 );
 
                 return nameMatch || regCarMatch || garageMatch;
             });
 
             filteredUsers.forEach(u => {
-                let phone = String(u[0]).replace(/'/g, '');
-                let name = u[1], carData = u[2], img = u[3];
+                let phone = String(u[0] || '').replace(/'/g, '');
+                let name = u[1] || 'ไม่มีชื่อ', carData = u[2] || '', img = u[3] || '';
                 let avatar = img ? `<img src="${fixImg(img)}" class="w-12 h-12 rounded-full object-cover border border-neutral-700">` : `<div class="w-12 h-12 rounded-full bg-neutral-700 flex items-center justify-center text-lg">👤</div>`;
                 
-                let myCars = (appData.garage || []).filter(car => String(car[1]).replace(/'/g,'') === phone);
+                let myCars = (appData.garage || []).filter(car => String(car[1]||'').replace(/'/g,'') === phone);
                 
                 html += `
                 <div class="bg-cardbg border border-neutral-800 rounded-xl p-3 flex items-center gap-3 cursor-pointer hover:border-primary transition-colors mb-2" onclick="viewUserProfile('${phone}', '${name}', '${img}')">
                     ${avatar}
                     <div class="flex-1 overflow-hidden">
                         <h4 class="font-bold text-sm text-primary">${name}</h4>
-                        <p class="text-xs text-neutral-400 truncate">${carData || 'ไม่มีข้อมูลรถเริ่มต้น'}</p>
+                        <p class="text-xs text-neutral-400 truncate">${carData || 'ไม่มีข้อมูลรถ'}</p>
                         <p class="text-[10px] text-neutral-500 mt-1">🚗 รถในโรงรถ: ${myCars.length} คัน</p>
                     </div>
                     <div class="text-neutral-600 text-xs px-2">➔</div>
@@ -215,8 +216,41 @@
             document.getElementById('memberList').innerHTML = html || '<p class="text-center text-sm text-neutral-500 py-4">ไม่พบสมาชิก หรือ รถที่คุณค้นหา</p>';
         }
 
+        function renderEvents() {
+            let html = '';
+            (appData.events || []).forEach(e => { 
+                let imgHtml = (e[6] && String(e[6]).trim() !== '') ? `<img src="${fixImg(e[6])}" class="w-24 h-24 rounded-lg object-cover">` : '';
+                html += `<div class="bg-cardbg border border-neutral-800 rounded-xl p-3 flex gap-3 cursor-pointer" onclick="pinMap(${e[4]||0}, ${e[5]||0}, '${e[1]||''}')">
+                    ${imgHtml}
+                    <div class="flex-1">
+                        <span class="text-xs text-primary font-bold">📅 ${e[2] ? new Date(e[2]).toLocaleString('th-TH') : ''}</span>
+                        <h3 class="font-semibold text-sm leading-tight my-1">${e[1]||''}</h3>
+                        <p class="text-xs text-neutral-400 line-clamp-2">${e[7] || ''}</p>
+                        <button onclick="readMore('event', '${e[0]}'); event.stopPropagation();" class="text-primary text-[10px] underline mt-1 block">รายละเอียดจัดงาน</button>
+                    </div></div>`;
+            });
+            document.getElementById('eventList').innerHTML = html || '<p class="text-center text-sm text-neutral-500 py-4">ไม่มีอีเวนต์</p>';
+            if(appData.events && appData.events.length > 0 && appData.events[0][4]) {
+                initMap(appData.events[0][4], appData.events[0][5], appData.events[0][1]);
+            }
+        }
+
+        function renderShop() {
+            let html = '';
+            (appData.shop || []).forEach(s => { 
+                if(s[5] !== 'Active') return;
+                let imgHtml = (s[4] && String(s[4]).trim() !== '') ? `<img src="${fixImg(s[4])}" onclick="readMore('shop', '${s[0]}')" class="h-32 w-full object-cover cursor-pointer">` : `<div onclick="readMore('shop', '${s[0]}')" class="h-32 bg-neutral-800 flex items-center justify-center cursor-pointer text-xs text-gray-500">ไม่มีรูปภาพ</div>`;
+                html += `<div class="bg-cardbg border border-neutral-800 rounded-xl overflow-hidden flex flex-col justify-between h-auto pb-2">
+                    ${imgHtml}
+                    <div class="p-3 flex flex-col flex-1 justify-between">
+                        <div><h4 class="font-semibold text-xs line-clamp-2">${s[1]||''}</h4><button onclick="readMore('shop', '${s[0]}')" class="text-primary text-[10px] underline mt-1">รายละเอียดสินค้า</button></div>
+                        <div class="mt-2"><p class="text-primary font-bold text-sm mb-1">฿${s[3]||0}</p><button onclick="addCart('${s[0]}', '${s[1]}', ${s[3]||0})" class="bg-primary text-white text-xs w-full py-1.5 rounded">เพิ่มลงตะกร้า</button></div>
+                    </div></div>`;
+            }); document.getElementById('shopList').innerHTML = html || '<p class="text-center text-sm text-neutral-500 py-4">ไม่มีสินค้า</p>';
+        }
+
         function viewUserProfile(phone, name, img) {
-            let myCars = (appData.garage || []).filter(car => String(car[1]).replace(/'/g,'') === String(phone).replace(/'/g,''));
+            let myCars = (appData.garage || []).filter(car => String(car[1]||'').replace(/'/g,'') === String(phone).replace(/'/g,''));
             let avatar = img ? `<img src="${fixImg(img)}" class="w-20 h-20 rounded-full object-cover mx-auto mb-2 border-2 border-primary">` : `<div class="w-20 h-20 rounded-full bg-neutral-700 flex items-center justify-center text-2xl mx-auto mb-2">👤</div>`;
             
             let carsHtml = myCars.length > 0 ? myCars.map(car => {
@@ -231,11 +265,11 @@
                 </div>`;
             }).join('') : '<p class="text-xs text-neutral-500 mt-2 text-center">ยังไม่ได้เพิ่มรถในโรงรถ</p>';
 
-            Swal.fire({ title: name, html: `${avatar}<p class="text-xs text-neutral-400 mb-4">สมาชิก UNEX CLUB</p><div class="border-t border-neutral-800 pt-2 text-left"><b class="text-xs">โรงรถ:</b><div class="max-h-60 overflow-y-auto">${carsHtml}</div></div>`, confirmButtonText: 'ปิด', confirmButtonColor: '#dc2626' });
+            Swal.fire({ title: name, html: `${avatar}<p class="text-xs text-neutral-400 mb-4">สมาชิก UNEX CLUB</p><div class="border-t border-neutral-800 pt-2 text-left"><b class="text-xs">โรงรถของฉัน:</b><div class="max-h-60 overflow-y-auto">${carsHtml}</div></div>`, confirmButtonText: 'ปิด', confirmButtonColor: '#dc2626' });
         }
 
         async function openProfileModal() {
-            let myCars = (appData.garage || []).filter(car => String(car[1]).replace(/'/g,'') === String(userPhone).replace(/'/g,''));
+            let myCars = (appData.garage || []).filter(car => String(car[1]||'').replace(/'/g,'') === String(userPhone).replace(/'/g,''));
             let avatar = userImg ? `<img src="${fixImg(userImg)}" class="w-20 h-20 rounded-full object-cover mx-auto mb-2 border-2 border-primary">` : `<div class="w-20 h-20 rounded-full bg-neutral-700 flex items-center justify-center text-2xl mx-auto mb-2">👤</div>`;
             
             let carsHtml = myCars.map(car => {
@@ -372,48 +406,18 @@
         function logout() { localStorage.clear(); location.reload(); }
         function checkAuth() { if(!userPhone) { showLoginForm(); return false; } return true; }
 
-        function renderEvents() {
-            let html = '';
-            (appData.events||[]).forEach(e => { 
-                let imgHtml = (e[6] && e[6].trim() !== '') ? `<img src="${fixImg(e[6])}" class="w-24 h-24 rounded-lg object-cover">` : '';
-                html += `<div class="bg-cardbg border border-neutral-800 rounded-xl p-3 flex gap-3 cursor-pointer" onclick="pinMap(${e[4]}, ${e[5]}, '${e[1]}')">
-                    ${imgHtml}
-                    <div class="flex-1">
-                        <span class="text-xs text-primary font-bold">📅 ${new Date(e[2]).toLocaleString('th-TH')}</span>
-                        <h3 class="font-semibold text-sm leading-tight my-1">${e[1]}</h3>
-                        <p class="text-xs text-neutral-400 line-clamp-2">${e[7] || ''}</p>
-                        <button onclick="readMore('event', '${e[0]}'); event.stopPropagation();" class="text-primary text-[10px] underline mt-1 block">รายละเอียดจัดงาน</button>
-                    </div></div>`;
-            });
-            document.getElementById('eventList').innerHTML = html || '<p>ไม่มีอีเวนต์</p>';
-            if(appData.events && appData.events.length > 0 && appData.events[0][4]) initMap(appData.events[0][4], appData.events[0][5], appData.events[0][1]);
-        }
-
-        function renderShop() {
-            let html = '';
-            (appData.shop||[]).forEach(s => { 
-                if(s[5] !== 'Active') return;
-                let imgHtml = (s[4] && s[4].trim() !== '') ? `<img src="${fixImg(s[4])}" onclick="readMore('shop', '${s[0]}')" class="h-32 w-full object-cover cursor-pointer">` : `<div onclick="readMore('shop', '${s[0]}')" class="h-32 bg-neutral-800 flex items-center justify-center cursor-pointer text-xs text-gray-500">ไม่มีรูปภาพ</div>`;
-                html += `<div class="bg-cardbg border border-neutral-800 rounded-xl overflow-hidden flex flex-col justify-between h-auto pb-2">
-                    ${imgHtml}
-                    <div class="p-3 flex flex-col flex-1 justify-between">
-                        <div><h4 class="font-semibold text-xs line-clamp-2">${s[1]}</h4><button onclick="readMore('shop', '${s[0]}')" class="text-primary text-[10px] underline mt-1">รายละเอียดสินค้า</button></div>
-                        <div class="mt-2"><p class="text-primary font-bold text-sm mb-1">฿${s[3]}</p><button onclick="addCart('${s[0]}', '${s[1]}', ${s[3]})" class="bg-primary text-white text-xs w-full py-1.5 rounded">เพิ่มลงตะกร้า</button></div>
-                    </div></div>`;
-            }); document.getElementById('shopList').innerHTML = html || '<p>ไม่มีสินค้า</p>';
-        }
-
         function readMore(type, id) {
             let title = '', html = '', imgTag = '';
             if (type === 'news') {
-                let r = appData.news.find(x => String(x[0])===String(id)); title = r[1]; imgTag = r[3] ? `<img src="${fixImg(r[3])}" class="w-full rounded-lg mb-3">` : '';
-                html = `${imgTag}<div class="text-left text-sm text-gray-800 whitespace-pre-line">${r[2]}</div>`;
+                let r = appData.news.find(x => String(x[0])===String(id)); title = r[1]||''; imgTag = r[3] ? `<img src="${fixImg(r[3])}" class="w-full rounded-lg mb-3">` : '';
+                html = `${imgTag}<div class="text-left text-sm text-gray-800 whitespace-pre-line">${r[2]||''}</div>`;
             } else if (type === 'event') {
-                let r = appData.events.find(x => String(x[0])===String(id)); title = r[1]; imgTag = r[6] ? `<img src="${fixImg(r[6])}" class="w-full rounded-lg mb-3">` : '';
-                html = `${imgTag}<div class="text-left text-sm text-gray-800 whitespace-pre-line"><b>สถานที่:</b> ${r[3]}<br><b>วันที่:</b> ${new Date(r[2]).toLocaleString('th-TH')}<br><br>${r[7]||'ไม่มีรายละเอียดเพิ่มเติม'}</div>`;
+                let r = appData.events.find(x => String(x[0])===String(id)); title = r[1]||''; imgTag = r[6] ? `<img src="${fixImg(r[6])}" class="w-full rounded-lg mb-3">` : '';
+                let dateStr = r[2] ? new Date(r[2]).toLocaleString('th-TH') : '';
+                html = `${imgTag}<div class="text-left text-sm text-gray-800 whitespace-pre-line"><b>สถานที่:</b> ${r[3]||''}<br><b>วันที่:</b> ${dateStr}<br><br>${r[7]||'ไม่มีรายละเอียดเพิ่มเติม'}</div>`;
             } else if (type === 'shop') {
-                let r = appData.shop.find(x => String(x[0])===String(id)); title = r[1]; imgTag = r[4] ? `<img src="${fixImg(r[4])}" class="w-full rounded-lg mb-3">` : '';
-                html = `${imgTag}<div class="text-left text-sm text-gray-800 whitespace-pre-line mb-3">${r[2]||'ไม่มีรายละเอียด'}</div><div class="text-left font-bold text-lg text-primary">ราคา ฿${r[3]}</div>`;
+                let r = appData.shop.find(x => String(x[0])===String(id)); title = r[1]||''; imgTag = r[4] ? `<img src="${fixImg(r[4])}" class="w-full rounded-lg mb-3">` : '';
+                html = `${imgTag}<div class="text-left text-sm text-gray-800 whitespace-pre-line mb-3">${r[2]||'ไม่มีรายละเอียด'}</div><div class="text-left font-bold text-lg text-primary">ราคา ฿${r[3]||0}</div>`;
             }
             Swal.fire({ title: title, html: html, confirmButtonText: 'ปิดหน้าต่าง', confirmButtonColor: '#dc2626' });
         }
@@ -422,6 +426,7 @@
             if(!checkAuth()) return;
             const text = v(`cmt-${newsId}`); if(!text) return;
             document.getElementById(`cmt-${newsId}`).value = '';
+            if(!appData.comments) appData.comments = [];
             appData.comments.push([new Date().getTime(), newsId, userPhone, userName, text, 'Just now', userImg]); renderFeed(); 
             await fetch(GAS_URL, {method:'POST', mode:'no-cors', body: JSON.stringify({action:'addComment', newsId:newsId, phone:userPhone, name:userName, text:text, profileImg:userImg})});
         }
