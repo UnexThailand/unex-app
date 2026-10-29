@@ -43,13 +43,14 @@
         let appData = {}, cart = {}, map, marker;
         let userPhone = localStorage.getItem('unexPhone'), userName = localStorage.getItem('unexName'), userImg = localStorage.getItem('unexImg') || '';
 
+        // อัปเดต: ให้รองรับรูประบบ Base64 ได้โดยไม่พัง
         function fixImg(url) {
             if(!url) return '';
+            if(url.startsWith('data:image')) return url; 
             const match = url.match(/id=([a-zA-Z0-9_-]+)/) || url.match(/d\/([a-zA-Z0-9_-]+)/);
             return match ? `https://drive.google.com/thumbnail?id=${match[1]}&sz=w1000` : url;
         }
 
-        // แปลงข้อมูลรูปภาพจาก DB ที่อาจเป็นรูปเดียว(ระบบเก่า) หรือ Array (ระบบใหม่)
         function parseImages(imgData) {
             if(!imgData) return [];
             if(imgData.startsWith('[')) { try { return JSON.parse(imgData); } catch(e) { return []; } }
@@ -76,6 +77,18 @@
                 appData = await res.json();
                 if(appData.config.SiteName) document.getElementById('siteName').innerText = appData.config.SiteName;
                 
+                // อัปเดต: ซิงค์โปรไฟล์ล่าสุดเพื่อดึงรูปลิงก์ตรงจาก Drive มาแทนที่
+                if(userPhone && appData.users) {
+                    let myProfile = appData.users.find(u => String(u[0]) === String(userPhone));
+                    if(myProfile) {
+                        userName = myProfile[1]; 
+                        userImg = myProfile[3] || '';
+                        localStorage.setItem('unexName', userName); 
+                        localStorage.setItem('unexImg', userImg);
+                        renderAuthUI();
+                    }
+                }
+
                 renderFeed(); renderEvents(); renderShop();
             } catch(e) { console.log(e); }
         }
@@ -122,7 +135,6 @@
             document.getElementById('feedList').innerHTML = html || '<p>ไม่มีข่าวสาร</p>';
         }
 
-        // --- ดูโปรไฟล์จากคอมเมนต์ ---
         function viewUserProfile(phone, name, img) {
             let myCars = (appData.garage || []).filter(car => String(car[1]) === String(phone));
             let avatar = img ? `<img src="${fixImg(img)}" class="w-20 h-20 rounded-full object-cover mx-auto mb-2 border-2 border-primary">` : `<div class="w-20 h-20 rounded-full bg-neutral-700 flex items-center justify-center text-2xl mx-auto mb-2">👤</div>`;
@@ -146,7 +158,6 @@
             });
         }
 
-        // --- โปรไฟล์ส่วนตัว ---
         async function openProfileModal() {
             let myCars = (appData.garage || []).filter(car => String(car[1]) === String(userPhone));
             let avatar = userImg ? `<img src="${fixImg(userImg)}" class="w-20 h-20 rounded-full object-cover mx-auto mb-2 border-2 border-primary">` : `<div class="w-20 h-20 rounded-full bg-neutral-700 flex items-center justify-center text-2xl mx-auto mb-2">👤</div>`;
@@ -183,18 +194,15 @@
             });
             if(form) {
                 Swal.fire({title:'กำลังบันทึก...', didOpen:()=>Swal.showLoading()});
-                const proc = (b64) => {
-                    fetch(GAS_URL, {method:'POST', mode:'no-cors', body: JSON.stringify({action:'updateProfile', phone:userPhone, name:form.name, oldImg:userImg, imgBase64:b64})}).then(()=>{
-                        localStorage.setItem('unexName', form.name); userName = form.name;
-                        if(b64) { localStorage.setItem('unexImg', b64); userImg = b64; }
-                        Swal.fire('สำเร็จ', '', 'success').then(()=>init());
-                    });
+                const proc = async (b64) => {
+                    await fetch(GAS_URL, {method:'POST', mode:'no-cors', body: JSON.stringify({action:'updateProfile', phone:userPhone, name:form.name, oldImg:userImg, imgBase64:b64})});
+                    // อัปเดต: รีโหลดหน้าเพื่อซิงค์ข้อมูลใหม่จาก Google Drive อย่างสมบูรณ์
+                    Swal.fire('สำเร็จ', 'อัปเดตโปรไฟล์เรียบร้อย', 'success').then(() => location.reload());
                 };
                 if(form.file) { const r = new FileReader(); r.onload=(e)=>proc(e.target.result); r.readAsDataURL(form.file); } else proc('');
             }
         }
 
-        // ระบบแปลงไฟล์เป็น Base64
         function toBase64(file) {
             return new Promise((res) => { const r = new FileReader(); r.onload=()=>res(r.result); r.readAsDataURL(file); });
         }
@@ -219,18 +227,17 @@
                 
                 Swal.fire({title:'กำลังบันทึกข้อมูล...', didOpen:()=>Swal.showLoading()});
                 await fetch(GAS_URL, {method:'POST', mode:'no-cors', body: JSON.stringify({action:'addCar', phone:userPhone, brand:car.brand, model:car.model, year:car.year, color:car.color, detail:car.detail, imgBase64Array:b64Array})});
-                Swal.fire('สำเร็จ', 'เพิ่มรถสำเร็จ', 'success').then(()=>init());
+                Swal.fire('สำเร็จ', 'เพิ่มรถสำเร็จ', 'success').then(()=>location.reload());
             }
         }
 
         async function deleteCar(carId) {
             if((await Swal.fire({title:'ลบรถคันนี้?', icon:'warning', showCancelButton:true})).isConfirmed) {
                 await fetch(GAS_URL, {method:'POST', mode:'no-cors', body: JSON.stringify({action:'deleteCar', carId:carId})});
-                init(); Swal.fire('ลบสำเร็จ', '', 'success');
+                Swal.fire('ลบสำเร็จ', '', 'success').then(()=>location.reload());
             }
         }
 
-        // --- ระบบ Authentication (เบอร์ + รหัสผ่าน) ---
         async function profileAuth() {
             const { value: loginData } = await Swal.fire({
                 title: 'เข้าสู่ระบบ',
@@ -249,9 +256,8 @@
                 userPhone = loginData.phone; userName = data.name; userImg = data.profileImg||'';
                 Swal.fire('สำเร็จ', `ยินดีต้อนรับคุณ ${userName}`, 'success').then(()=>location.reload());
             } else if (data.status === 'error') {
-                Swal.fire('เกิดข้อผิดพลาด', data.message, 'error'); // รหัสผิด
+                Swal.fire('เกิดข้อผิดพลาด', data.message, 'error');
             } else {
-                // ไม่พบเบอร์นี้ = เปิดหน้าลงทะเบียน
                 let brandOpts = (appData.brands||[]).map(b => `<option value="${b[1]}">${b[1]}</option>`).join('');
                 const { value: form } = await Swal.fire({
                     title: 'ลงทะเบียนสมาชิกใหม่', 
