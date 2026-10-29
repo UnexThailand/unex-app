@@ -18,18 +18,43 @@
         <div id="authArea"></div>
     </header>
 
-    <button onclick="viewCart()" id="cartBtn" class="hidden fixed bottom-20 right-4 bg-primary text-white p-4 rounded-full shadow-2xl z-50 flex items-center gap-2">🛒 <span id="cartCount" class="font-bold">0</span></button>
+    <button onclick="viewCart()" id="cartBtn" class="hidden fixed bottom-24 right-4 bg-primary text-white p-4 rounded-full shadow-2xl z-50 flex items-center gap-2">🛒 <span id="cartCount" class="font-bold">0</span></button>
 
     <main class="max-w-md mx-auto p-4">
-        <section id="tab-feed" class="tab-content active space-y-4"><h2 class="text-lg font-bold">📰 Community News</h2><div id="feedList" class="space-y-4">กำลังโหลด...</div></section>
-        <section id="tab-events" class="tab-content space-y-4"><h2 class="text-lg font-bold">📍 Events & Meetups</h2><div id="eventList" class="space-y-3"></div><div class="bg-cardbg p-3 rounded-xl border border-neutral-800"><div id="map"></div></div></section>
-        <section id="tab-shop" class="tab-content space-y-4"><h2 class="text-lg font-bold">🛒 Official Shop</h2><div id="shopList" class="grid grid-cols-2 gap-3"></div></section>
+        <!-- Tab 1: Community News -->
+        <section id="tab-feed" class="tab-content active space-y-4">
+            <h2 class="text-lg font-bold">📰 Community News</h2>
+            <input type="text" id="search-news" onkeyup="renderFeed()" placeholder="🔍 ค้นหาหัวข้อข่าว, เนื้อหา..." class="w-full bg-neutral-900 border border-neutral-800 rounded-lg p-2.5 text-sm text-white outline-none focus:border-primary transition-colors shadow-inner">
+            <div id="feedList" class="space-y-4">กำลังโหลด...</div>
+        </section>
+
+        <!-- Tab 2: Members & Garage (ใหม่ล่าสุด!) -->
+        <section id="tab-members" class="tab-content space-y-4">
+            <h2 class="text-lg font-bold">👥 Members & Garage</h2>
+            <input type="text" id="search-members" onkeyup="renderMembers()" placeholder="🔍 ค้นหาชื่อ, ยี่ห้อ, รุ่นรถ, ของแต่ง..." class="w-full bg-neutral-900 border border-neutral-800 rounded-lg p-2.5 text-sm text-white outline-none focus:border-primary transition-colors shadow-inner">
+            <div id="memberList" class="space-y-2">กำลังโหลด...</div>
+        </section>
+
+        <!-- Tab 3: Events -->
+        <section id="tab-events" class="tab-content space-y-4">
+            <h2 class="text-lg font-bold">📍 Events & Meetups</h2>
+            <div id="eventList" class="space-y-3"></div>
+            <div class="bg-cardbg p-3 rounded-xl border border-neutral-800"><div id="map"></div></div>
+        </section>
+
+        <!-- Tab 4: Shop -->
+        <section id="tab-shop" class="tab-content space-y-4">
+            <h2 class="text-lg font-bold">🛒 Official Shop</h2>
+            <div id="shopList" class="grid grid-cols-2 gap-3"></div>
+        </section>
     </main>
 
-    <nav class="fixed bottom-0 w-full bg-cardbg border-t border-neutral-800 pb-safe z-40 flex justify-around p-2">
-        <button onclick="switchTab('feed')" class="nav-btn text-primary text-xs w-1/3 p-2 font-bold">📰 News</button>
-        <button onclick="switchTab('events')" class="nav-btn text-neutral-500 text-xs w-1/3 p-2 font-bold">📅 Events</button>
-        <button onclick="switchTab('shop')" class="nav-btn text-neutral-500 text-xs w-1/3 p-2 font-bold">🛍️ Shop</button>
+    <!-- Navigation Bar ปรับเป็น 4 เมนู -->
+    <nav class="fixed bottom-0 w-full bg-cardbg border-t border-neutral-800 pb-safe z-40 flex justify-around p-1">
+        <button onclick="switchTab('feed')" class="nav-btn text-primary text-[10px] w-1/4 p-2 font-bold flex flex-col items-center gap-1"><span class="text-lg">📰</span>News</button>
+        <button onclick="switchTab('members')" class="nav-btn text-neutral-500 text-[10px] w-1/4 p-2 font-bold flex flex-col items-center gap-1"><span class="text-lg">👥</span>Members</button>
+        <button onclick="switchTab('events')" class="nav-btn text-neutral-500 text-[10px] w-1/4 p-2 font-bold flex flex-col items-center gap-1"><span class="text-lg">📅</span>Events</button>
+        <button onclick="switchTab('shop')" class="nav-btn text-neutral-500 text-[10px] w-1/4 p-2 font-bold flex flex-col items-center gap-1"><span class="text-lg">🛍️</span>Shop</button>
     </nav>
 
     <!-- Lightbox สำหรับกดดูรูปขยาย -->
@@ -64,8 +89,8 @@
         function switchTab(tab) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.getElementById(`tab-${tab}`).classList.add('active');
-            document.querySelectorAll('.nav-btn').forEach(btn => btn.className = 'nav-btn text-neutral-500 text-xs w-1/3 p-2 font-bold');
-            event.currentTarget.className = 'nav-btn text-primary text-xs w-1/3 p-2 font-bold';
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.className = 'nav-btn text-neutral-500 text-[10px] w-1/4 p-2 font-bold flex flex-col items-center gap-1');
+            event.currentTarget.className = 'nav-btn text-primary text-[10px] w-1/4 p-2 font-bold flex flex-col items-center gap-1';
             if(tab==='events' && map) setTimeout(()=>map.invalidateSize(), 100);
         }
 
@@ -77,7 +102,7 @@
                 if(appData.config.SiteName) document.getElementById('siteName').innerText = appData.config.SiteName;
                 
                 if(userPhone && appData.users) {
-                    let myProfile = appData.users.find(u => String(u[0]) === String(userPhone));
+                    let myProfile = appData.users.find(u => String(u[0]).replace(/'/g, '') === String(userPhone).replace(/'/g, ''));
                     if(myProfile) {
                         userName = myProfile[1]; 
                         userImg = myProfile[3] || '';
@@ -87,11 +112,13 @@
                     }
                 }
 
-                renderFeed(); renderEvents(); renderShop();
+                renderFeed(); 
+                renderMembers(); // โหลดหน้ารายชื่อสมาชิก
+                renderEvents(); 
+                renderShop();
             } catch(e) { console.log(e); }
         }
 
-        // --- แยกปุ่มเข้าสู่ระบบ กับ สมัครสมาชิก อย่างชัดเจน ---
         function renderAuthUI() {
             const area = document.getElementById('authArea');
             if(userPhone) {
@@ -107,9 +134,17 @@
             }
         }
 
+        // --- ระบบค้นหาสำหรับหน้า Feed ---
         function renderFeed() {
+            let search = v('search-news').toLowerCase();
             let html = '';
-            appData.news.forEach(n => { 
+            
+            // กรองข้อมูลข่าวสารตามคำค้นหา (ค้นจากหัวข้อ หรือ เนื้อหา)
+            let filteredNews = (appData.news || []).filter(n => 
+                n[1].toLowerCase().includes(search) || (n[2] || '').toLowerCase().includes(search)
+            );
+
+            filteredNews.forEach(n => { 
                 let postComments = appData.comments.filter(c => String(c[1]) === String(n[0]));
                 let imgHtml = (n[3] && n[3].trim() !== '') ? `<img src="${fixImg(n[3])}" class="w-full object-cover max-h-96">` : '';
                 html += `<div class="bg-cardbg border border-neutral-800 rounded-xl overflow-hidden">
@@ -122,10 +157,10 @@
                             ${postComments.map(c => {
                                 let cImg = c[6] ? `<img src="${fixImg(c[6])}" class="w-5 h-5 rounded-full object-cover">` : `<div class="w-5 h-5 rounded-full bg-neutral-700 flex items-center justify-center text-[10px]">👤</div>`;
                                 return `<div class="text-xs bg-neutral-900 p-2 rounded flex justify-between items-center">
-                                    <div class="flex items-center gap-2 cursor-pointer" onclick="viewUserProfile('${c[2]}', '${c[3]}', '${c[6]||''}')">
+                                    <div class="flex items-center gap-2 cursor-pointer" onclick="viewUserProfile('${String(c[2]).replace(/'/g,'')}', '${c[3]}', '${c[6]||''}')">
                                         ${cImg}<span><b class="text-primary">${c[3]}:</b> ${c[4]}</span>
                                     </div>
-                                    ${String(c[2]) === userPhone ? `<button onclick="editComment('${c[0]}', '${c[4]}')" class="text-neutral-500 hover:text-white">✏️</button>` : ''}
+                                    ${String(c[2]).replace(/'/g,'') === String(userPhone).replace(/'/g,'') ? `<button onclick="editComment('${c[0]}', '${c[4]}')" class="text-neutral-500 hover:text-white">✏️</button>` : ''}
                                 </div>`;
                             }).join('')}
                         </div>
@@ -135,11 +170,53 @@
                         </div>
                     </div></div>`;
             });
-            document.getElementById('feedList').innerHTML = html || '<p>ไม่มีข่าวสาร</p>';
+            document.getElementById('feedList').innerHTML = html || '<p class="text-center text-sm text-neutral-500 py-4">ไม่พบข่าวสารที่ค้นหา</p>';
+        }
+
+        // --- ระบบค้นหาสมาชิกและโรงรถ (ฟังก์ชันใหม่ล่าสุด) ---
+        function renderMembers() {
+            let search = v('search-members').toLowerCase();
+            let html = '';
+            
+            // กรองข้อมูลสมาชิก (ค้นจากชื่อ, รถที่กรอกตอนสมัคร, หรือรถในโรงรถ)
+            let filteredUsers = (appData.users || []).filter(u => {
+                let nameMatch = u[1] && u[1].toLowerCase().includes(search);
+                let regCarMatch = u[2] && u[2].toLowerCase().includes(search);
+                
+                // ค้นหาลึกเข้าไปถึงข้อมูลรถในโรงรถ
+                let myCars = (appData.garage || []).filter(car => String(car[1]).replace(/'/g,'') === String(u[0]).replace(/'/g,''));
+                let garageMatch = myCars.some(car => 
+                    (car[2] && car[2].toLowerCase().includes(search)) || 
+                    (car[3] && car[3].toLowerCase().includes(search)) ||
+                    (car[6] && car[6].toLowerCase().includes(search))
+                );
+
+                return nameMatch || regCarMatch || garageMatch;
+            });
+
+            filteredUsers.forEach(u => {
+                let phone = String(u[0]).replace(/'/g, '');
+                let name = u[1], carData = u[2], img = u[3];
+                let avatar = img ? `<img src="${fixImg(img)}" class="w-12 h-12 rounded-full object-cover border border-neutral-700">` : `<div class="w-12 h-12 rounded-full bg-neutral-700 flex items-center justify-center text-lg">👤</div>`;
+                
+                let myCars = (appData.garage || []).filter(car => String(car[1]).replace(/'/g,'') === phone);
+                
+                html += `
+                <div class="bg-cardbg border border-neutral-800 rounded-xl p-3 flex items-center gap-3 cursor-pointer hover:border-primary transition-colors mb-2" onclick="viewUserProfile('${phone}', '${name}', '${img}')">
+                    ${avatar}
+                    <div class="flex-1 overflow-hidden">
+                        <h4 class="font-bold text-sm text-primary">${name}</h4>
+                        <p class="text-xs text-neutral-400 truncate">${carData || 'ไม่มีข้อมูลรถเริ่มต้น'}</p>
+                        <p class="text-[10px] text-neutral-500 mt-1">🚗 รถในโรงรถ: ${myCars.length} คัน</p>
+                    </div>
+                    <div class="text-neutral-600 text-xs px-2">➔</div>
+                </div>`;
+            });
+            document.getElementById('memberList').innerHTML = html || '<p class="text-center text-sm text-neutral-500 py-4">ไม่พบสมาชิก หรือ รถที่คุณค้นหา</p>';
         }
 
         function viewUserProfile(phone, name, img) {
-            let myCars = (appData.garage || []).filter(car => String(car[1]) === String(phone));
+            let myCars = (appData.garage || []).filter(car => String(car[1]).replace(/'/g,'') === String(phone).replace(/'/g,''));
             let avatar = img ? `<img src="${fixImg(img)}" class="w-20 h-20 rounded-full object-cover mx-auto mb-2 border-2 border-primary">` : `<div class="w-20 h-20 rounded-full bg-neutral-700 flex items-center justify-center text-2xl mx-auto mb-2">👤</div>`;
             
             let carsHtml = myCars.length > 0 ? myCars.map(car => {
@@ -152,13 +229,13 @@
                     <div class="text-xs text-neutral-300 mt-1 mb-2 whitespace-pre-line">${car[6]}</div>
                     <div class="flex gap-2 overflow-x-auto pb-2">${thumbsHtml}</div>
                 </div>`;
-            }).join('') : '<p class="text-xs text-neutral-500 mt-2">ยังไม่ได้เพิ่มรถในโรงรถ</p>';
+            }).join('') : '<p class="text-xs text-neutral-500 mt-2 text-center">ยังไม่ได้เพิ่มรถในโรงรถ</p>';
 
-            Swal.fire({ title: name, html: `${avatar}<p class="text-xs text-neutral-400 mb-4">สมาชิก UNEX CLUB</p><div class="border-t border-neutral-800 pt-2 text-left"><b class="text-xs">โรงรถของฉัน:</b><div class="max-h-60 overflow-y-auto">${carsHtml}</div></div>`, confirmButtonText: 'ปิด', confirmButtonColor: '#dc2626' });
+            Swal.fire({ title: name, html: `${avatar}<p class="text-xs text-neutral-400 mb-4">สมาชิก UNEX CLUB</p><div class="border-t border-neutral-800 pt-2 text-left"><b class="text-xs">โรงรถ:</b><div class="max-h-60 overflow-y-auto">${carsHtml}</div></div>`, confirmButtonText: 'ปิด', confirmButtonColor: '#dc2626' });
         }
 
         async function openProfileModal() {
-            let myCars = (appData.garage || []).filter(car => String(car[1]) === String(userPhone));
+            let myCars = (appData.garage || []).filter(car => String(car[1]).replace(/'/g,'') === String(userPhone).replace(/'/g,''));
             let avatar = userImg ? `<img src="${fixImg(userImg)}" class="w-20 h-20 rounded-full object-cover mx-auto mb-2 border-2 border-primary">` : `<div class="w-20 h-20 rounded-full bg-neutral-700 flex items-center justify-center text-2xl mx-auto mb-2">👤</div>`;
             
             let carsHtml = myCars.map(car => {
@@ -179,7 +256,7 @@
                 title: 'โปรไฟล์ของฉัน',
                 html: `${avatar}<b>${userName}</b><br><span class="text-xs text-neutral-400">โทร: ${userPhone}</span><br>
                 <button onclick="editProfileInfo()" class="bg-neutral-800 text-xs px-3 py-1 rounded mt-2 border border-neutral-700">✏️ แก้ไขชื่อ / รูปโปรไฟล์</button>
-                <div class="border-t border-neutral-800 mt-4 pt-2 text-left"><div class="flex justify-between items-center mb-2"><b class="text-xs">โรงรถของฉัน</b><button onclick="openAddCarModal()" class="bg-primary text-white text-[10px] px-2 py-1 rounded">+ เพิ่มรถ</button></div><div class="max-h-60 overflow-y-auto">${carsHtml || '<p class="text-xs text-neutral-500">ยังไม่มีรถในโรงรถ</p>'}</div></div>
+                <div class="border-t border-neutral-800 mt-4 pt-2 text-left"><div class="flex justify-between items-center mb-2"><b class="text-xs">โรงรถของฉัน</b><button onclick="openAddCarModal()" class="bg-primary text-white text-[10px] px-2 py-1 rounded">+ เพิ่มรถ</button></div><div class="max-h-60 overflow-y-auto">${carsHtml || '<p class="text-xs text-neutral-500 text-center">ยังไม่มีรถในโรงรถ</p>'}</div></div>
                 <div class="mt-4"><button onclick="logout()" class="text-red-500 text-xs underline font-bold">ออกจากระบบ</button></div>`,
                 showConfirmButton: false, showCloseButton: true
             });
@@ -236,7 +313,6 @@
             }
         }
 
-        // --- ระบบฟอร์มล็อกอิน ---
         async function showLoginForm() {
             const { value: loginData } = await Swal.fire({
                 title: 'เข้าสู่ระบบ',
@@ -267,7 +343,6 @@
             }
         }
 
-        // --- ระบบฟอร์มสมัครสมาชิกใหม่ ---
         async function showRegisterForm() {
             let brandOpts = (appData.brands||[]).map(b => `<option value="${b[1]}">${b[1]}</option>`).join('');
             const { value: form } = await Swal.fire({
@@ -275,6 +350,8 @@
                 html: `
                 <input id="r-phone" type="tel" placeholder="เบอร์โทรศัพท์ (ใช้เป็น ID เข้าสู่ระบบ)" class="swal2-input">
                 <input id="r-name" placeholder="ชื่อ-นามสกุล" class="swal2-input">
+                <select id="r-brand" class="swal2-input"><option value="">เลือกแบรนด์รถที่ขับ</option>${brandOpts}</select>
+                <input id="r-car" placeholder="รุ่นรถ - ทะเบียน" class="swal2-input">
                 <input id="r-pwd" type="password" placeholder="ตั้งรหัสผ่านสำหรับเข้าสู่ระบบ" class="swal2-input border-red-500 border">`,
                 showCancelButton: true,
                 confirmButtonText: 'สมัครสมาชิก',
