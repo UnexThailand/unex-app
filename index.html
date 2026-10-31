@@ -556,7 +556,7 @@
             let qty = Object.values(cart).reduce((s, i) => s + i.qty, 0); document.getElementById('cartCount').innerText = qty; document.getElementById('cartBtn').style.display = qty > 0 ? 'flex' : 'none';
         }
         
-        async function viewCart() {
+async function viewCart() {
             let total = 0, html = `<div class="text-left text-sm max-h-60 overflow-y-auto mb-4 border-b pb-2">`;
             for(let id in cart) {
                 let item = cart[id]; total += (item.price * item.qty);
@@ -564,12 +564,24 @@
                     <div class="flex items-center gap-2"><button onclick="cart['${id}'].qty--; if(cart['${id}'].qty<=0) delete cart['${id}']; Swal.close(); viewCart();" class="bg-gray-200 px-2 rounded text-black">-</button><span>${item.qty}</span><button onclick="cart['${id}'].qty++; Swal.close(); viewCart();" class="bg-gray-200 px-2 rounded text-black">+</button></div></div>`;
             }
             html += `</div><h3 class="font-bold text-lg text-primary mb-2">ยอดชำระ: ฿${total}</h3>`;
-            let payInfo = appData.config.PromptPay ? `สแกนพร้อมเพย์:<br><b class="text-red-500">${appData.config.BankAccount || ''}</b><br><img src="https://promptpay.io/${appData.config.PromptPay}/${total}.png" class="mx-auto w-40 rounded">` : 'ชำระที่หน้างาน';
-            const { value, isConfirmed } = await Swal.fire({ title: '🛒 สั่งซื้อสินค้า', html: html + `<div class="text-xs text-gray-600 my-2">${payInfo}</div>`, input: appData.config.PromptPay ? 'file' : null, confirmButtonText: 'โอนเงินและสั่งซื้อ', showCancelButton: true, preConfirm: () => { return Swal.getInput()?.files[0]; } });
+            
+            // --- อัปเดตระบบดึงรูป QR Code สำหรับชำระเงิน ---
+            let payInfo = '';
+            if (appData.config.QRCodeImg && appData.config.QRCodeImg.trim() !== '') {
+                payInfo = `โอนเงินเข้าบัญชี:<br><b class="text-red-500 whitespace-pre-line">${appData.config.BankAccount || ''}</b><br><img src="${fixImg(appData.config.QRCodeImg)}" class="mx-auto max-w-full h-auto mt-2 rounded border border-gray-300">`;
+            } else if (appData.config.PromptPay) {
+                payInfo = `สแกนพร้อมเพย์:<br><b class="text-red-500 whitespace-pre-line">${appData.config.BankAccount || ''}</b><br><img src="https://promptpay.io/${appData.config.PromptPay}/${total}.png" class="mx-auto w-40 rounded mt-2">`;
+            } else {
+                payInfo = 'ชำระที่หน้างาน';
+            }
+            // ---------------------------------------------
+
+            const { value, isConfirmed } = await Swal.fire({ title: '🛒 สั่งซื้อสินค้า', html: html + `<div class="text-xs text-gray-600 my-3">${payInfo}</div>`, input: 'file', confirmButtonText: 'โอนเงินและส่งออเดอร์', showCancelButton: true, preConfirm: () => { return Swal.getInput()?.files[0]; } });
             if (isConfirmed) {
+                if(!value) return Swal.fire('ผิดพลาด', 'กรุณาแนบสลิปการโอนเงิน', 'warning');
                 Swal.fire({title:'กำลังประมวลผล...', didOpen:()=>Swal.showLoading()});
                 const proc = (b64) => { fetch(GAS_URL, {method:'POST', mode:'no-cors', body: JSON.stringify({ action:'checkout', phone:userPhone, cart:cart, total:total, slipBase64:b64 })}).then(() => { cart = {}; document.getElementById('cartBtn').style.display='none'; Swal.fire('สำเร็จ', 'ส่งออเดอร์เรียบร้อย', 'success'); }); };
-                if(value) { const r = new FileReader(); r.onload = (e) => proc(e.target.result); r.readAsDataURL(value); } else proc('');
+                const r = new FileReader(); r.onload = (e) => proc(e.target.result); r.readAsDataURL(value);
             }
         }
 
