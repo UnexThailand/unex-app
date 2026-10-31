@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>UNEX CLUB</title>
     <style>
-        /* รองรับการเปลี่ยนสีแบบ Real-time จาก Admin */
         :root {
             --theme-primary: #dc2626;
             --theme-bg: #0a0a0a;
@@ -133,7 +132,6 @@
                 const res = await fetch(`${GAS_URL}?action=getAppData`);
                 appData = await res.json();
                 
-                // --- ระบบอัปเดตสีธีมและโลโก้จาก Admin ---
                 const root = document.documentElement;
                 if(appData.config.ColorPrimary) root.style.setProperty('--theme-primary', appData.config.ColorPrimary);
                 if(appData.config.ColorBg) root.style.setProperty('--theme-bg', appData.config.ColorBg);
@@ -145,7 +143,6 @@
                 } else if(appData.config.SiteName) {
                     document.getElementById('siteLogoArea').innerHTML = `<h1 class="text-xl font-bold tracking-wider text-primary">${appData.config.SiteName}</h1>`;
                 }
-                // ------------------------------------
                 
                 if(userPhone && appData.users) {
                     let myProfile = appData.users.find(u => String(u[0]||'').replace(/'/g, '') === String(userPhone).replace(/'/g, ''));
@@ -166,8 +163,7 @@
             const area = document.getElementById('authArea');
             if(userPhone) {
                 let avatar = userImg ? `<img src="${fixImg(userImg)}" class="w-8 h-8 rounded-full object-cover border border-primary">` : `<div class="w-8 h-8 rounded-full bg-neutral-700 flex items-center justify-center text-xs">👤</div>`;
-                area.innerHTML = `<div class="flex items-center gap-2 cursor-pointer" onclick="openProfileModal()">
-                    ${avatar}<span class="text-xs font-semibold text-textcolor">${userName}</span></div>`;
+                area.innerHTML = `<div class="flex items-center gap-2 cursor-pointer" onclick="openProfileModal()">${avatar}<span class="text-xs font-semibold text-textcolor">${userName}</span></div>`;
             } else {
                 area.innerHTML = `<div class="flex gap-2"><button onclick="showLoginForm()" class="text-[10px] md:text-xs bg-primary text-white px-3 py-1.5 rounded-full border border-primary font-bold shadow-sm">เข้าสู่ระบบ</button><button onclick="showRegisterForm()" class="text-[10px] md:text-xs bg-neutral-800 text-white px-3 py-1.5 rounded-full border border-neutral-700 font-bold shadow-sm">สมัครสมาชิก</button></div>`;
             }
@@ -181,22 +177,7 @@
             filteredNews.forEach(n => { 
                 let postComments = (appData.comments || []).filter(c => String(c[1]) === String(n[0]));
                 let imgHtml = (n[3] && String(n[3]).trim() !== '') ? `<img src="${fixImg(n[3])}" class="w-full object-cover max-h-96">` : '';
-                html += `<div class="bg-cardbg border border-neutral-800 rounded-xl overflow-hidden">
-                    <div class="p-3 font-semibold text-sm border-b border-neutral-800">${n[1]||''} <span class="text-xs text-neutral-500 font-normal ml-2">${n[4]||''}</span></div>
-                    ${imgHtml}
-                    <div class="p-3 space-y-2 text-sm">
-                        <p class="text-neutral-300 line-clamp-3">${n[2]||''}</p>
-                        <button onclick="readMore('news', '${n[0]}')" class="text-primary text-xs underline">อ่านเพิ่มเติม</button>
-                        <div class="border-t border-neutral-800 pt-2 space-y-1">
-                            ${postComments.map(c => {
-                                let cImg = c[6] ? `<img src="${fixImg(c[6])}" class="w-5 h-5 rounded-full object-cover">` : `<div class="w-5 h-5 rounded-full bg-neutral-700 flex items-center justify-center text-[10px]">👤</div>`;
-                                let cleanCPhone = String(c[2]||'').replace(/'/g, '');
-                                let cleanUserPhone = String(userPhone||'').replace(/'/g, '');
-                                return `<div class="text-xs bg-neutral-900 p-2 rounded flex justify-between items-center"><div class="flex items-center gap-2 cursor-pointer" onclick="viewUserProfile('${cleanCPhone}', '${c[3]}', '${c[6]||''}')">${cImg}<span><b class="text-primary">${c[3]}:</b> ${c[4]}</span></div>${cleanCPhone === cleanUserPhone ? `<button onclick="editComment('${c[0]}', '${c[4]}')" class="text-neutral-500 hover:text-white">✏️</button>` : ''}</div>`;
-                            }).join('')}
-                        </div>
-                        <div class="flex gap-2 pt-2"><input type="text" id="cmt-${n[0]}" placeholder="แสดงความคิดเห็น..." class="w-full bg-neutral-900 border border-neutral-800 rounded px-2 py-1 text-xs outline-none"><button onclick="postComment('${n[0]}')" class="bg-primary text-white text-xs px-3 py-1 rounded">ส่ง</button></div>
-                    </div></div>`;
+                html += `<div class="bg-cardbg border border-neutral-800 rounded-xl overflow-hidden"><div class="p-3 font-semibold text-sm border-b border-neutral-800">${n[1]||''} <span class="text-xs text-neutral-500 font-normal ml-2">${n[4]||''}</span></div>${imgHtml}<div class="p-3 space-y-2 text-sm"><p class="text-neutral-300 line-clamp-3">${n[2]||''}</p><button onclick="readMore('news', '${n[0]}')" class="text-primary text-xs underline">อ่านเพิ่มเติม</button><div class="border-t border-neutral-800 pt-2 space-y-1">${postComments.map(c => { let cImg = c[6] ? `<img src="${fixImg(c[6])}" class="w-5 h-5 rounded-full object-cover">` : `<div class="w-5 h-5 rounded-full bg-neutral-700 flex items-center justify-center text-[10px]">👤</div>`; let cleanCPhone = String(c[2]||'').replace(/'/g, ''); let cleanUserPhone = String(userPhone||'').replace(/'/g, ''); return `<div class="text-xs bg-neutral-900 p-2 rounded flex justify-between items-center"><div class="flex items-center gap-2 cursor-pointer" onclick="viewUserProfile('${cleanCPhone}', '${c[3]}', '${c[6]||''}')">${cImg}<span><b class="text-primary">${c[3]}:</b> ${c[4]}</span></div>${cleanCPhone === cleanUserPhone ? `<button onclick="editComment('${c[0]}', '${c[4]}')" class="text-neutral-500 hover:text-white">✏️</button>` : ''}</div>`; }).join('')}</div><div class="flex gap-2 pt-2"><input type="text" id="cmt-${n[0]}" placeholder="แสดงความคิดเห็น..." class="w-full bg-neutral-900 border border-neutral-800 rounded px-2 py-1 text-xs outline-none"><button onclick="postComment('${n[0]}')" class="bg-primary text-white text-xs px-3 py-1 rounded">ส่ง</button></div></div></div>`;
             });
             document.getElementById('feedList').innerHTML = html || '<p class="text-center text-sm text-neutral-500 py-4">ไม่พบข่าวสาร</p>';
         }
@@ -211,19 +192,7 @@
                 let author = (appData.users || []).find(u => String(u[0]||'').replace(/'/g, '') === cleanPhone);
                 let authorImg = author && author[3] ? `<img src="${fixImg(author[3])}" class="w-8 h-8 rounded-full object-cover border border-neutral-600">` : `<div class="w-8 h-8 rounded-full bg-neutral-700 flex items-center justify-center text-xs">👤</div>`;
 
-                html += `<div class="bg-cardbg border border-neutral-800 rounded-xl p-3 mb-4">
-                    <div class="flex items-center gap-2 mb-2 cursor-pointer" onclick="viewUserProfile('${cleanPhone}', '${p[2]}', '${author?author[3]:''}')">${authorImg}<div class="font-semibold text-sm text-primary">${p[2]}</div></div>
-                    <p class="text-sm text-neutral-200 whitespace-pre-line">${p[4] || ''}</p>${imgHtml}
-                    <div class="flex items-center gap-4 mt-3 border-t border-neutral-800 pt-2"><button onclick="likePost('${p[0]}')" class="text-xs text-neutral-400 hover:text-primary flex items-center gap-1 transition-colors">❤️ <span id="like-${p[0]}">${p[5] || 0}</span></button><span class="text-xs text-neutral-400">💬 ${postComments.length} คอมเมนต์</span></div>
-                    <div class="mt-2 space-y-1">
-                        ${postComments.map(c => {
-                            let cCleanPhone = String(c[1]||'').replace(/'/g, ''); let cAuthor = (appData.users || []).find(u => String(u[0]||'').replace(/'/g, '') === cCleanPhone);
-                            let cImg = cAuthor && cAuthor[3] ? `<img src="${fixImg(cAuthor[3])}" class="w-5 h-5 rounded-full object-cover">` : `<div class="w-5 h-5 rounded-full bg-neutral-700 flex items-center justify-center text-[10px]">👤</div>`;
-                            return `<div class="text-xs bg-neutral-900 p-2 rounded flex items-center gap-2">${cImg} <span><b class="text-primary cursor-pointer hover:underline" onclick="viewUserProfile('${cCleanPhone}', '${c[2]}', '${cAuthor?cAuthor[3]:''}')">${c[2]}:</b> ${c[3]}</span></div>`;
-                        }).join('')}
-                    </div>
-                    <div class="flex gap-2 pt-2"><input type="text" id="bc-${p[0]}" placeholder="แสดงความคิดเห็น..." class="w-full bg-neutral-900 border border-neutral-800 rounded px-2 py-1 text-xs outline-none focus:border-primary transition-colors"><button onclick="postBoardComment('${p[0]}')" class="bg-primary text-white text-xs px-3 py-1 rounded font-bold">ส่ง</button></div>
-                </div>`;
+                html += `<div class="bg-cardbg border border-neutral-800 rounded-xl p-3 mb-4"><div class="flex items-center gap-2 mb-2 cursor-pointer" onclick="viewUserProfile('${cleanPhone}', '${p[2]}', '${author?author[3]:''}')">${authorImg}<div class="font-semibold text-sm text-primary">${p[2]}</div></div><p class="text-sm text-neutral-200 whitespace-pre-line">${p[4] || ''}</p>${imgHtml}<div class="flex items-center gap-4 mt-3 border-t border-neutral-800 pt-2"><button onclick="likePost('${p[0]}')" class="text-xs text-neutral-400 hover:text-primary flex items-center gap-1 transition-colors">❤️ <span id="like-${p[0]}">${p[5] || 0}</span></button><span class="text-xs text-neutral-400">💬 ${postComments.length} คอมเมนต์</span></div><div class="mt-2 space-y-1">${postComments.map(c => { let cCleanPhone = String(c[1]||'').replace(/'/g, ''); let cAuthor = (appData.users || []).find(u => String(u[0]||'').replace(/'/g, '') === cCleanPhone); let cImg = cAuthor && cAuthor[3] ? `<img src="${fixImg(cAuthor[3])}" class="w-5 h-5 rounded-full object-cover">` : `<div class="w-5 h-5 rounded-full bg-neutral-700 flex items-center justify-center text-[10px]">👤</div>`; return `<div class="text-xs bg-neutral-900 p-2 rounded flex items-center gap-2">${cImg} <span><b class="text-primary cursor-pointer hover:underline" onclick="viewUserProfile('${cCleanPhone}', '${c[2]}', '${cAuthor?cAuthor[3]:''}')">${c[2]}:</b> ${c[3]}</span></div>`; }).join('')}</div><div class="flex gap-2 pt-2"><input type="text" id="bc-${p[0]}" placeholder="แสดงความคิดเห็น..." class="w-full bg-neutral-900 border border-neutral-800 rounded px-2 py-1 text-xs outline-none focus:border-primary transition-colors"><button onclick="postBoardComment('${p[0]}')" class="bg-primary text-white text-xs px-3 py-1 rounded font-bold">ส่ง</button></div></div>`;
             });
             document.getElementById('boardList').innerHTML = html || '<p class="text-center text-sm text-neutral-500 py-4">ยังไม่มีโพสต์ เริ่มแชร์รูปรถเป็นคนแรกเลย!</p>';
         }
@@ -269,10 +238,53 @@
             Swal.fire({ title: name, html: `${avatar}<p class="text-xs text-neutral-400 mb-4">สมาชิก UNEX CLUB</p><div class="border-t border-neutral-800 pt-2 text-left"><b class="text-xs">โรงรถของฉัน:</b><div class="max-h-60 overflow-y-auto">${carsHtml}</div></div>`, confirmButtonText: 'ปิด', confirmButtonColor: '#dc2626' });
         }
 
+        // --- หน้าโปรไฟล์ พร้อมเมนูประวัติการสั่งซื้อ ---
         async function openProfileModal() {
-            let myCars = (appData.garage || []).filter(car => String(car[1]||'').replace(/'/g,'') === String(userPhone).replace(/'/g,'')); let avatar = userImg ? `<img src="${fixImg(userImg)}" class="w-20 h-20 rounded-full object-cover mx-auto mb-2 border-2 border-primary">` : `<div class="w-20 h-20 rounded-full bg-neutral-700 flex items-center justify-center text-2xl mx-auto mb-2">👤</div>`;
-            let carsHtml = myCars.map(car => { let imgs = parseImages(car[7]); let thumbsHtml = imgs.map(i => `<img src="${fixImg(i)}" onclick="viewFullImg('${i}')" class="w-12 h-12 rounded object-cover shrink-0 cursor-pointer border border-neutral-700">`).join(''); return `<div class="bg-neutral-900 border border-neutral-800 rounded-lg p-3 text-left text-xs mb-3"><div class="flex justify-between items-start mb-2"><div><b class="text-primary text-sm">${car[2]} ${car[3]}</b><br><span class="text-neutral-400">ปี: ${car[4]} | สี: ${car[5]}</span></div><button onclick="deleteCar('${car[0]}')" class="text-red-500 font-bold px-2 py-1 bg-red-500/10 rounded">ลบ</button></div><div class="text-neutral-300 mb-2 whitespace-pre-line">${car[6]}</div><div class="flex gap-2 overflow-x-auto pb-1">${thumbsHtml}</div></div>`; }).join('');
-            const { value: action } = await Swal.fire({ title: 'โปรไฟล์ของฉัน', html: `${avatar}<b>${userName}</b><br><span class="text-xs text-neutral-400">โทร: ${userPhone}</span><br><button onclick="editProfileInfo()" class="bg-neutral-800 text-xs px-3 py-1 rounded mt-2 border border-neutral-700">✏️ แก้ไขชื่อ / รูปโปรไฟล์</button><div class="border-t border-neutral-800 mt-4 pt-2 text-left"><div class="flex justify-between items-center mb-2"><b class="text-xs">โรงรถของฉัน</b><button onclick="openAddCarModal()" class="bg-primary text-white text-[10px] px-2 py-1 rounded">+ เพิ่มรถ</button></div><div class="max-h-60 overflow-y-auto">${carsHtml || '<p class="text-xs text-neutral-500 text-center">ยังไม่มีรถในโรงรถ</p>'}</div></div><div class="mt-4"><button onclick="logout()" class="text-red-500 text-xs underline font-bold">ออกจากระบบ</button></div>`, showConfirmButton: false, showCloseButton: true });
+            let myCars = (appData.garage || []).filter(car => String(car[1]||'').replace(/'/g,'') === String(userPhone).replace(/'/g,'')); 
+            let myOrders = (appData.orders || []).filter(ord => String(ord[1]||'').replace(/'/g,'') === String(userPhone).replace(/'/g,''));
+            let avatar = userImg ? `<img src="${fixImg(userImg)}" class="w-20 h-20 rounded-full object-cover mx-auto mb-2 border-2 border-primary">` : `<div class="w-20 h-20 rounded-full bg-neutral-700 flex items-center justify-center text-2xl mx-auto mb-2">👤</div>`;
+            
+            let carsHtml = myCars.map(car => { 
+                let imgs = parseImages(car[7]); 
+                let thumbsHtml = imgs.map(i => `<img src="${fixImg(i)}" onclick="viewFullImg('${i}')" class="w-12 h-12 rounded object-cover shrink-0 cursor-pointer border border-neutral-700">`).join(''); 
+                return `<div class="bg-neutral-900 border border-neutral-800 rounded-lg p-3 text-left text-xs mb-3"><div class="flex justify-between items-start mb-2"><div><b class="text-primary text-sm">${car[2]} ${car[3]}</b><br><span class="text-neutral-400">ปี: ${car[4]} | สี: ${car[5]}</span></div><button onclick="deleteCar('${car[0]}')" class="text-red-500 font-bold px-2 py-1 bg-red-500/10 rounded">ลบ</button></div><div class="text-neutral-300 mb-2 whitespace-pre-line">${car[6]}</div><div class="flex gap-2 overflow-x-auto pb-1">${thumbsHtml}</div></div>`; 
+            }).join('');
+
+            // สร้างรายการประวัติออเดอร์
+            let ordersHtml = myOrders.map(ord => {
+                let itemsObj = {};
+                try { itemsObj = JSON.parse(ord[2]); } catch(e) {}
+                let itemsList = '';
+                for(let k in itemsObj) {
+                    itemsList += `• ${itemsObj[k].name} (x${itemsObj[k].qty}) - ฿${itemsObj[k].price * itemsObj[k].qty}<br>`;
+                }
+                let statusColor = ord[5] === 'สำเร็จ' ? 'text-green-500' : ord[5] === 'ยกเลิก' ? 'text-red-500' : 'text-yellow-500';
+                let slipBtn = ord[4] && ord[4].includes('http') ? `<a href="${fixImg(ord[4])}" target="_blank" class="text-blue-400 underline text-[11px] block mt-1">ดูสลิปที่แนบ</a>` : '';
+                return `<div class="bg-neutral-900 border border-neutral-800 rounded-lg p-3 text-left text-xs mb-2">
+                    <div class="flex justify-between font-bold mb-1"><span>รหัส: ${ord[0]}</span><span class="${statusColor}">สถานะ: ${ord[5]}</span></div>
+                    <div class="text-neutral-300 mb-1">${itemsList}</div>
+                    <div class="flex justify-between items-center text-neutral-400 pt-1 border-t border-neutral-800"><span>ยอดรวม: ฿${ord[3]}</span><span>${ord[6]||''}</span></div>
+                    ${slipBtn}
+                </div>`;
+            }).join('');
+
+            const { value: action } = await Swal.fire({ 
+                title: 'โปรไฟล์ของฉัน', 
+                html: `${avatar}<b>${userName}</b><br><span class="text-xs text-neutral-400">โทร: ${userPhone}</span><br>
+                <button onclick="editProfileInfo()" class="bg-neutral-800 text-xs px-3 py-1 rounded mt-2 border border-neutral-700">✏️ แก้ไขชื่อ / รูปโปรไฟล์</button>
+                
+                <div class="border-t border-neutral-800 mt-4 pt-3 text-left">
+                    <div class="flex justify-between items-center mb-2"><b class="text-xs font-bold text-primary">📦 ประวัติการสั่งซื้อและสถานะ</b></div>
+                    <div class="max-h-44 overflow-y-auto mb-4">${ordersHtml || '<p class="text-xs text-neutral-500 text-center py-2">ยังไม่มีประวัติการสั่งซื้อ</p>'}</div>
+
+                    <div class="flex justify-between items-center mb-2"><b class="text-xs font-bold">โรงรถของฉัน</b><button onclick="openAddCarModal()" class="bg-primary text-white text-[10px] px-2 py-1 rounded">+ เพิ่มรถ</button></div>
+                    <div class="max-h-44 overflow-y-auto">${carsHtml || '<p class="text-xs text-neutral-500 text-center py-2">ยังไม่มีรถในโรงรถ</p>'}</div>
+                </div>
+                <div class="mt-4"><button onclick="logout()" class="text-red-500 text-xs underline font-bold">ออกจากระบบ</button></div>`, 
+                width: '450px',
+                showConfirmButton: false, 
+                showCloseButton: true 
+            });
         }
 
         async function editProfileInfo() {
