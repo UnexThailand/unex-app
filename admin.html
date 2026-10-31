@@ -17,6 +17,7 @@
             <button onclick="nav('dash')" id="btn-dash" class="w-full text-left p-3 rounded-lg bg-gray-800 text-red-400">📊 ออเดอร์ (Orders)</button>
             <button onclick="nav('users')" id="btn-users" class="w-full text-left p-3 rounded-lg hover:bg-gray-800">👥 จัดการผู้ใช้ (Users)</button>
             <button onclick="nav('news')" id="btn-news" class="w-full text-left p-3 rounded-lg hover:bg-gray-800">📰 ข่าวสาร (News)</button>
+            <button onclick="nav('board')" id="btn-board" class="w-full text-left p-3 rounded-lg hover:bg-gray-800 text-yellow-300">💬 บอร์ด (Board)</button>
             <button onclick="nav('event')" id="btn-event" class="w-full text-left p-3 rounded-lg hover:bg-gray-800">📅 อีเวนต์ (Events)</button>
             <button onclick="nav('shop')" id="btn-shop" class="w-full text-left p-3 rounded-lg hover:bg-gray-800">🛒 สินค้า (Shop)</button>
             <button onclick="nav('brands')" id="btn-brands" class="w-full text-left p-3 rounded-lg hover:bg-gray-800">🏎️ ยี่ห้อรถ (Brands)</button>
@@ -32,6 +33,19 @@
         <section id="sec-users" class="tab-sec"><div class="flex justify-between mb-4"><h2 class="text-2xl font-bold">👥 จัดการผู้ใช้</h2><button onclick="openForm('user')" class="bg-green-600 text-white px-4 py-2 rounded">+ เพิ่มผู้ใช้</button></div><div class="bg-white rounded-xl shadow p-4"><table class="w-full text-sm text-left"><thead class="bg-gray-50"><tr><th class="p-2">เบอร์โทร (ID)</th><th class="p-2">ชื่อ-นามสกุล</th><th class="p-2">ข้อมูลรถ</th><th class="p-2">จัดการ</th></tr></thead><tbody id="tb-users"></tbody></table></div></section>
 
         <section id="sec-news" class="tab-sec"><div class="flex justify-between mb-4"><h2 class="text-2xl font-bold">📰 ข่าวสาร</h2><button onclick="openForm('news')" class="bg-green-600 text-white px-4 py-2 rounded">+ โพสต์ข่าว</button></div><div class="bg-white rounded-xl shadow p-4"><table class="w-full text-sm text-left"><thead class="bg-gray-50"><tr><th class="p-2">หัวข้อ</th><th class="p-2">วันที่</th><th class="p-2">จัดการ</th></tr></thead><tbody id="tb-news"></tbody></table></div></section>
+
+        <!-- แท็บใหม่ จัดการกระดานสนทนา -->
+        <section id="sec-board" class="tab-sec">
+            <h2 class="text-2xl font-bold mb-4">💬 จัดการกระดานสนทนา (Board)</h2>
+            <div class="bg-white rounded-xl shadow p-4 mb-6">
+                <h3 class="text-lg font-bold mb-2 text-red-600">โพสต์ทั้งหมด</h3>
+                <div class="overflow-x-auto"><table class="w-full text-sm text-left"><thead class="bg-gray-50"><tr><th class="p-2">ID</th><th class="p-2">ผู้โพสต์</th><th class="p-2">ข้อความ/รูป</th><th class="p-2">จัดการ</th></tr></thead><tbody id="tb-posts"></tbody></table></div>
+            </div>
+            <div class="bg-white rounded-xl shadow p-4">
+                <h3 class="text-lg font-bold mb-2 text-blue-600">คอมเมนต์ทั้งหมด</h3>
+                <div class="overflow-x-auto"><table class="w-full text-sm text-left"><thead class="bg-gray-50"><tr><th class="p-2">อ้างอิงโพสต์ ID</th><th class="p-2">ผู้คอมเมนต์</th><th class="p-2">ข้อความ</th><th class="p-2">จัดการ</th></tr></thead><tbody id="tb-board-comments"></tbody></table></div>
+            </div>
+        </section>
 
         <section id="sec-event" class="tab-sec"><div class="flex justify-between mb-4"><h2 class="text-2xl font-bold">📅 อีเวนต์</h2><button onclick="openForm('event')" class="bg-green-600 text-white px-4 py-2 rounded">+ สร้างอีเวนต์</button></div><div class="bg-white rounded-xl shadow p-4"><table class="w-full text-sm text-left"><thead class="bg-gray-50"><tr><th class="p-2">ชื่องาน</th><th class="p-2">วันที่</th><th class="p-2">พิกัด</th><th class="p-2">จัดการ</th></tr></thead><tbody id="tb-events"></tbody></table></div></section>
 
@@ -83,8 +97,9 @@
         function nav(sec) {
             document.querySelectorAll('.tab-sec').forEach(el => el.classList.remove('active'));
             document.getElementById(`sec-${sec}`).classList.add('active');
-            ['dash','users','news','event','shop','brands','set'].forEach(b => document.getElementById(`btn-${b}`).className = 'w-full text-left p-3 rounded-lg hover:bg-gray-800 text-white');
+            ['dash','users','news','board','event','shop','brands','set'].forEach(b => document.getElementById(`btn-${b}`).className = 'w-full text-left p-3 rounded-lg hover:bg-gray-800 text-white');
             document.getElementById(`btn-${sec}`).className = 'w-full text-left p-3 rounded-lg bg-gray-800 text-red-400 font-bold';
+            if(sec==='board') document.getElementById('btn-board').classList.add('text-yellow-300');
         }
 
         async function initAdmin() {
@@ -114,6 +129,12 @@
             // News
             document.getElementById('tb-news').innerHTML = adminData.news.map(r => `<tr><td class="p-2">${r[1]}</td><td class="p-2">${r[4]}</td><td class="p-2"><button onclick="editData('news','${r[0]}')" class="text-blue-600 hover:underline mr-2">แก้ไข</button><button onclick="del('News','${r[0]}')" class="text-red-600 hover:underline">ลบ</button></td></tr>`).join('');
             
+            // Board Posts
+            document.getElementById('tb-posts').innerHTML = (adminData.communityPosts||[]).map(r => `<tr><td class="p-2 text-xs text-gray-500">${r[0]}</td><td class="p-2 font-bold">${r[2]}<br><span class="text-xs text-gray-500">${r[1]}</span></td><td class="p-2 text-sm">${r[4]}<br>${r[3]?`<a href="${r[3]}" target="_blank" class="text-blue-500 underline text-xs">ดูรูปภาพ</a>`:''}</td><td class="p-2"><button onclick="del('CommunityPosts','${r[0]}')" class="text-red-600 hover:underline font-bold text-xs">ลบโพสต์</button></td></tr>`).join('');
+            
+            // Board Comments
+            document.getElementById('tb-board-comments').innerHTML = (adminData.communityComments||[]).map(r => `<tr><td class="p-2 text-xs text-gray-500">${r[0]}</td><td class="p-2 font-bold">${r[2]}<br><span class="text-xs text-gray-500">${r[1]}</span></td><td class="p-2 text-sm">${r[3]}</td><td class="p-2"><button onclick="delBoardComment('${r[0]}', '${encodeURIComponent(r[3])}')" class="text-red-600 hover:underline font-bold text-xs">ลบคอมเมนต์</button></td></tr>`).join('');
+
             // Events
             document.getElementById('tb-events').innerHTML = adminData.events.map(r => `<tr><td class="p-2">${r[1]}</td><td class="p-2">${new Date(r[2]).toLocaleDateString()}</td><td class="p-2 text-xs">${r[4]},${r[5]}</td><td class="p-2"><button onclick="editData('event','${r[0]}')" class="text-blue-600 hover:underline mr-2">แก้ไข</button><button onclick="del('Events','${r[0]}')" class="text-red-600 hover:underline">ลบ</button></td></tr>`).join('');
             
@@ -129,12 +150,12 @@
             document.getElementById('f-type').value = type;
             document.getElementById('f-id').value = '';
             document.getElementById('f-oldImg').value = '';
-            document.getElementById('imgUploadContainer').style.display = 'block'; // แสดงช่องอัปโหลดรูปตามปกติ
+            document.getElementById('imgUploadContainer').style.display = 'block'; 
             let html = '';
             
             if(type === 'user') {
                 document.getElementById('modalTitle').innerText = '👥 เพิ่ม/แก้ไขผู้ใช้';
-                document.getElementById('imgUploadContainer').style.display = 'none'; // ซ่อนช่องอัปโหลดรูปสำหรับ User
+                document.getElementById('imgUploadContainer').style.display = 'none'; 
                 html = `<input id="f1" type="tel" placeholder="เบอร์โทรศัพท์ (ห้ามซ้ำ)" required class="w-full border p-2 rounded"><input id="f2" placeholder="ชื่อ-นามสกุล" required class="w-full border p-2 rounded"><input id="f3" placeholder="ข้อมูลรถ (เช่น BMW 320d - 1กข1234)" required class="w-full border p-2 rounded">`;
             } else if(type === 'news') {
                 document.getElementById('modalTitle').innerText = '📰 โพสต์ข่าวสาร';
@@ -240,11 +261,22 @@
         }
 
         async function updateRow(action, id, val) { await fetch(GAS_URL, {method:'POST', mode:'no-cors', body: JSON.stringify({pwd:pwd, action:action, id:id, status:val})}); }
+        
         async function del(sheet, id) {
             if((await Swal.fire({title: 'ยืนยันการลบ?', icon:'warning', showCancelButton:true})).isConfirmed) {
                 await fetch(GAS_URL, { method:'POST', mode:'no-cors', body: JSON.stringify({pwd:pwd, action:'admin_delete', sheet:sheet, id:id}) }); initAdmin();
             }
         }
+        
+        // ฟังก์ชันลบคอมเมนต์บอร์ดโดยเฉพาะ
+        async function delBoardComment(postId, encodedText) {
+            let text = decodeURIComponent(encodedText);
+            if((await Swal.fire({title: 'ลบคอมเมนต์นี้?', icon:'warning', showCancelButton:true})).isConfirmed) {
+                await fetch(GAS_URL, { method:'POST', mode:'no-cors', body: JSON.stringify({pwd:pwd, action:'admin_deleteBoardComment', postId:postId, text:text}) }); 
+                initAdmin();
+            }
+        }
+
         function v(id) { return document.getElementById(id) ? document.getElementById(id).value : ''; }
         function vSet(id, val) { if(document.getElementById(id)) document.getElementById(id).value = val; }
     </script>
