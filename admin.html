@@ -14,22 +14,54 @@
     <aside class="w-64 bg-gray-900 text-white flex flex-col h-full shadow-xl">
         <div class="p-6 text-2xl font-bold text-red-500 border-b border-gray-800">UNEX ADMIN</div>
         <nav class="p-4 space-y-1 flex-1 overflow-y-auto text-sm">
-            <button onclick="nav('dash')" id="btn-dash" class="w-full text-left p-3 rounded-lg bg-gray-800 text-red-400">📊 ออเดอร์ (Orders)</button>
-            <button onclick="nav('users')" id="btn-users" class="w-full text-left p-3 rounded-lg hover:bg-gray-800">👥 จัดการผู้ใช้ (Users)</button>
-            <button onclick="nav('news')" id="btn-news" class="w-full text-left p-3 rounded-lg hover:bg-gray-800">📰 ข่าวสาร (News)</button>
+            <button onclick="nav('dash')" id="btn-dash" class="w-full text-left p-3 rounded-lg bg-gray-800 text-red-400 font-bold">🏠 หน้าแรก (Dashboard)</button>
+            <button onclick="nav('orders')" id="btn-orders" class="w-full text-left p-3 rounded-lg hover:bg-gray-800 text-white">📊 ออเดอร์ (Orders)</button>
+            <button onclick="nav('users')" id="btn-users" class="w-full text-left p-3 rounded-lg hover:bg-gray-800 text-white">👥 จัดการผู้ใช้ (Users)</button>
+            <button onclick="nav('news')" id="btn-news" class="w-full text-left p-3 rounded-lg hover:bg-gray-800 text-white">📰 ข่าวสาร (News)</button>
             <button onclick="nav('board')" id="btn-board" class="w-full text-left p-3 rounded-lg hover:bg-gray-800 text-yellow-300">💬 บอร์ด (Board)</button>
-            <button onclick="nav('event')" id="btn-event" class="w-full text-left p-3 rounded-lg hover:bg-gray-800">📅 อีเวนต์ (Events)</button>
-            <button onclick="nav('shop')" id="btn-shop" class="w-full text-left p-3 rounded-lg hover:bg-gray-800">🛒 สินค้า (Shop)</button>
-            <button onclick="nav('brands')" id="btn-brands" class="w-full text-left p-3 rounded-lg hover:bg-gray-800">🏎️ ยี่ห้อรถ (Brands)</button>
+            <button onclick="nav('event')" id="btn-event" class="w-full text-left p-3 rounded-lg hover:bg-gray-800 text-white">📅 อีเวนต์ (Events)</button>
+            <button onclick="nav('shop')" id="btn-shop" class="w-full text-left p-3 rounded-lg hover:bg-gray-800 text-white">🛒 สินค้า (Shop)</button>
+            <button onclick="nav('brands')" id="btn-brands" class="w-full text-left p-3 rounded-lg hover:bg-gray-800 text-white">🏎️ ยี่ห้อรถ (Brands)</button>
             <button onclick="nav('theme')" id="btn-theme" class="w-full text-left p-3 rounded-lg hover:bg-gray-800 text-purple-300">🎨 จัดการธีม (Theme)</button>
-            <button onclick="nav('set')" id="btn-set" class="w-full text-left p-3 rounded-lg hover:bg-gray-800">⚙️ ตั้งค่าระบบ</button>
+            <button onclick="nav('set')" id="btn-set" class="w-full text-left p-3 rounded-lg hover:bg-gray-800 text-white">⚙️ ตั้งค่าระบบ</button>
         </nav>
     </aside>
 
     <main class="flex-1 overflow-y-auto p-8 bg-gray-100 relative">
-        <button onclick="initAdmin()" class="absolute top-4 right-8 bg-blue-600 text-white px-4 py-2 rounded text-sm font-bold shadow">🔄 รีเฟรชข้อมูล</button>
+        <button onclick="initAdmin()" class="absolute top-4 right-8 bg-blue-600 text-white px-4 py-2 rounded text-sm font-bold shadow hover:bg-blue-700">🔄 รีเฟรชข้อมูล</button>
         
-        <section id="sec-dash" class="tab-sec active"><h2 class="text-2xl font-bold mb-4">📊 ออเดอร์</h2><div class="bg-white rounded-xl shadow p-4"><table class="w-full text-sm text-left"><thead class="bg-gray-50"><tr><th class="p-2">รหัส</th><th class="p-2">เบอร์โทร</th><th class="p-2">สถานะ</th><th class="p-2">จัดการ</th></tr></thead><tbody id="tb-orders"></tbody></table></div></section>
+        <!-- แท็บหน้าแรก Dashboard สรุปสถิติ -->
+        <section id="sec-dash" class="tab-sec active space-y-6">
+            <h2 class="text-2xl font-bold">🏠 แดชบอร์ดสรุปภาพรวมระบบ</h2>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="bg-white p-6 rounded-xl shadow border-l-4 border-blue-500">
+                    <p class="text-xs text-gray-500 font-bold uppercase">สมาชิกรวมทั้งหมด</p>
+                    <h3 id="stat-users" class="text-3xl font-bold mt-2">0</h3>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow border-l-4 border-green-500">
+                    <p class="text-xs text-gray-500 font-bold uppercase">รายได้รวม (สำเร็จ)</p>
+                    <h3 id="stat-revenue" class="text-3xl font-bold mt-2 text-green-600">฿0</h3>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow border-l-4 border-yellow-500">
+                    <p class="text-xs text-gray-500 font-bold uppercase">ออเดอร์รอตรวจสอบ</p>
+                    <h3 id="stat-pending-orders" class="text-3xl font-bold mt-2 text-yellow-600">0</h3>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow border-l-4 border-purple-500">
+                    <p class="text-xs text-gray-500 font-bold uppercase">โพสต์ในบอร์ดทั้งหมด</p>
+                    <h3 id="stat-posts" class="text-3xl font-bold mt-2 text-purple-600">0</h3>
+                </div>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow">
+                <h3 class="text-lg font-bold mb-3">📌 สรุปข้อมูลระบบย่อย</h3>
+                <ul class="space-y-2 text-sm text-gray-600">
+                    <li>🛒 สินค้าทั้งหมดในระบบ: <b id="stat-shop" class="text-gray-900">0</b> รายการ</li>
+                    <li>📅 อีเวนต์ที่จัดขึ้น: <b id="stat-events" class="text-gray-900">0</b> กิจกรรม</li>
+                    <li>💬 ความคิดเห็นในบอร์ด: <b id="stat-comments" class="text-gray-900">0</b> ข้อความ</li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="sec-orders" class="tab-sec"><h2 class="text-2xl font-bold mb-4">📊 ออเดอร์ทั้งหมด</h2><div class="bg-white rounded-xl shadow p-4"><table class="w-full text-sm text-left"><thead class="bg-gray-50"><tr><th class="p-2">รหัส</th><th class="p-2">เบอร์โทร</th><th class="p-2">สถานะ</th><th class="p-2">จัดการ</th></tr></thead><tbody id="tb-orders"></tbody></table></div></section>
         <section id="sec-users" class="tab-sec"><div class="flex justify-between mb-4"><h2 class="text-2xl font-bold">👥 จัดการผู้ใช้</h2><button onclick="openForm('user')" class="bg-green-600 text-white px-4 py-2 rounded">+ เพิ่มผู้ใช้</button></div><div class="bg-white rounded-xl shadow p-4"><table class="w-full text-sm text-left"><thead class="bg-gray-50"><tr><th class="p-2">เบอร์โทร (ID)</th><th class="p-2">ชื่อ-นามสกุล</th><th class="p-2">ข้อมูลรถ</th><th class="p-2">จัดการ</th></tr></thead><tbody id="tb-users"></tbody></table></div></section>
         <section id="sec-news" class="tab-sec"><div class="flex justify-between mb-4"><h2 class="text-2xl font-bold">📰 ข่าวสาร</h2><button onclick="openForm('news')" class="bg-green-600 text-white px-4 py-2 rounded">+ โพสต์ข่าว</button></div><div class="bg-white rounded-xl shadow p-4"><table class="w-full text-sm text-left"><thead class="bg-gray-50"><tr><th class="p-2">หัวข้อ</th><th class="p-2">วันที่</th><th class="p-2">จัดการ</th></tr></thead><tbody id="tb-news"></tbody></table></div></section>
 
@@ -43,7 +75,6 @@
         <section id="sec-shop" class="tab-sec"><div class="flex justify-between mb-4"><h2 class="text-2xl font-bold">🛒 สินค้า</h2><button onclick="openForm('shop')" class="bg-green-600 text-white px-4 py-2 rounded">+ เพิ่มสินค้า</button></div><div class="bg-white rounded-xl shadow p-4"><table class="w-full text-sm text-left"><thead class="bg-gray-50"><tr><th class="p-2">ชื่อสินค้า</th><th class="p-2">ราคา</th><th class="p-2">จัดการ</th></tr></thead><tbody id="tb-shop"></tbody></table></div></section>
         <section id="sec-brands" class="tab-sec"><div class="flex justify-between mb-4"><h2 class="text-2xl font-bold">🏎️ ยี่ห้อรถ</h2><button onclick="openForm('brand')" class="bg-green-600 text-white px-4 py-2 rounded">+ เพิ่มยี่ห้อ</button></div><div class="bg-white rounded-xl shadow p-4"><table class="w-full text-sm text-left"><thead class="bg-gray-50"><tr><th class="p-2">ยี่ห้อ</th><th class="p-2">รุ่นที่มี</th><th class="p-2">จัดการ</th></tr></thead><tbody id="tb-brands"></tbody></table></div></section>
 
-        <!-- แท็บใหม่ จัดการธีมและสี -->
         <section id="sec-theme" class="tab-sec max-w-xl">
             <h2 class="text-2xl font-bold mb-4">🎨 จัดการธีมและสี (Theme Settings)</h2>
             <form onsubmit="saveTheme(event)" class="bg-white p-6 rounded-xl shadow space-y-4">
@@ -53,22 +84,10 @@
                     <input type="hidden" id="cfg-oldLogo">
                     <div class="mt-2"><img id="preview-Logo" src="" class="h-16 object-contain hidden border rounded shadow-sm bg-white"></div>
                 </div>
-                <div>
-                    <label class="block text-sm font-bold mb-1">สีหลัก (Primary Color)</label>
-                    <input type="color" id="cfg-ColorPrimary" value="#dc2626" class="w-full h-10 cursor-pointer p-1 border rounded">
-                </div>
-                <div>
-                    <label class="block text-sm font-bold mb-1">สีพื้นหลัง (Background Color)</label>
-                    <input type="color" id="cfg-ColorBg" value="#0a0a0a" class="w-full h-10 cursor-pointer p-1 border rounded">
-                </div>
-                <div>
-                    <label class="block text-sm font-bold mb-1">สีส่วนประกอบ / เมนู (Card/Component Color)</label>
-                    <input type="color" id="cfg-ColorCard" value="#171717" class="w-full h-10 cursor-pointer p-1 border rounded">
-                </div>
-                <div>
-                    <label class="block text-sm font-bold mb-1">สีตัวอักษร (Text Color)</label>
-                    <input type="color" id="cfg-ColorText" value="#f3f4f6" class="w-full h-10 cursor-pointer p-1 border rounded">
-                </div>
+                <div><label class="block text-sm font-bold mb-1">สีหลัก (Primary Color)</label><input type="color" id="cfg-ColorPrimary" value="#dc2626" class="w-full h-10 cursor-pointer p-1 border rounded"></div>
+                <div><label class="block text-sm font-bold mb-1">สีพื้นหลัง (Background Color)</label><input type="color" id="cfg-ColorBg" value="#0a0a0a" class="w-full h-10 cursor-pointer p-1 border rounded"></div>
+                <div><label class="block text-sm font-bold mb-1">สีส่วนประกอบ / เมนู (Card/Component Color)</label><input type="color" id="cfg-ColorCard" value="#171717" class="w-full h-10 cursor-pointer p-1 border rounded"></div>
+                <div><label class="block text-sm font-bold mb-1">สีตัวอักษร (Text Color)</label><input type="color" id="cfg-ColorText" value="#f3f4f6" class="w-full h-10 cursor-pointer p-1 border rounded"></div>
                 <button type="submit" class="w-full bg-purple-600 text-white p-3 rounded font-bold hover:bg-purple-700 transition-colors">บันทึกธีมและโลโก้</button>
             </form>
         </section>
@@ -78,15 +97,12 @@
                 <input type="text" id="cfg-SiteName" placeholder="ชื่อเว็บไซต์" class="w-full border p-2 rounded">
                 <input type="text" id="cfg-PromptPay" placeholder="เบอร์ PromptPay" class="w-full border p-2 rounded">
                 <textarea id="cfg-BankAccount" placeholder="ชื่อ / เลขบัญชีธนาคาร (โชว์ให้ลูกค้า)" class="w-full border p-2 rounded h-24"></textarea>
-                
                 <div class="border p-4 rounded bg-gray-50">
                     <label class="block text-sm font-bold mb-2">อัปโหลดรูป QR Code หรือ บัญชี (ทางเลือก)</label>
-                    <p class="text-xs text-gray-500 mb-2">*หากอัปโหลดรูประบบจะใช้รูปนี้แทน QR พร้อมเพย์อัตโนมัติ</p>
                     <input type="file" id="cfg-QRCode" accept="image/*" class="w-full border p-2 text-sm rounded bg-white">
                     <input type="hidden" id="cfg-oldQRCode">
                     <div class="mt-2"><img id="preview-QRCode" src="" class="h-32 object-contain hidden border rounded shadow-sm bg-white"></div>
                 </div>
-
                 <button type="submit" class="w-full bg-gray-900 text-white p-3 rounded font-bold hover:bg-gray-800 transition-colors">บันทึกบัญชี</button>
             </form>
         </section>
@@ -117,8 +133,8 @@
         function nav(sec) {
             document.querySelectorAll('.tab-sec').forEach(el => el.classList.remove('active'));
             document.getElementById(`sec-${sec}`).classList.add('active');
-            ['dash','users','news','board','event','shop','brands','theme','set'].forEach(b => document.getElementById(`btn-${b}`).className = 'w-full text-left p-3 rounded-lg hover:bg-gray-800 text-white');
-            document.getElementById(`btn-${sec}`).className = 'w-full text-left p-3 rounded-lg bg-gray-800 font-bold ' + (sec==='board' ? 'text-yellow-300' : sec==='theme' ? 'text-purple-300' : 'text-red-400');
+            ['dash','orders','users','news','board','event','shop','brands','theme','set'].forEach(b => document.getElementById(`btn-${b}`).className = 'w-full text-left p-3 rounded-lg hover:bg-gray-800 text-white');
+            document.getElementById(`btn-${sec}`).className = 'w-full text-left p-3 rounded-lg bg-gray-800 font-bold ' + (sec==='dash'?'text-red-400':sec==='board'?'text-yellow-300':sec==='theme'?'text-purple-300':'text-white');
         }
 
         async function initAdmin() {
@@ -128,18 +144,28 @@
                 adminData = await res.json();
                 if(adminData.error) return Swal.fire('Error', 'รหัสผิด', 'error');
                 
+                // คำนวณสถิติแสดงในหน้า Dashboard
+                document.getElementById('stat-users').innerText = (adminData.users || []).length;
+                document.getElementById('stat-posts').innerText = (adminData.communityPosts || []).length;
+                document.getElementById('stat-shop').innerText = (adminData.shop || []).length;
+                document.getElementById('stat-events').innerText = (adminData.events || []).length;
+                document.getElementById('stat-comments').innerText = (adminData.communityComments || []).length;
+
+                let pendingCount = 0, totalRev = 0;
+                (adminData.orders || []).forEach(o => {
+                    if(o[5] === 'รอตรวจสอบ') pendingCount++;
+                    if(o[5] === 'สำเร็จ') totalRev += (parseFloat(o[3]) || 0);
+                });
+                document.getElementById('stat-pending-orders').innerText = pendingCount;
+                document.getElementById('stat-revenue').innerText = '฿' + totalRev.toLocaleString();
+
                 vSet('cfg-SiteName', adminData.config.SiteName || '');
                 vSet('cfg-PromptPay', adminData.config.PromptPay || '');
                 vSet('cfg-BankAccount', adminData.config.BankAccount || '');
-                
-                // โหลดรูปภาพ
                 vSet('cfg-oldQRCode', adminData.config.QRCodeImg || '');
                 if(adminData.config.QRCodeImg) { let p = document.getElementById('preview-QRCode'); p.src = adminData.config.QRCodeImg; p.classList.remove('hidden'); }
-                
                 vSet('cfg-oldLogo', adminData.config.LogoImg || '');
                 if(adminData.config.LogoImg) { let p = document.getElementById('preview-Logo'); p.src = adminData.config.LogoImg; p.classList.remove('hidden'); }
-
-                // โหลดธีมสี
                 vSet('cfg-ColorPrimary', adminData.config.ColorPrimary || '#dc2626');
                 vSet('cfg-ColorBg', adminData.config.ColorBg || '#0a0a0a');
                 vSet('cfg-ColorCard', adminData.config.ColorCard || '#171717');
@@ -201,36 +227,16 @@
         async function saveSettings(e) {
             e.preventDefault(); Swal.fire({title:'บันทึก...', didOpen:()=>Swal.showLoading()});
             let file = document.getElementById('cfg-QRCode').files[0];
-            let payload = { 
-                pwd: pwd, action: 'admin_saveSettings', 
-                settings: { SiteName: v('cfg-SiteName'), PromptPay: v('cfg-PromptPay'), BankAccount: v('cfg-BankAccount') }
-            };
-            const proc = async (b64) => {
-                if(b64) payload.qrBase64 = b64;
-                await fetch(GAS_URL, { method:'POST', mode:'no-cors', body: JSON.stringify(payload)}); 
-                initAdmin(); document.getElementById('cfg-QRCode').value = ''; Swal.fire('สำเร็จ', '', 'success');
-            };
+            let payload = { pwd: pwd, action: 'admin_saveSettings', settings: { SiteName: v('cfg-SiteName'), PromptPay: v('cfg-PromptPay'), BankAccount: v('cfg-BankAccount') }};
+            const proc = async (b64) => { if(b64) payload.qrBase64 = b64; await fetch(GAS_URL, { method:'POST', mode:'no-cors', body: JSON.stringify(payload)}); initAdmin(); document.getElementById('cfg-QRCode').value = ''; Swal.fire('สำเร็จ', '', 'success'); };
             if(file) { const reader = new FileReader(); reader.onload = (ev) => proc(ev.target.result); reader.readAsDataURL(file); } else { proc(''); }
         }
 
-        // --- ฟังก์ชันบันทึกธีมและโลโก้ ---
         async function saveTheme(e) {
             e.preventDefault(); Swal.fire({title:'บันทึกธีม...', didOpen:()=>Swal.showLoading()});
             let file = document.getElementById('cfg-Logo').files[0];
-            let payload = { 
-                pwd: pwd, action: 'admin_saveSettings', 
-                settings: { 
-                    ColorPrimary: v('cfg-ColorPrimary'), 
-                    ColorBg: v('cfg-ColorBg'), 
-                    ColorCard: v('cfg-ColorCard'), 
-                    ColorText: v('cfg-ColorText')
-                }
-            };
-            const proc = async (b64) => {
-                if(b64) payload.logoBase64 = b64;
-                await fetch(GAS_URL, { method:'POST', mode:'no-cors', body: JSON.stringify(payload)}); 
-                initAdmin(); document.getElementById('cfg-Logo').value = ''; Swal.fire('สำเร็จ', 'อัปเดตธีมเรียบร้อย', 'success');
-            };
+            let payload = { pwd: pwd, action: 'admin_saveSettings', settings: { ColorPrimary: v('cfg-ColorPrimary'), ColorBg: v('cfg-ColorBg'), ColorCard: v('cfg-ColorCard'), ColorText: v('cfg-ColorText') }};
+            const proc = async (b64) => { if(b64) payload.logoBase64 = b64; await fetch(GAS_URL, { method:'POST', mode:'no-cors', body: JSON.stringify(payload)}); initAdmin(); document.getElementById('cfg-Logo').value = ''; Swal.fire('สำเร็จ', 'อัปเดตธีมเรียบร้อย', 'success'); };
             if(file) { const reader = new FileReader(); reader.onload = (ev) => proc(ev.target.result); reader.readAsDataURL(file); } else { proc(''); }
         }
 
