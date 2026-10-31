@@ -239,9 +239,14 @@
         }
 
         // --- หน้าโปรไฟล์ พร้อมเมนูประวัติการสั่งซื้อ ---
+        // --- หน้าโปรไฟล์ พร้อมแสดงประวัติการสั่งซื้อ ---
         async function openProfileModal() {
-            let myCars = (appData.garage || []).filter(car => String(car[1]||'').replace(/'/g,'') === String(userPhone).replace(/'/g,'')); 
-            let myOrders = (appData.orders || []).filter(ord => String(ord[1]||'').replace(/'/g,'') === String(userPhone).replace(/'/g,''));
+            let cleanUserPhone = String(userPhone || '').replace(/['\s]/g, '');
+            let myCars = (appData.garage || []).filter(car => String(car[1]||'').replace(/['\s]/g,'') === cleanUserPhone); 
+            
+            // ดึงออเดอร์ของผู้ใช้ที่ตรงกับเบอร์โทร
+            let myOrders = (appData.orders || []).filter(ord => String(ord[1]||'').replace(/['\s]/g,'') === cleanUserPhone);
+            
             let avatar = userImg ? `<img src="${fixImg(userImg)}" class="w-20 h-20 rounded-full object-cover mx-auto mb-2 border-2 border-primary">` : `<div class="w-20 h-20 rounded-full bg-neutral-700 flex items-center justify-center text-2xl mx-auto mb-2">👤</div>`;
             
             let carsHtml = myCars.map(car => { 
