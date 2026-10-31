@@ -4,17 +4,42 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>UNEX CLUB</title>
+    <style>
+        /* รองรับการเปลี่ยนสีแบบ Real-time จาก Admin */
+        :root {
+            --theme-primary: #dc2626;
+            --theme-bg: #0a0a0a;
+            --theme-card: #171717;
+            --theme-text: #f3f4f6;
+        }
+        body { font-family: 'Kanit', sans-serif; } 
+        .tab-content { display: none; } .tab-content.active { display: block; } 
+        #map { height: 350px; border-radius: 0.75rem; z-index: 1; } 
+    </style>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>tailwind.config={darkMode:'class',theme:{extend:{colors:{primary:'#dc2626',darkbg:'#0a0a0a',cardbg:'#171717'}}}}</script>
+    <script>
+        tailwind.config={
+            darkMode:'class',
+            theme:{
+                extend:{
+                    colors:{
+                        primary:'var(--theme-primary)',
+                        darkbg:'var(--theme-bg)',
+                        cardbg:'var(--theme-card)',
+                        textcolor:'var(--theme-text)'
+                    }
+                }
+            }
+        }
+    </script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <style> body { font-family: 'Kanit', sans-serif; } .tab-content { display: none; } .tab-content.active { display: block; } #map { height: 350px; border-radius: 0.75rem; z-index: 1; } </style>
 </head>
-<body class="bg-darkbg text-gray-100 pb-24">
+<body class="bg-darkbg text-textcolor pb-24 transition-colors duration-500">
 
-    <header class="bg-cardbg border-b border-neutral-800 p-4 sticky top-0 z-50 flex justify-between items-center">
-        <h1 id="siteName" class="text-xl font-bold tracking-wider text-primary">UNEX CLUB</h1>
+    <header class="bg-cardbg border-b border-neutral-800 p-4 sticky top-0 z-50 flex justify-between items-center transition-colors duration-500">
+        <div id="siteLogoArea"><h1 class="text-xl font-bold tracking-wider text-primary">UNEX CLUB</h1></div>
         <div id="authArea"></div>
     </header>
 
@@ -24,11 +49,11 @@
         <!-- Tab 1: Community News -->
         <section id="tab-feed" class="tab-content active space-y-4">
             <h2 class="text-lg font-bold">📰 Community News</h2>
-            <input type="text" id="search-news" onkeyup="renderFeed()" placeholder="🔍 ค้นหาหัวข้อข่าว, เนื้อหา..." class="w-full bg-neutral-900 border border-neutral-800 rounded-lg p-2.5 text-sm text-white outline-none focus:border-primary transition-colors shadow-inner">
+            <input type="text" id="search-news" onkeyup="renderFeed()" placeholder="🔍 ค้นหาหัวข้อข่าว, เนื้อหา..." class="w-full bg-neutral-900 border border-neutral-800 rounded-lg p-2.5 text-sm text-textcolor outline-none focus:border-primary transition-colors shadow-inner">
             <div id="feedList" class="space-y-4">กำลังโหลด...</div>
         </section>
 
-        <!-- Tab 2: Community Board (ระบบใหม่) -->
+        <!-- Tab 2: Community Board -->
         <section id="tab-board" class="tab-content space-y-4">
             <div class="flex justify-between items-center">
                 <h2 class="text-lg font-bold">💬 Community Board</h2>
@@ -40,7 +65,7 @@
         <!-- Tab 3: Members & Garage -->
         <section id="tab-members" class="tab-content space-y-4">
             <h2 class="text-lg font-bold">👥 Members & Garage</h2>
-            <input type="text" id="search-members" onkeyup="renderMembers()" placeholder="🔍 ค้นหาชื่อ, ยี่ห้อ, รุ่นรถ, ของแต่ง..." class="w-full bg-neutral-900 border border-neutral-800 rounded-lg p-2.5 text-sm text-white outline-none focus:border-primary transition-colors shadow-inner">
+            <input type="text" id="search-members" onkeyup="renderMembers()" placeholder="🔍 ค้นหาชื่อ, ยี่ห้อ, รุ่นรถ, ของแต่ง..." class="w-full bg-neutral-900 border border-neutral-800 rounded-lg p-2.5 text-sm text-textcolor outline-none focus:border-primary transition-colors shadow-inner">
             <div id="memberList" class="space-y-2">กำลังโหลด...</div>
         </section>
 
@@ -58,8 +83,8 @@
         </section>
     </main>
 
-    <!-- Navigation Bar 5 เมนู -->
-    <nav class="fixed bottom-0 w-full bg-cardbg border-t border-neutral-800 pb-safe z-40 flex justify-around p-1">
+    <!-- Navigation Bar -->
+    <nav class="fixed bottom-0 w-full bg-cardbg border-t border-neutral-800 pb-safe z-40 flex justify-around p-1 transition-colors duration-500">
         <button onclick="switchTab('feed')" class="nav-btn text-primary text-[10px] w-1/5 p-2 font-bold flex flex-col items-center gap-1"><span class="text-lg">📰</span>News</button>
         <button onclick="switchTab('board')" class="nav-btn text-neutral-500 text-[10px] w-1/5 p-2 font-bold flex flex-col items-center gap-1"><span class="text-lg">💬</span>Board</button>
         <button onclick="switchTab('members')" class="nav-btn text-neutral-500 text-[10px] w-1/5 p-2 font-bold flex flex-col items-center gap-1"><span class="text-lg">👥</span>Members</button>
@@ -67,7 +92,7 @@
         <button onclick="switchTab('shop')" class="nav-btn text-neutral-500 text-[10px] w-1/5 p-2 font-bold flex flex-col items-center gap-1"><span class="text-lg">🛍️</span>Shop</button>
     </nav>
 
-    <!-- Lightbox สำหรับกดดูรูปขยาย -->
+    <!-- Lightbox -->
     <div id="lightbox" class="fixed inset-0 bg-black/95 z-[9999] hidden flex justify-center items-center p-4 cursor-pointer" onclick="this.classList.add('hidden')">
         <img id="lightbox-img" src="" class="max-w-full max-h-[90vh] rounded-lg object-contain pointer-events-none shadow-2xl">
         <button class="absolute top-6 right-6 text-white text-3xl font-bold bg-black/50 w-10 h-10 rounded-full flex items-center justify-center">&times;</button>
@@ -84,13 +109,11 @@
             const match = url.match(/id=([a-zA-Z0-9_-]+)/) || url.match(/d\/([a-zA-Z0-9_-]+)/);
             return match ? `https://drive.google.com/thumbnail?id=${match[1]}&sz=w1000` : url;
         }
-
         function parseImages(imgData) {
             if(!imgData) return [];
             if(imgData.startsWith('[')) { try { return JSON.parse(imgData); } catch(e) { return []; } }
             return [imgData];
         }
-
         function viewFullImg(url) {
             document.getElementById('lightbox-img').src = fixImg(url);
             document.getElementById('lightbox').classList.remove('hidden');
@@ -109,7 +132,20 @@
             try {
                 const res = await fetch(`${GAS_URL}?action=getAppData`);
                 appData = await res.json();
-                if(appData.config.SiteName) document.getElementById('siteName').innerText = appData.config.SiteName;
+                
+                // --- ระบบอัปเดตสีธีมและโลโก้จาก Admin ---
+                const root = document.documentElement;
+                if(appData.config.ColorPrimary) root.style.setProperty('--theme-primary', appData.config.ColorPrimary);
+                if(appData.config.ColorBg) root.style.setProperty('--theme-bg', appData.config.ColorBg);
+                if(appData.config.ColorCard) root.style.setProperty('--theme-card', appData.config.ColorCard);
+                if(appData.config.ColorText) root.style.setProperty('--theme-text', appData.config.ColorText);
+                
+                if(appData.config.LogoImg) {
+                    document.getElementById('siteLogoArea').innerHTML = `<img src="${fixImg(appData.config.LogoImg)}" class="h-10 object-contain">`;
+                } else if(appData.config.SiteName) {
+                    document.getElementById('siteLogoArea').innerHTML = `<h1 class="text-xl font-bold tracking-wider text-primary">${appData.config.SiteName}</h1>`;
+                }
+                // ------------------------------------
                 
                 if(userPhone && appData.users) {
                     let myProfile = appData.users.find(u => String(u[0]||'').replace(/'/g, '') === String(userPhone).replace(/'/g, ''));
@@ -122,11 +158,7 @@
                     }
                 }
 
-                renderFeed(); 
-                renderBoard(); // โหลดหน้าบอร์ด
-                renderMembers();
-                renderEvents(); 
-                renderShop();
+                renderFeed(); renderBoard(); renderMembers(); renderEvents(); renderShop();
             } catch(e) { console.log("Init Error:", e); }
         }
 
@@ -135,23 +167,16 @@
             if(userPhone) {
                 let avatar = userImg ? `<img src="${fixImg(userImg)}" class="w-8 h-8 rounded-full object-cover border border-primary">` : `<div class="w-8 h-8 rounded-full bg-neutral-700 flex items-center justify-center text-xs">👤</div>`;
                 area.innerHTML = `<div class="flex items-center gap-2 cursor-pointer" onclick="openProfileModal()">
-                    ${avatar}<span class="text-xs font-semibold">${userName}</span></div>`;
+                    ${avatar}<span class="text-xs font-semibold text-textcolor">${userName}</span></div>`;
             } else {
-                area.innerHTML = `
-                <div class="flex gap-2">
-                    <button onclick="showLoginForm()" class="text-[10px] md:text-xs bg-primary text-white px-3 py-1.5 rounded-full border border-primary font-bold shadow-sm">เข้าสู่ระบบ</button>
-                    <button onclick="showRegisterForm()" class="text-[10px] md:text-xs bg-neutral-800 text-white px-3 py-1.5 rounded-full border border-neutral-700 font-bold shadow-sm">สมัครสมาชิก</button>
-                </div>`;
+                area.innerHTML = `<div class="flex gap-2"><button onclick="showLoginForm()" class="text-[10px] md:text-xs bg-primary text-white px-3 py-1.5 rounded-full border border-primary font-bold shadow-sm">เข้าสู่ระบบ</button><button onclick="showRegisterForm()" class="text-[10px] md:text-xs bg-neutral-800 text-white px-3 py-1.5 rounded-full border border-neutral-700 font-bold shadow-sm">สมัครสมาชิก</button></div>`;
             }
         }
 
         function renderFeed() {
             let search = v('search-news').toLowerCase();
             let html = '';
-            
-            let filteredNews = (appData.news || []).filter(n => 
-                String(n[1]||'').toLowerCase().includes(search) || String(n[2]||'').toLowerCase().includes(search)
-            );
+            let filteredNews = (appData.news || []).filter(n => String(n[1]||'').toLowerCase().includes(search) || String(n[2]||'').toLowerCase().includes(search));
 
             filteredNews.forEach(n => { 
                 let postComments = (appData.comments || []).filter(c => String(c[1]) === String(n[0]));
@@ -167,65 +192,37 @@
                                 let cImg = c[6] ? `<img src="${fixImg(c[6])}" class="w-5 h-5 rounded-full object-cover">` : `<div class="w-5 h-5 rounded-full bg-neutral-700 flex items-center justify-center text-[10px]">👤</div>`;
                                 let cleanCPhone = String(c[2]||'').replace(/'/g, '');
                                 let cleanUserPhone = String(userPhone||'').replace(/'/g, '');
-                                return `<div class="text-xs bg-neutral-900 p-2 rounded flex justify-between items-center">
-                                    <div class="flex items-center gap-2 cursor-pointer" onclick="viewUserProfile('${cleanCPhone}', '${c[3]}', '${c[6]||''}')">
-                                        ${cImg}<span><b class="text-primary">${c[3]}:</b> ${c[4]}</span>
-                                    </div>
-                                    ${cleanCPhone === cleanUserPhone ? `<button onclick="editComment('${c[0]}', '${c[4]}')" class="text-neutral-500 hover:text-white">✏️</button>` : ''}
-                                </div>`;
+                                return `<div class="text-xs bg-neutral-900 p-2 rounded flex justify-between items-center"><div class="flex items-center gap-2 cursor-pointer" onclick="viewUserProfile('${cleanCPhone}', '${c[3]}', '${c[6]||''}')">${cImg}<span><b class="text-primary">${c[3]}:</b> ${c[4]}</span></div>${cleanCPhone === cleanUserPhone ? `<button onclick="editComment('${c[0]}', '${c[4]}')" class="text-neutral-500 hover:text-white">✏️</button>` : ''}</div>`;
                             }).join('')}
                         </div>
-                        <div class="flex gap-2 pt-2">
-                            <input type="text" id="cmt-${n[0]}" placeholder="แสดงความคิดเห็น..." class="w-full bg-neutral-900 border border-neutral-800 rounded px-2 py-1 text-xs outline-none">
-                            <button onclick="postComment('${n[0]}')" class="bg-primary text-white text-xs px-3 py-1 rounded">ส่ง</button>
-                        </div>
+                        <div class="flex gap-2 pt-2"><input type="text" id="cmt-${n[0]}" placeholder="แสดงความคิดเห็น..." class="w-full bg-neutral-900 border border-neutral-800 rounded px-2 py-1 text-xs outline-none"><button onclick="postComment('${n[0]}')" class="bg-primary text-white text-xs px-3 py-1 rounded">ส่ง</button></div>
                     </div></div>`;
             });
             document.getElementById('feedList').innerHTML = html || '<p class="text-center text-sm text-neutral-500 py-4">ไม่พบข่าวสาร</p>';
         }
 
-        // --- ระบบ Community Board ใหม่ ---
         function renderBoard() {
             let html = '';
-            // กลับด้าน Array เพื่อให้โพสต์ล่าสุดอยู่บนสุด
             let posts = [...(appData.communityPosts || [])].reverse(); 
-            
             posts.forEach(p => {
                 let postComments = (appData.communityComments || []).filter(c => String(c[0]) === String(p[0]));
                 let imgHtml = (p[3] && String(p[3]).trim() !== '') ? `<img src="${fixImg(p[3])}" onclick="viewFullImg('${p[3]}')" class="w-full object-cover max-h-96 mt-2 rounded cursor-pointer border border-neutral-800">` : '';
-
-                // หาข้อมูลรูปโปรไฟล์คนโพสต์
                 let cleanPhone = String(p[1]||'').replace(/'/g, '');
                 let author = (appData.users || []).find(u => String(u[0]||'').replace(/'/g, '') === cleanPhone);
                 let authorImg = author && author[3] ? `<img src="${fixImg(author[3])}" class="w-8 h-8 rounded-full object-cover border border-neutral-600">` : `<div class="w-8 h-8 rounded-full bg-neutral-700 flex items-center justify-center text-xs">👤</div>`;
 
                 html += `<div class="bg-cardbg border border-neutral-800 rounded-xl p-3 mb-4">
-                    <div class="flex items-center gap-2 mb-2 cursor-pointer" onclick="viewUserProfile('${cleanPhone}', '${p[2]}', '${author?author[3]:''}')">
-                        ${authorImg}
-                        <div class="font-semibold text-sm text-primary">${p[2]}</div>
-                    </div>
-                    <p class="text-sm text-neutral-200 whitespace-pre-line">${p[4] || ''}</p>
-                    ${imgHtml}
-                    <div class="flex items-center gap-4 mt-3 border-t border-neutral-800 pt-2">
-                        <button onclick="likePost('${p[0]}')" class="text-xs text-neutral-400 hover:text-primary flex items-center gap-1 transition-colors">
-                            ❤️ <span id="like-${p[0]}">${p[5] || 0}</span>
-                        </button>
-                        <span class="text-xs text-neutral-400">💬 ${postComments.length} คอมเมนต์</span>
-                    </div>
+                    <div class="flex items-center gap-2 mb-2 cursor-pointer" onclick="viewUserProfile('${cleanPhone}', '${p[2]}', '${author?author[3]:''}')">${authorImg}<div class="font-semibold text-sm text-primary">${p[2]}</div></div>
+                    <p class="text-sm text-neutral-200 whitespace-pre-line">${p[4] || ''}</p>${imgHtml}
+                    <div class="flex items-center gap-4 mt-3 border-t border-neutral-800 pt-2"><button onclick="likePost('${p[0]}')" class="text-xs text-neutral-400 hover:text-primary flex items-center gap-1 transition-colors">❤️ <span id="like-${p[0]}">${p[5] || 0}</span></button><span class="text-xs text-neutral-400">💬 ${postComments.length} คอมเมนต์</span></div>
                     <div class="mt-2 space-y-1">
                         ${postComments.map(c => {
-                            let cCleanPhone = String(c[1]||'').replace(/'/g, '');
-                            let cAuthor = (appData.users || []).find(u => String(u[0]||'').replace(/'/g, '') === cCleanPhone);
+                            let cCleanPhone = String(c[1]||'').replace(/'/g, ''); let cAuthor = (appData.users || []).find(u => String(u[0]||'').replace(/'/g, '') === cCleanPhone);
                             let cImg = cAuthor && cAuthor[3] ? `<img src="${fixImg(cAuthor[3])}" class="w-5 h-5 rounded-full object-cover">` : `<div class="w-5 h-5 rounded-full bg-neutral-700 flex items-center justify-center text-[10px]">👤</div>`;
-                            return `<div class="text-xs bg-neutral-900 p-2 rounded flex items-center gap-2">
-                                ${cImg} <span><b class="text-primary cursor-pointer hover:underline" onclick="viewUserProfile('${cCleanPhone}', '${c[2]}', '${cAuthor?cAuthor[3]:''}')">${c[2]}:</b> ${c[3]}</span>
-                            </div>`;
+                            return `<div class="text-xs bg-neutral-900 p-2 rounded flex items-center gap-2">${cImg} <span><b class="text-primary cursor-pointer hover:underline" onclick="viewUserProfile('${cCleanPhone}', '${c[2]}', '${cAuthor?cAuthor[3]:''}')">${c[2]}:</b> ${c[3]}</span></div>`;
                         }).join('')}
                     </div>
-                    <div class="flex gap-2 pt-2">
-                        <input type="text" id="bc-${p[0]}" placeholder="แสดงความคิดเห็น..." class="w-full bg-neutral-900 border border-neutral-800 rounded px-2 py-1 text-xs outline-none focus:border-primary transition-colors">
-                        <button onclick="postBoardComment('${p[0]}')" class="bg-primary text-white text-xs px-3 py-1 rounded font-bold">ส่ง</button>
-                    </div>
+                    <div class="flex gap-2 pt-2"><input type="text" id="bc-${p[0]}" placeholder="แสดงความคิดเห็น..." class="w-full bg-neutral-900 border border-neutral-800 rounded px-2 py-1 text-xs outline-none focus:border-primary transition-colors"><button onclick="postBoardComment('${p[0]}')" class="bg-primary text-white text-xs px-3 py-1 rounded font-bold">ส่ง</button></div>
                 </div>`;
             });
             document.getElementById('boardList').innerHTML = html || '<p class="text-center text-sm text-neutral-500 py-4">ยังไม่มีโพสต์ เริ่มแชร์รูปรถเป็นคนแรกเลย!</p>';
@@ -233,283 +230,75 @@
 
         async function openCreatePostModal() {
             if(!checkAuth()) return;
-            const { value: form } = await Swal.fire({
-                title: 'สร้างโพสต์ใหม่',
-                html: `<textarea id="cp-text" placeholder="คุณกำลังคิดอะไรอยู่? หรืออยากโชว์รูปรถ..." class="swal2-textarea h-24 text-sm"></textarea>
-                <label class="text-xs text-left block mt-2 text-primary font-bold">แนบรูปภาพ (ทางเลือก)</label>
-                <input id="cp-img" type="file" class="swal2-file text-sm" accept="image/*">`,
-                preConfirm: () => { 
-                    if(!v('cp-text') && !document.getElementById('cp-img').files[0]) { Swal.showValidationMessage('กรุณาพิมพ์ข้อความหรือใส่รูปภาพ'); return false; }
-                    return { text: v('cp-text'), file: document.getElementById('cp-img').files[0] } 
-                },
-                confirmButtonText: 'แชร์เลย',
-                confirmButtonColor: '#dc2626',
-                showCancelButton: true,
-                cancelButtonText: 'ยกเลิก'
-            });
-
-            if(form) {
-                Swal.fire({title:'กำลังโพสต์...', didOpen:()=>Swal.showLoading()});
-                const proc = async (b64) => {
-                    let newId = new Date().getTime();
-                    await fetch(GAS_URL, {method:'POST', mode:'no-cors', body: JSON.stringify({action:'addCommunityPost', postId: newId, phone:userPhone, name:userName, caption:form.text, imgBase64:b64})});
-                    Swal.fire('สำเร็จ', 'โพสต์ของคุณถูกแชร์แล้ว', 'success').then(()=>location.reload());
-                };
-                if(form.file) { const r = new FileReader(); r.onload=(e)=>proc(e.target.result); r.readAsDataURL(form.file); } else proc('');
-            }
+            const { value: form } = await Swal.fire({ title: 'สร้างโพสต์ใหม่', html: `<textarea id="cp-text" placeholder="คุณกำลังคิดอะไรอยู่? หรืออยากโชว์รูปรถ..." class="swal2-textarea h-24 text-sm"></textarea><label class="text-xs text-left block mt-2 text-primary font-bold">แนบรูปภาพ (ทางเลือก)</label><input id="cp-img" type="file" class="swal2-file text-sm" accept="image/*">`, preConfirm: () => { if(!v('cp-text') && !document.getElementById('cp-img').files[0]) { Swal.showValidationMessage('กรุณาพิมพ์ข้อความหรือใส่รูปภาพ'); return false; } return { text: v('cp-text'), file: document.getElementById('cp-img').files[0] } }, confirmButtonText: 'แชร์เลย', confirmButtonColor: '#dc2626', showCancelButton: true, cancelButtonText: 'ยกเลิก' });
+            if(form) { Swal.fire({title:'กำลังโพสต์...', didOpen:()=>Swal.showLoading()}); const proc = async (b64) => { let newId = new Date().getTime(); await fetch(GAS_URL, {method:'POST', mode:'no-cors', body: JSON.stringify({action:'addCommunityPost', postId: newId, phone:userPhone, name:userName, caption:form.text, imgBase64:b64})}); Swal.fire('สำเร็จ', 'โพสต์ของคุณถูกแชร์แล้ว', 'success').then(()=>location.reload()); }; if(form.file) { const r = new FileReader(); r.onload=(e)=>proc(e.target.result); r.readAsDataURL(form.file); } else proc(''); }
         }
 
         async function likePost(postId) {
             if(!checkAuth()) return;
             let post = appData.communityPosts.find(p => String(p[0]) === String(postId));
-            if(post) {
-                // อัปเดตตัวเลขทันทีเพื่อความรวดเร็วบนหน้าจอ
-                post[5] = (parseInt(post[5]) || 0) + 1;
-                document.getElementById(`like-${postId}`).innerText = post[5];
-                document.getElementById(`like-${postId}`).parentElement.classList.add('text-primary');
-                
-                // ส่งค่าไปอัปเดตที่หลังบ้าน
-                fetch(GAS_URL, {method:'POST', mode:'no-cors', body: JSON.stringify({action:'likeCommunityPost', postId:postId})});
-            }
+            if(post) { post[5] = (parseInt(post[5]) || 0) + 1; document.getElementById(`like-${postId}`).innerText = post[5]; document.getElementById(`like-${postId}`).parentElement.classList.add('text-primary'); fetch(GAS_URL, {method:'POST', mode:'no-cors', body: JSON.stringify({action:'likeCommunityPost', postId:postId})}); }
         }
 
         async function postBoardComment(postId) {
-            if(!checkAuth()) return;
-            const text = v(`bc-${postId}`); if(!text) return;
-            document.getElementById(`bc-${postId}`).value = '';
-            
-            if(!appData.communityComments) appData.communityComments = [];
-            appData.communityComments.push([postId, userPhone, userName, text]); 
-            renderBoard(); 
-            
+            if(!checkAuth()) return; const text = v(`bc-${postId}`); if(!text) return; document.getElementById(`bc-${postId}`).value = '';
+            if(!appData.communityComments) appData.communityComments = []; appData.communityComments.push([postId, userPhone, userName, text]); renderBoard(); 
             await fetch(GAS_URL, {method:'POST', mode:'no-cors', body: JSON.stringify({action:'addCommunityComment', postId:postId, phone:userPhone, name:userName, text:text})});
         }
-        // ------------------------------
 
         function renderMembers() {
-            let search = v('search-members').toLowerCase();
-            let html = '';
-            
-            let filteredUsers = (appData.users || []).filter(u => {
-                let nameMatch = String(u[1] || '').toLowerCase().includes(search);
-                let regCarMatch = String(u[2] || '').toLowerCase().includes(search);
-                
-                let myCars = (appData.garage || []).filter(car => String(car[1]||'').replace(/'/g,'') === String(u[0]||'').replace(/'/g,''));
-                let garageMatch = myCars.some(car => 
-                    String(car[2] || '').toLowerCase().includes(search) || 
-                    String(car[3] || '').toLowerCase().includes(search) ||
-                    String(car[6] || '').toLowerCase().includes(search)
-                );
-
-                return nameMatch || regCarMatch || garageMatch;
-            });
-
-            filteredUsers.forEach(u => {
-                let phone = String(u[0] || '').replace(/'/g, '');
-                let name = u[1] || 'ไม่มีชื่อ', carData = u[2] || '', img = u[3] || '';
-                let avatar = img ? `<img src="${fixImg(img)}" class="w-12 h-12 rounded-full object-cover border border-neutral-700">` : `<div class="w-12 h-12 rounded-full bg-neutral-700 flex items-center justify-center text-lg">👤</div>`;
-                
-                let myCars = (appData.garage || []).filter(car => String(car[1]||'').replace(/'/g,'') === phone);
-                
-                html += `
-                <div class="bg-cardbg border border-neutral-800 rounded-xl p-3 flex items-center gap-3 cursor-pointer hover:border-primary transition-colors mb-2" onclick="viewUserProfile('${phone}', '${name}', '${img}')">
-                    ${avatar}
-                    <div class="flex-1 overflow-hidden">
-                        <h4 class="font-bold text-sm text-primary">${name}</h4>
-                        <p class="text-xs text-neutral-400 truncate">${carData || 'ไม่มีข้อมูลรถ'}</p>
-                        <p class="text-[10px] text-neutral-500 mt-1">🚗 รถในโรงรถ: ${myCars.length} คัน</p>
-                    </div>
-                    <div class="text-neutral-600 text-xs px-2">➔</div>
-                </div>`;
-            });
+            let search = v('search-members').toLowerCase(); let html = '';
+            let filteredUsers = (appData.users || []).filter(u => { let nameMatch = String(u[1] || '').toLowerCase().includes(search); let regCarMatch = String(u[2] || '').toLowerCase().includes(search); let myCars = (appData.garage || []).filter(car => String(car[1]||'').replace(/'/g,'') === String(u[0]||'').replace(/'/g,'')); let garageMatch = myCars.some(car => String(car[2] || '').toLowerCase().includes(search) || String(car[3] || '').toLowerCase().includes(search) || String(car[6] || '').toLowerCase().includes(search)); return nameMatch || regCarMatch || garageMatch; });
+            filteredUsers.forEach(u => { let phone = String(u[0] || '').replace(/'/g, ''); let name = u[1] || 'ไม่มีชื่อ', carData = u[2] || '', img = u[3] || ''; let avatar = img ? `<img src="${fixImg(img)}" class="w-12 h-12 rounded-full object-cover border border-neutral-700">` : `<div class="w-12 h-12 rounded-full bg-neutral-700 flex items-center justify-center text-lg">👤</div>`; let myCars = (appData.garage || []).filter(car => String(car[1]||'').replace(/'/g,'') === phone); html += `<div class="bg-cardbg border border-neutral-800 rounded-xl p-3 flex items-center gap-3 cursor-pointer hover:border-primary transition-colors mb-2" onclick="viewUserProfile('${phone}', '${name}', '${img}')">${avatar}<div class="flex-1 overflow-hidden"><h4 class="font-bold text-sm text-primary">${name}</h4><p class="text-xs text-neutral-400 truncate">${carData || 'ไม่มีข้อมูลรถ'}</p><p class="text-[10px] text-neutral-500 mt-1">🚗 รถในโรงรถ: ${myCars.length} คัน</p></div><div class="text-neutral-600 text-xs px-2">➔</div></div>`; });
             document.getElementById('memberList').innerHTML = html || '<p class="text-center text-sm text-neutral-500 py-4">ไม่พบสมาชิก หรือ รถที่คุณค้นหา</p>';
         }
 
         function renderEvents() {
-            let html = '';
-            (appData.events || []).forEach(e => { 
-                let imgHtml = (e[6] && String(e[6]).trim() !== '') ? `<img src="${fixImg(e[6])}" class="w-24 h-24 rounded-lg object-cover">` : '';
-                html += `<div class="bg-cardbg border border-neutral-800 rounded-xl p-3 flex gap-3 cursor-pointer" onclick="pinMap(${e[4]||0}, ${e[5]||0}, '${e[1]||''}')">
-                    ${imgHtml}
-                    <div class="flex-1">
-                        <span class="text-xs text-primary font-bold">📅 ${e[2] ? new Date(e[2]).toLocaleString('th-TH') : ''}</span>
-                        <h3 class="font-semibold text-sm leading-tight my-1">${e[1]||''}</h3>
-                        <p class="text-xs text-neutral-400 line-clamp-2">${e[7] || ''}</p>
-                        <button onclick="readMore('event', '${e[0]}'); event.stopPropagation();" class="text-primary text-[10px] underline mt-1 block">รายละเอียดจัดงาน</button>
-                    </div></div>`;
-            });
+            let html = ''; (appData.events || []).forEach(e => { let imgHtml = (e[6] && String(e[6]).trim() !== '') ? `<img src="${fixImg(e[6])}" class="w-24 h-24 rounded-lg object-cover">` : ''; html += `<div class="bg-cardbg border border-neutral-800 rounded-xl p-3 flex gap-3 cursor-pointer" onclick="pinMap(${e[4]||0}, ${e[5]||0}, '${e[1]||''}')">${imgHtml}<div class="flex-1"><span class="text-xs text-primary font-bold">📅 ${e[2] ? new Date(e[2]).toLocaleString('th-TH') : ''}</span><h3 class="font-semibold text-sm leading-tight my-1">${e[1]||''}</h3><p class="text-xs text-neutral-400 line-clamp-2">${e[7] || ''}</p><button onclick="readMore('event', '${e[0]}'); event.stopPropagation();" class="text-primary text-[10px] underline mt-1 block">รายละเอียดจัดงาน</button></div></div>`; });
             document.getElementById('eventList').innerHTML = html || '<p class="text-center text-sm text-neutral-500 py-4">ไม่มีอีเวนต์</p>';
-            if(appData.events && appData.events.length > 0 && appData.events[0][4]) {
-                initMap(appData.events[0][4], appData.events[0][5], appData.events[0][1]);
-            }
+            if(appData.events && appData.events.length > 0 && appData.events[0][4]) { initMap(appData.events[0][4], appData.events[0][5], appData.events[0][1]); }
         }
 
         function renderShop() {
-            let html = '';
-            (appData.shop || []).forEach(s => { 
-                if(s[5] !== 'Active') return;
-                let imgHtml = (s[4] && String(s[4]).trim() !== '') ? `<img src="${fixImg(s[4])}" onclick="readMore('shop', '${s[0]}')" class="h-32 w-full object-cover cursor-pointer">` : `<div onclick="readMore('shop', '${s[0]}')" class="h-32 bg-neutral-800 flex items-center justify-center cursor-pointer text-xs text-gray-500">ไม่มีรูปภาพ</div>`;
-                html += `<div class="bg-cardbg border border-neutral-800 rounded-xl overflow-hidden flex flex-col justify-between h-auto pb-2">
-                    ${imgHtml}
-                    <div class="p-3 flex flex-col flex-1 justify-between">
-                        <div><h4 class="font-semibold text-xs line-clamp-2">${s[1]||''}</h4><button onclick="readMore('shop', '${s[0]}')" class="text-primary text-[10px] underline mt-1">รายละเอียดสินค้า</button></div>
-                        <div class="mt-2"><p class="text-primary font-bold text-sm mb-1">฿${s[3]||0}</p><button onclick="addCart('${s[0]}', '${s[1]}', ${s[3]||0})" class="bg-primary text-white text-xs w-full py-1.5 rounded">เพิ่มลงตะกร้า</button></div>
-                    </div></div>`;
-            }); document.getElementById('shopList').innerHTML = html || '<p class="text-center text-sm text-neutral-500 py-4">ไม่มีสินค้า</p>';
+            let html = ''; (appData.shop || []).forEach(s => { if(s[5] !== 'Active') return; let imgHtml = (s[4] && String(s[4]).trim() !== '') ? `<img src="${fixImg(s[4])}" onclick="readMore('shop', '${s[0]}')" class="h-32 w-full object-cover cursor-pointer">` : `<div onclick="readMore('shop', '${s[0]}')" class="h-32 bg-neutral-800 flex items-center justify-center cursor-pointer text-xs text-gray-500">ไม่มีรูปภาพ</div>`; html += `<div class="bg-cardbg border border-neutral-800 rounded-xl overflow-hidden flex flex-col justify-between h-auto pb-2">${imgHtml}<div class="p-3 flex flex-col flex-1 justify-between"><div><h4 class="font-semibold text-xs line-clamp-2">${s[1]||''}</h4><button onclick="readMore('shop', '${s[0]}')" class="text-primary text-[10px] underline mt-1">รายละเอียดสินค้า</button></div><div class="mt-2"><p class="text-primary font-bold text-sm mb-1">฿${s[3]||0}</p><button onclick="addCart('${s[0]}', '${s[1]}', ${s[3]||0})" class="bg-primary text-white text-xs w-full py-1.5 rounded">เพิ่มลงตะกร้า</button></div></div></div>`; }); document.getElementById('shopList').innerHTML = html || '<p class="text-center text-sm text-neutral-500 py-4">ไม่มีสินค้า</p>';
         }
 
         function viewUserProfile(phone, name, img) {
-            let myCars = (appData.garage || []).filter(car => String(car[1]||'').replace(/'/g,'') === String(phone).replace(/'/g,''));
-            let avatar = img ? `<img src="${fixImg(img)}" class="w-20 h-20 rounded-full object-cover mx-auto mb-2 border-2 border-primary">` : `<div class="w-20 h-20 rounded-full bg-neutral-700 flex items-center justify-center text-2xl mx-auto mb-2">👤</div>`;
-            
-            let carsHtml = myCars.length > 0 ? myCars.map(car => {
-                let imgs = parseImages(car[7]);
-                let thumbsHtml = imgs.map(i => `<img src="${fixImg(i)}" onclick="viewFullImg('${i}')" class="w-14 h-14 rounded object-cover shrink-0 cursor-pointer border border-neutral-700">`).join('');
-                return `
-                <div class="bg-neutral-900 border border-neutral-800 rounded-lg p-3 text-left mt-2">
-                    <b class="text-primary text-sm">${car[2]} ${car[3]}</b><br>
-                    <span class="text-xs text-neutral-400">ปี: ${car[4]} | สี: ${car[5]}</span><br>
-                    <div class="text-xs text-neutral-300 mt-1 mb-2 whitespace-pre-line">${car[6]}</div>
-                    <div class="flex gap-2 overflow-x-auto pb-2">${thumbsHtml}</div>
-                </div>`;
-            }).join('') : '<p class="text-xs text-neutral-500 mt-2 text-center">ยังไม่ได้เพิ่มรถในโรงรถ</p>';
-
+            let myCars = (appData.garage || []).filter(car => String(car[1]||'').replace(/'/g,'') === String(phone).replace(/'/g,'')); let avatar = img ? `<img src="${fixImg(img)}" class="w-20 h-20 rounded-full object-cover mx-auto mb-2 border-2 border-primary">` : `<div class="w-20 h-20 rounded-full bg-neutral-700 flex items-center justify-center text-2xl mx-auto mb-2">👤</div>`;
+            let carsHtml = myCars.length > 0 ? myCars.map(car => { let imgs = parseImages(car[7]); let thumbsHtml = imgs.map(i => `<img src="${fixImg(i)}" onclick="viewFullImg('${i}')" class="w-14 h-14 rounded object-cover shrink-0 cursor-pointer border border-neutral-700">`).join(''); return `<div class="bg-neutral-900 border border-neutral-800 rounded-lg p-3 text-left mt-2"><b class="text-primary text-sm">${car[2]} ${car[3]}</b><br><span class="text-xs text-neutral-400">ปี: ${car[4]} | สี: ${car[5]}</span><br><div class="text-xs text-neutral-300 mt-1 mb-2 whitespace-pre-line">${car[6]}</div><div class="flex gap-2 overflow-x-auto pb-2">${thumbsHtml}</div></div>`; }).join('') : '<p class="text-xs text-neutral-500 mt-2 text-center">ยังไม่ได้เพิ่มรถในโรงรถ</p>';
             Swal.fire({ title: name, html: `${avatar}<p class="text-xs text-neutral-400 mb-4">สมาชิก UNEX CLUB</p><div class="border-t border-neutral-800 pt-2 text-left"><b class="text-xs">โรงรถของฉัน:</b><div class="max-h-60 overflow-y-auto">${carsHtml}</div></div>`, confirmButtonText: 'ปิด', confirmButtonColor: '#dc2626' });
         }
 
         async function openProfileModal() {
-            let myCars = (appData.garage || []).filter(car => String(car[1]||'').replace(/'/g,'') === String(userPhone).replace(/'/g,''));
-            let avatar = userImg ? `<img src="${fixImg(userImg)}" class="w-20 h-20 rounded-full object-cover mx-auto mb-2 border-2 border-primary">` : `<div class="w-20 h-20 rounded-full bg-neutral-700 flex items-center justify-center text-2xl mx-auto mb-2">👤</div>`;
-            
-            let carsHtml = myCars.map(car => {
-                let imgs = parseImages(car[7]);
-                let thumbsHtml = imgs.map(i => `<img src="${fixImg(i)}" onclick="viewFullImg('${i}')" class="w-12 h-12 rounded object-cover shrink-0 cursor-pointer border border-neutral-700">`).join('');
-                return `
-                <div class="bg-neutral-900 border border-neutral-800 rounded-lg p-3 text-left text-xs mb-3">
-                    <div class="flex justify-between items-start mb-2">
-                        <div><b class="text-primary text-sm">${car[2]} ${car[3]}</b><br><span class="text-neutral-400">ปี: ${car[4]} | สี: ${car[5]}</span></div>
-                        <button onclick="deleteCar('${car[0]}')" class="text-red-500 font-bold px-2 py-1 bg-red-500/10 rounded">ลบ</button>
-                    </div>
-                    <div class="text-neutral-300 mb-2 whitespace-pre-line">${car[6]}</div>
-                    <div class="flex gap-2 overflow-x-auto pb-1">${thumbsHtml}</div>
-                </div>`;
-            }).join('');
-
-            const { value: action } = await Swal.fire({
-                title: 'โปรไฟล์ของฉัน',
-                html: `${avatar}<b>${userName}</b><br><span class="text-xs text-neutral-400">โทร: ${userPhone}</span><br>
-                <button onclick="editProfileInfo()" class="bg-neutral-800 text-xs px-3 py-1 rounded mt-2 border border-neutral-700">✏️ แก้ไขชื่อ / รูปโปรไฟล์</button>
-                <div class="border-t border-neutral-800 mt-4 pt-2 text-left"><div class="flex justify-between items-center mb-2"><b class="text-xs">โรงรถของฉัน</b><button onclick="openAddCarModal()" class="bg-primary text-white text-[10px] px-2 py-1 rounded">+ เพิ่มรถ</button></div><div class="max-h-60 overflow-y-auto">${carsHtml || '<p class="text-xs text-neutral-500 text-center">ยังไม่มีรถในโรงรถ</p>'}</div></div>
-                <div class="mt-4"><button onclick="logout()" class="text-red-500 text-xs underline font-bold">ออกจากระบบ</button></div>`,
-                showConfirmButton: false, showCloseButton: true
-            });
+            let myCars = (appData.garage || []).filter(car => String(car[1]||'').replace(/'/g,'') === String(userPhone).replace(/'/g,'')); let avatar = userImg ? `<img src="${fixImg(userImg)}" class="w-20 h-20 rounded-full object-cover mx-auto mb-2 border-2 border-primary">` : `<div class="w-20 h-20 rounded-full bg-neutral-700 flex items-center justify-center text-2xl mx-auto mb-2">👤</div>`;
+            let carsHtml = myCars.map(car => { let imgs = parseImages(car[7]); let thumbsHtml = imgs.map(i => `<img src="${fixImg(i)}" onclick="viewFullImg('${i}')" class="w-12 h-12 rounded object-cover shrink-0 cursor-pointer border border-neutral-700">`).join(''); return `<div class="bg-neutral-900 border border-neutral-800 rounded-lg p-3 text-left text-xs mb-3"><div class="flex justify-between items-start mb-2"><div><b class="text-primary text-sm">${car[2]} ${car[3]}</b><br><span class="text-neutral-400">ปี: ${car[4]} | สี: ${car[5]}</span></div><button onclick="deleteCar('${car[0]}')" class="text-red-500 font-bold px-2 py-1 bg-red-500/10 rounded">ลบ</button></div><div class="text-neutral-300 mb-2 whitespace-pre-line">${car[6]}</div><div class="flex gap-2 overflow-x-auto pb-1">${thumbsHtml}</div></div>`; }).join('');
+            const { value: action } = await Swal.fire({ title: 'โปรไฟล์ของฉัน', html: `${avatar}<b>${userName}</b><br><span class="text-xs text-neutral-400">โทร: ${userPhone}</span><br><button onclick="editProfileInfo()" class="bg-neutral-800 text-xs px-3 py-1 rounded mt-2 border border-neutral-700">✏️ แก้ไขชื่อ / รูปโปรไฟล์</button><div class="border-t border-neutral-800 mt-4 pt-2 text-left"><div class="flex justify-between items-center mb-2"><b class="text-xs">โรงรถของฉัน</b><button onclick="openAddCarModal()" class="bg-primary text-white text-[10px] px-2 py-1 rounded">+ เพิ่มรถ</button></div><div class="max-h-60 overflow-y-auto">${carsHtml || '<p class="text-xs text-neutral-500 text-center">ยังไม่มีรถในโรงรถ</p>'}</div></div><div class="mt-4"><button onclick="logout()" class="text-red-500 text-xs underline font-bold">ออกจากระบบ</button></div>`, showConfirmButton: false, showCloseButton: true });
         }
 
         async function editProfileInfo() {
-            const { value: form } = await Swal.fire({
-                title: 'แก้ไขโปรไฟล์',
-                html: `<input id="e-name" value="${userName}" class="swal2-input" placeholder="ชื่อ-นามสกุล"><label class="text-xs text-left block mt-2">เปลี่ยนรูปโปรไฟล์</label><input id="e-img" type="file" class="swal2-file" accept="image/*">`,
-                preConfirm: () => { return { name: document.getElementById('e-name').value, file: document.getElementById('e-img').files[0] } }
-            });
-            if(form) {
-                Swal.fire({title:'กำลังบันทึก...', didOpen:()=>Swal.showLoading()});
-                const proc = async (b64) => {
-                    await fetch(GAS_URL, {method:'POST', mode:'no-cors', body: JSON.stringify({action:'updateProfile', phone:userPhone, name:form.name, oldImg:userImg, imgBase64:b64})});
-                    Swal.fire('สำเร็จ', 'อัปเดตโปรไฟล์เรียบร้อย', 'success').then(() => location.reload());
-                };
-                if(form.file) { const r = new FileReader(); r.onload=(e)=>proc(e.target.result); r.readAsDataURL(form.file); } else proc('');
-            }
+            const { value: form } = await Swal.fire({ title: 'แก้ไขโปรไฟล์', html: `<input id="e-name" value="${userName}" class="swal2-input" placeholder="ชื่อ-นามสกุล"><label class="text-xs text-left block mt-2">เปลี่ยนรูปโปรไฟล์</label><input id="e-img" type="file" class="swal2-file" accept="image/*">`, preConfirm: () => { return { name: document.getElementById('e-name').value, file: document.getElementById('e-img').files[0] } } });
+            if(form) { Swal.fire({title:'กำลังบันทึก...', didOpen:()=>Swal.showLoading()}); const proc = async (b64) => { await fetch(GAS_URL, {method:'POST', mode:'no-cors', body: JSON.stringify({action:'updateProfile', phone:userPhone, name:form.name, oldImg:userImg, imgBase64:b64})}); Swal.fire('สำเร็จ', 'อัปเดตโปรไฟล์เรียบร้อย', 'success').then(() => location.reload()); }; if(form.file) { const r = new FileReader(); r.onload=(e)=>proc(e.target.result); r.readAsDataURL(form.file); } else proc(''); }
         }
 
-        function toBase64(file) {
-            return new Promise((res) => { const r = new FileReader(); r.onload=()=>res(r.result); r.readAsDataURL(file); });
-        }
+        function toBase64(file) { return new Promise((res) => { const r = new FileReader(); r.onload=()=>res(r.result); r.readAsDataURL(file); }); }
 
         async function openAddCarModal() {
-            const { value: car } = await Swal.fire({
-                title: 'เพิ่มรถในโรงรถ',
-                html: `<input id="c-brand" placeholder="ยี่ห้อ (เช่น BMW)" class="swal2-input"><input id="c-model" placeholder="รุ่น (เช่น E46 320i)" class="swal2-input"><input id="c-year" placeholder="ปี ค.ศ. (เช่น 2004)" class="swal2-input"><input id="c-color" placeholder="สีรถ" class="swal2-input"><textarea id="c-detail" placeholder="รายละเอียดแต่งรถ (ล้อ, ช่วงล่าง, เครื่อง)" class="swal2-textarea"></textarea>
-                <label class="text-xs text-left block mt-2 text-primary font-bold">อัปโหลดรูปรถ (เลือกได้สูงสุด 10 รูป)</label>
-                <input id="c-img" type="file" multiple class="swal2-file" accept="image/*" onchange="if(this.files.length>10){Swal.showValidationMessage('เลือกได้สูงสุด 10 รูปเท่านั้น'); this.value='';}">`,
-                preConfirm: () => {
-                    return { brand: v('c-brand'), model: v('c-model'), year: v('c-year'), color: v('c-color'), detail: v('c-detail'), files: document.getElementById('c-img').files }
-                }
-            });
-            
-            if(car) {
-                let b64Array = [];
-                if(car.files && car.files.length > 0) {
-                    Swal.fire({title:'กำลังเตรียมรูปภาพ...', text: 'อาจใช้เวลาสักครู่หากมีรูปจำนวนมาก', didOpen:()=>Swal.showLoading()});
-                    for(let i=0; i<car.files.length; i++) { b64Array.push(await toBase64(car.files[i])); }
-                }
-                
-                Swal.fire({title:'กำลังบันทึกข้อมูล...', didOpen:()=>Swal.showLoading()});
-                await fetch(GAS_URL, {method:'POST', mode:'no-cors', body: JSON.stringify({action:'addCar', phone:userPhone, brand:car.brand, model:car.model, year:car.year, color:car.color, detail:car.detail, imgBase64Array:b64Array})});
-                Swal.fire('สำเร็จ', 'เพิ่มรถสำเร็จ', 'success').then(()=>location.reload());
-            }
+            const { value: car } = await Swal.fire({ title: 'เพิ่มรถในโรงรถ', html: `<input id="c-brand" placeholder="ยี่ห้อ (เช่น BMW)" class="swal2-input"><input id="c-model" placeholder="รุ่น (เช่น E46 320i)" class="swal2-input"><input id="c-year" placeholder="ปี ค.ศ. (เช่น 2004)" class="swal2-input"><input id="c-color" placeholder="สีรถ" class="swal2-input"><textarea id="c-detail" placeholder="รายละเอียดแต่งรถ (ล้อ, ช่วงล่าง, เครื่อง)" class="swal2-textarea"></textarea><label class="text-xs text-left block mt-2 text-primary font-bold">อัปโหลดรูปรถ (เลือกได้สูงสุด 10 รูป)</label><input id="c-img" type="file" multiple class="swal2-file" accept="image/*" onchange="if(this.files.length>10){Swal.showValidationMessage('เลือกได้สูงสุด 10 รูปเท่านั้น'); this.value='';}">`, preConfirm: () => { return { brand: v('c-brand'), model: v('c-model'), year: v('c-year'), color: v('c-color'), detail: v('c-detail'), files: document.getElementById('c-img').files } } });
+            if(car) { let b64Array = []; if(car.files && car.files.length > 0) { Swal.fire({title:'กำลังเตรียมรูปภาพ...', text: 'อาจใช้เวลาสักครู่หากมีรูปจำนวนมาก', didOpen:()=>Swal.showLoading()}); for(let i=0; i<car.files.length; i++) { b64Array.push(await toBase64(car.files[i])); } } Swal.fire({title:'กำลังบันทึกข้อมูล...', didOpen:()=>Swal.showLoading()}); await fetch(GAS_URL, {method:'POST', mode:'no-cors', body: JSON.stringify({action:'addCar', phone:userPhone, brand:car.brand, model:car.model, year:car.year, color:car.color, detail:car.detail, imgBase64Array:b64Array})}); Swal.fire('สำเร็จ', 'เพิ่มรถสำเร็จ', 'success').then(()=>location.reload()); }
         }
 
-        async function deleteCar(carId) {
-            if((await Swal.fire({title:'ลบรถคันนี้?', icon:'warning', showCancelButton:true})).isConfirmed) {
-                await fetch(GAS_URL, {method:'POST', mode:'no-cors', body: JSON.stringify({action:'deleteCar', carId:carId})});
-                Swal.fire('ลบสำเร็จ', '', 'success').then(()=>location.reload());
-            }
-        }
+        async function deleteCar(carId) { if((await Swal.fire({title:'ลบรถคันนี้?', icon:'warning', showCancelButton:true})).isConfirmed) { await fetch(GAS_URL, {method:'POST', mode:'no-cors', body: JSON.stringify({action:'deleteCar', carId:carId})}); Swal.fire('ลบสำเร็จ', '', 'success').then(()=>location.reload()); } }
 
         async function showLoginForm() {
-            const { value: loginData } = await Swal.fire({
-                title: 'เข้าสู่ระบบ',
-                html: `<input id="l-phone" type="tel" class="swal2-input" placeholder="เบอร์โทรศัพท์"><input id="l-pwd" type="password" class="swal2-input" placeholder="รหัสผ่าน">`,
-                focusConfirm: false,
-                showCancelButton: true,
-                confirmButtonText: 'เข้าสู่ระบบ',
-                cancelButtonText: 'ยกเลิก',
-                preConfirm: () => { 
-                    if(!v('l-phone') || !v('l-pwd')) { Swal.showValidationMessage('กรุณากรอกเบอร์โทรศัพท์และรหัสผ่าน'); return false; }
-                    return { phone: v('l-phone'), pwd: v('l-pwd') } 
-                }
-            });
-            if (!loginData) return;
-            
-            Swal.fire({title:'กำลังตรวจสอบ...', didOpen:()=>Swal.showLoading()});
-            const res = await fetch(`${GAS_URL}?action=checkUser&phone=${loginData.phone}&pwd=${loginData.pwd}`);
-            const data = await res.json();
-            
-            if(data.status === 'success') {
-                localStorage.setItem('unexPhone', loginData.phone); localStorage.setItem('unexName', data.name); localStorage.setItem('unexImg', data.profileImg||'');
-                userPhone = loginData.phone; userName = data.name; userImg = data.profileImg||'';
-                Swal.fire('สำเร็จ', `ยินดีต้อนรับคุณ ${userName}`, 'success').then(()=>location.reload());
-            } else if (data.status === 'error') {
-                Swal.fire('เกิดข้อผิดพลาด', data.message, 'error');
-            } else {
-                Swal.fire('ไม่พบผู้ใช้', 'ไม่พบเบอร์โทรศัพท์นี้ในระบบ กรุณาสมัครสมาชิก', 'warning');
-            }
+            const { value: loginData } = await Swal.fire({ title: 'เข้าสู่ระบบ', html: `<input id="l-phone" type="tel" class="swal2-input" placeholder="เบอร์โทรศัพท์"><input id="l-pwd" type="password" class="swal2-input" placeholder="รหัสผ่าน">`, focusConfirm: false, showCancelButton: true, confirmButtonText: 'เข้าสู่ระบบ', cancelButtonText: 'ยกเลิก', preConfirm: () => { if(!v('l-phone') || !v('l-pwd')) { Swal.showValidationMessage('กรุณากรอกเบอร์โทรศัพท์และรหัสผ่าน'); return false; } return { phone: v('l-phone'), pwd: v('l-pwd') } } });
+            if (!loginData) return; Swal.fire({title:'กำลังตรวจสอบ...', didOpen:()=>Swal.showLoading()}); const res = await fetch(`${GAS_URL}?action=checkUser&phone=${loginData.phone}&pwd=${loginData.pwd}`); const data = await res.json();
+            if(data.status === 'success') { localStorage.setItem('unexPhone', loginData.phone); localStorage.setItem('unexName', data.name); localStorage.setItem('unexImg', data.profileImg||''); userPhone = loginData.phone; userName = data.name; userImg = data.profileImg||''; Swal.fire('สำเร็จ', `ยินดีต้อนรับคุณ ${userName}`, 'success').then(()=>location.reload()); } else if (data.status === 'error') { Swal.fire('เกิดข้อผิดพลาด', data.message, 'error'); } else { Swal.fire('ไม่พบผู้ใช้', 'ไม่พบเบอร์โทรศัพท์นี้ในระบบ กรุณาสมัครสมาชิก', 'warning'); }
         }
 
         async function showRegisterForm() {
             let brandOpts = (appData.brands||[]).map(b => `<option value="${b[1]}">${b[1]}</option>`).join('');
-            const { value: form } = await Swal.fire({
-                title: 'ลงทะเบียนสมาชิกใหม่', 
-                html: `
-                <input id="r-phone" type="tel" placeholder="เบอร์โทรศัพท์ (ใช้เป็น ID เข้าสู่ระบบ)" class="swal2-input">
-                <input id="r-name" placeholder="ชื่อ-นามสกุล" class="swal2-input">
-                <select id="r-brand" class="swal2-input"><option value="">เลือกแบรนด์รถที่ขับ</option>${brandOpts}</select>
-                <input id="r-car" placeholder="ทะเบียนรถ" class="swal2-input">
-                <input id="r-pwd" type="password" placeholder="ตั้งรหัสผ่านสำหรับเข้าสู่ระบบ" class="swal2-input border-red-500 border">`,
-                showCancelButton: true,
-                confirmButtonText: 'สมัครสมาชิก',
-                cancelButtonText: 'ยกเลิก',
-                preConfirm: () => { 
-                    if(!v('r-phone') || !v('r-name') || !v('r-pwd')) { Swal.showValidationMessage('กรุณากรอกเบอร์โทร, ชื่อ และรหัสผ่าน'); return false; }
-                    return { phone: v('r-phone'), name: v('r-name'), brand: v('r-brand'), car: v('r-car'), pwd: v('r-pwd') } 
-                }
-            });
-            if(form) {
-                Swal.fire({title:'กำลังลงทะเบียน...', didOpen:()=>Swal.showLoading()});
-                await fetch(GAS_URL, {method:'POST', mode:'no-cors', body: JSON.stringify({action:'register', phone:form.phone, name:form.name, carData: `${form.brand} ${form.car}`, pwd:form.pwd})});
-                localStorage.setItem('unexPhone', form.phone); localStorage.setItem('unexName', form.name); localStorage.setItem('unexImg', '');
-                Swal.fire('สำเร็จ', 'ลงทะเบียนเรียบร้อย', 'success').then(()=>location.reload());
-            }
+            const { value: form } = await Swal.fire({ title: 'ลงทะเบียนสมาชิกใหม่', html: `<input id="r-phone" type="tel" placeholder="เบอร์โทรศัพท์ (ใช้เป็น ID เข้าสู่ระบบ)" class="swal2-input"><input id="r-name" placeholder="ชื่อ-นามสกุล" class="swal2-input"><select id="r-brand" class="swal2-input"><option value="">เลือกแบรนด์รถที่ขับ</option>${brandOpts}</select><input id="r-car" placeholder="รุ่นรถ - ทะเบียน" class="swal2-input"><input id="r-pwd" type="password" placeholder="ตั้งรหัสผ่านสำหรับเข้าสู่ระบบ" class="swal2-input border-red-500 border">`, showCancelButton: true, confirmButtonText: 'สมัครสมาชิก', cancelButtonText: 'ยกเลิก', preConfirm: () => { if(!v('r-phone') || !v('r-name') || !v('r-pwd')) { Swal.showValidationMessage('กรุณากรอกเบอร์โทร, ชื่อ และรหัสผ่าน'); return false; } return { phone: v('r-phone'), name: v('r-name'), brand: v('r-brand'), car: v('r-car'), pwd: v('r-pwd') } } });
+            if(form) { Swal.fire({title:'กำลังลงทะเบียน...', didOpen:()=>Swal.showLoading()}); await fetch(GAS_URL, {method:'POST', mode:'no-cors', body: JSON.stringify({action:'register', phone:form.phone, name:form.name, carData: `${form.brand} ${form.car}`, pwd:form.pwd})}); localStorage.setItem('unexPhone', form.phone); localStorage.setItem('unexName', form.name); localStorage.setItem('unexImg', ''); Swal.fire('สำเร็จ', 'ลงทะเบียนเรียบร้อย', 'success').then(()=>location.reload()); }
         }
 
         function logout() { localStorage.clear(); location.reload(); }
@@ -517,72 +306,35 @@
 
         function readMore(type, id) {
             let title = '', html = '', imgTag = '';
-            if (type === 'news') {
-                let r = appData.news.find(x => String(x[0])===String(id)); title = r[1]||''; imgTag = r[3] ? `<img src="${fixImg(r[3])}" class="w-full rounded-lg mb-3">` : '';
-                html = `${imgTag}<div class="text-left text-sm text-gray-800 whitespace-pre-line">${r[2]||''}</div>`;
-            } else if (type === 'event') {
-                let r = appData.events.find(x => String(x[0])===String(id)); title = r[1]||''; imgTag = r[6] ? `<img src="${fixImg(r[6])}" class="w-full rounded-lg mb-3">` : '';
-                let dateStr = r[2] ? new Date(r[2]).toLocaleString('th-TH') : '';
-                html = `${imgTag}<div class="text-left text-sm text-gray-800 whitespace-pre-line"><b>สถานที่:</b> ${r[3]||''}<br><b>วันที่:</b> ${dateStr}<br><br>${r[7]||'ไม่มีรายละเอียดเพิ่มเติม'}</div>`;
-            } else if (type === 'shop') {
-                let r = appData.shop.find(x => String(x[0])===String(id)); title = r[1]||''; imgTag = r[4] ? `<img src="${fixImg(r[4])}" class="w-full rounded-lg mb-3">` : '';
-                html = `${imgTag}<div class="text-left text-sm text-gray-800 whitespace-pre-line mb-3">${r[2]||'ไม่มีรายละเอียด'}</div><div class="text-left font-bold text-lg text-primary">ราคา ฿${r[3]||0}</div>`;
-            }
+            if (type === 'news') { let r = appData.news.find(x => String(x[0])===String(id)); title = r[1]||''; imgTag = r[3] ? `<img src="${fixImg(r[3])}" class="w-full rounded-lg mb-3">` : ''; html = `${imgTag}<div class="text-left text-sm text-gray-800 whitespace-pre-line">${r[2]||''}</div>`; } else if (type === 'event') { let r = appData.events.find(x => String(x[0])===String(id)); title = r[1]||''; imgTag = r[6] ? `<img src="${fixImg(r[6])}" class="w-full rounded-lg mb-3">` : ''; let dateStr = r[2] ? new Date(r[2]).toLocaleString('th-TH') : ''; html = `${imgTag}<div class="text-left text-sm text-gray-800 whitespace-pre-line"><b>สถานที่:</b> ${r[3]||''}<br><b>วันที่:</b> ${dateStr}<br><br>${r[7]||'ไม่มีรายละเอียดเพิ่มเติม'}</div>`; } else if (type === 'shop') { let r = appData.shop.find(x => String(x[0])===String(id)); title = r[1]||''; imgTag = r[4] ? `<img src="${fixImg(r[4])}" class="w-full rounded-lg mb-3">` : ''; html = `${imgTag}<div class="text-left text-sm text-gray-800 whitespace-pre-line mb-3">${r[2]||'ไม่มีรายละเอียด'}</div><div class="text-left font-bold text-lg text-primary">ราคา ฿${r[3]||0}</div>`; }
             Swal.fire({ title: title, html: html, confirmButtonText: 'ปิดหน้าต่าง', confirmButtonColor: '#dc2626' });
         }
 
-        async function postComment(newsId) {
-            if(!checkAuth()) return;
-            const text = v(`cmt-${newsId}`); if(!text) return;
-            document.getElementById(`cmt-${newsId}`).value = '';
-            if(!appData.comments) appData.comments = [];
-            appData.comments.push([new Date().getTime(), newsId, userPhone, userName, text, 'Just now', userImg]); renderFeed(); 
-            await fetch(GAS_URL, {method:'POST', mode:'no-cors', body: JSON.stringify({action:'addComment', newsId:newsId, phone:userPhone, name:userName, text:text, profileImg:userImg})});
-        }
-        async function editComment(commentId, oldText) {
-            const { value: newText } = await Swal.fire({ title: 'แก้ไขข้อความ', input: 'text', inputValue: oldText });
-            if(newText && newText !== oldText) {
-                appData.comments.find(c => String(c[0])===String(commentId))[4] = newText; renderFeed();
-                await fetch(GAS_URL, {method:'POST', mode:'no-cors', body: JSON.stringify({action:'editComment', commentId:commentId, text:newText})});
-            }
-        }
+        async function postComment(newsId) { if(!checkAuth()) return; const text = v(`cmt-${newsId}`); if(!text) return; document.getElementById(`cmt-${newsId}`).value = ''; if(!appData.comments) appData.comments = []; appData.comments.push([new Date().getTime(), newsId, userPhone, userName, text, 'Just now', userImg]); renderFeed(); await fetch(GAS_URL, {method:'POST', mode:'no-cors', body: JSON.stringify({action:'addComment', newsId:newsId, phone:userPhone, name:userName, text:text, profileImg:userImg})}); }
+        async function editComment(commentId, oldText) { const { value: newText } = await Swal.fire({ title: 'แก้ไขข้อความ', input: 'text', inputValue: oldText }); if(newText && newText !== oldText) { appData.comments.find(c => String(c[0])===String(commentId))[4] = newText; renderFeed(); await fetch(GAS_URL, {method:'POST', mode:'no-cors', body: JSON.stringify({action:'editComment', commentId:commentId, text:newText})}); } }
 
         function initMap(lat, lng, title) { if(!map) { map = L.map('map').setView([lat, lng], 15); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map); } pinMap(lat, lng, title); }
         function pinMap(lat, lng, title) { if(!map || !lat || !lng) return; if(marker) map.removeLayer(marker); map.setView([lat, lng], 15); marker = L.marker([lat, lng]).addTo(map).bindPopup(`<b>${title}</b>`).openPopup(); }
 
-        function addCart(id, name, price) {
-            if(!checkAuth()) return;
-            if(cart[id]) cart[id].qty++; else cart[id] = { name, price, qty: 1 };
-            let qty = Object.values(cart).reduce((s, i) => s + i.qty, 0); document.getElementById('cartCount').innerText = qty; document.getElementById('cartBtn').style.display = qty > 0 ? 'flex' : 'none';
-        }
+        function addCart(id, name, price) { if(!checkAuth()) return; if(cart[id]) cart[id].qty++; else cart[id] = { name, price, qty: 1 }; let qty = Object.values(cart).reduce((s, i) => s + i.qty, 0); document.getElementById('cartCount').innerText = qty; document.getElementById('cartBtn').style.display = qty > 0 ? 'flex' : 'none'; }
         
-async function viewCart() {
+        async function viewCart() {
             let total = 0, html = `<div class="text-left text-sm max-h-60 overflow-y-auto mb-4 border-b pb-2">`;
             for(let id in cart) {
                 let item = cart[id]; total += (item.price * item.qty);
-                html += `<div class="flex justify-between items-center pb-2"><div><b>${item.name}</b><br>฿${item.price}</div>
-                    <div class="flex items-center gap-2"><button onclick="cart['${id}'].qty--; if(cart['${id}'].qty<=0) delete cart['${id}']; Swal.close(); viewCart();" class="bg-gray-200 px-2 rounded text-black">-</button><span>${item.qty}</span><button onclick="cart['${id}'].qty++; Swal.close(); viewCart();" class="bg-gray-200 px-2 rounded text-black">+</button></div></div>`;
+                html += `<div class="flex justify-between items-center pb-2"><div><b>${item.name}</b><br>฿${item.price}</div><div class="flex items-center gap-2"><button onclick="cart['${id}'].qty--; if(cart['${id}'].qty<=0) delete cart['${id}']; Swal.close(); viewCart();" class="bg-gray-200 px-2 rounded text-black">-</button><span>${item.qty}</span><button onclick="cart['${id}'].qty++; Swal.close(); viewCart();" class="bg-gray-200 px-2 rounded text-black">+</button></div></div>`;
             }
             html += `</div><h3 class="font-bold text-lg text-primary mb-2">ยอดชำระ: ฿${total}</h3>`;
             
-            // --- อัปเดตระบบดึงรูป QR Code สำหรับชำระเงิน ---
             let payInfo = '';
             if (appData.config.QRCodeImg && appData.config.QRCodeImg.trim() !== '') {
                 payInfo = `โอนเงินเข้าบัญชี:<br><b class="text-red-500 whitespace-pre-line">${appData.config.BankAccount || ''}</b><br><img src="${fixImg(appData.config.QRCodeImg)}" class="mx-auto max-w-full h-auto mt-2 rounded border border-gray-300">`;
             } else if (appData.config.PromptPay) {
                 payInfo = `สแกนพร้อมเพย์:<br><b class="text-red-500 whitespace-pre-line">${appData.config.BankAccount || ''}</b><br><img src="https://promptpay.io/${appData.config.PromptPay}/${total}.png" class="mx-auto w-40 rounded mt-2">`;
-            } else {
-                payInfo = 'ชำระที่หน้างาน';
-            }
-            // ---------------------------------------------
+            } else { payInfo = 'ชำระที่หน้างาน'; }
 
             const { value, isConfirmed } = await Swal.fire({ title: '🛒 สั่งซื้อสินค้า', html: html + `<div class="text-xs text-gray-600 my-3">${payInfo}</div>`, input: 'file', confirmButtonText: 'โอนเงินและส่งออเดอร์', showCancelButton: true, preConfirm: () => { return Swal.getInput()?.files[0]; } });
-            if (isConfirmed) {
-                if(!value) return Swal.fire('ผิดพลาด', 'กรุณาแนบสลิปการโอนเงิน', 'warning');
-                Swal.fire({title:'กำลังประมวลผล...', didOpen:()=>Swal.showLoading()});
-                const proc = (b64) => { fetch(GAS_URL, {method:'POST', mode:'no-cors', body: JSON.stringify({ action:'checkout', phone:userPhone, cart:cart, total:total, slipBase64:b64 })}).then(() => { cart = {}; document.getElementById('cartBtn').style.display='none'; Swal.fire('สำเร็จ', 'ส่งออเดอร์เรียบร้อย', 'success'); }); };
-                const r = new FileReader(); r.onload = (e) => proc(e.target.result); r.readAsDataURL(value);
-            }
+            if (isConfirmed) { if(!value) return Swal.fire('ผิดพลาด', 'กรุณาแนบสลิปการโอนเงิน', 'warning'); Swal.fire({title:'กำลังประมวลผล...', didOpen:()=>Swal.showLoading()}); const proc = (b64) => { fetch(GAS_URL, {method:'POST', mode:'no-cors', body: JSON.stringify({ action:'checkout', phone:userPhone, cart:cart, total:total, slipBase64:b64 })}).then(() => { cart = {}; document.getElementById('cartBtn').style.display='none'; Swal.fire('สำเร็จ', 'ส่งออเดอร์เรียบร้อย', 'success'); }); }; const r = new FileReader(); r.onload = (e) => proc(e.target.result); r.readAsDataURL(value); }
         }
 
         function v(id) { return document.getElementById(id) ? document.getElementById(id).value : ''; }
