@@ -179,7 +179,7 @@
         function renderTables() {
             document.getElementById('tb-orders').innerHTML = adminData.orders.map(r => `<tr><td class="p-2">${r[0]}<br><span class="text-xs text-blue-600">฿${r[3]}</span></td><td class="p-2">${r[1]}</td><td class="p-2"><select onchange="updateRow('admin_updateOrder','${r[0]}',this.value)" class="border rounded text-xs"><option hidden>${r[5]}</option><option value="รอตรวจสอบ">รอตรวจสอบ</option><option value="สำเร็จ">สำเร็จ</option><option value="ยกเลิก">ยกเลิก</option></select></td><td class="p-2">${r[4].includes('http')?`<a href="${r[4]}" target="_blank" class="text-blue-500 underline text-xs">สลิป</a>`:''}</td></tr>`).join('');
             document.getElementById('tb-users').innerHTML = adminData.users.map(r => `<tr><td class="p-2 font-bold">${r[0]}</td><td class="p-2">${r[1]}</td><td class="p-2 text-xs">${r[2]||'-'}</td><td class="p-2"><button onclick="editData('user','${r[0]}')" class="text-blue-600 hover:underline mr-2">แก้ไข</button><button onclick="del('Registrations','${r[0]}')" class="text-red-600 hover:underline">ลบ</button></td></tr>`).join('');
-            document.getElementById('tb-news').innerHTML = adminData.news.map(r => `<tr><td class="p-2">${r[1]}</td><td class="p-2">${r[4]}</td><td class="p-2"><button onclick="editData('news','${r[0]}')" class="text-blue-600 hover:underline mr-2">แก้ไข</button><button onclick="del('News','${r[0]}')" class="text-red-600 hover:underline">ลบ</button></td></tr>`).join('');
+           document.getElementById('tb-news').innerHTML = adminData.news.map(r => `<tr><td class="p-2">${r[1]} ${r[5]==='true'?`<span class="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full ml-2">POPUP</span>`:''}</td><td class="p-2">${r[4]}</td><td class="p-2"><button onclick="editData('news','${r[0]}')" class="text-blue-600 hover:underline mr-2">แก้ไข</button><button onclick="del('News','${r[0]}')" class="text-red-600 hover:underline">ลบ</button></td></tr>`).join('');
             document.getElementById('tb-posts').innerHTML = (adminData.communityPosts||[]).map(r => `<tr><td class="p-2 text-xs text-gray-500">${r[0]}</td><td class="p-2 font-bold">${r[2]}<br><span class="text-xs text-gray-500">${r[1]}</span></td><td class="p-2 text-sm">${r[4]}<br>${r[3]?`<a href="${r[3]}" target="_blank" class="text-blue-500 underline text-xs">ดูรูปภาพ</a>`:''}</td><td class="p-2"><button onclick="del('CommunityPosts','${r[0]}')" class="text-red-600 hover:underline font-bold text-xs">ลบโพสต์</button></td></tr>`).join('');
             document.getElementById('tb-board-comments').innerHTML = (adminData.communityComments||[]).map(r => `<tr><td class="p-2 text-xs text-gray-500">${r[0]}</td><td class="p-2 font-bold">${r[2]}<br><span class="text-xs text-gray-500">${r[1]}</span></td><td class="p-2 text-sm">${r[3]}</td><td class="p-2"><button onclick="delBoardComment('${r[0]}', '${encodeURIComponent(r[3])}')" class="text-red-600 hover:underline font-bold text-xs">ลบคอมเมนต์</button></td></tr>`).join('');
             document.getElementById('tb-events').innerHTML = adminData.events.map(r => `<tr><td class="p-2">${r[1]}</td><td class="p-2">${new Date(r[2]).toLocaleDateString()}</td><td class="p-2 text-xs">${r[4]},${r[5]}</td><td class="p-2"><button onclick="editData('event','${r[0]}')" class="text-blue-600 hover:underline mr-2">แก้ไข</button><button onclick="del('Events','${r[0]}')" class="text-red-600 hover:underline">ลบ</button></td></tr>`).join('');
@@ -191,7 +191,15 @@
             document.getElementById('dataForm').reset(); document.getElementById('f-type').value = type; document.getElementById('f-id').value = ''; document.getElementById('f-oldImg').value = ''; document.getElementById('imgUploadContainer').style.display = 'block'; 
             let html = '';
             if(type === 'user') { document.getElementById('modalTitle').innerText = '👥 เพิ่ม/แก้ไขผู้ใช้'; document.getElementById('imgUploadContainer').style.display = 'none'; html = `<input id="f1" type="tel" placeholder="เบอร์โทรศัพท์ (ห้ามซ้ำ)" required class="w-full border p-2 rounded"><input id="f2" placeholder="ชื่อ-นามสกุล" required class="w-full border p-2 rounded"><input id="f3" placeholder="ข้อมูลรถ" required class="w-full border p-2 rounded">`; } 
-            else if(type === 'news') { document.getElementById('modalTitle').innerText = '📰 โพสต์ข่าวสาร'; html = `<input id="f1" placeholder="หัวข้อข่าว" required class="w-full border p-2 rounded"><textarea id="f2" placeholder="เนื้อหาข่าว..." required class="w-full border p-2 rounded h-24"></textarea>`; } 
+           else if(type === 'news') { 
+                document.getElementById('modalTitle').innerText = '📰 โพสต์ข่าวสาร'; 
+                html = `<input id="f1" placeholder="หัวข้อข่าว" required class="w-full border p-2 rounded">
+                <textarea id="f2" placeholder="เนื้อหาข่าว..." required class="w-full border p-2 rounded h-24"></textarea>
+                <div class="flex items-center gap-2 mt-2 bg-red-50 p-3 rounded border border-red-200">
+                    <input type="checkbox" id="f-isPopup" class="w-5 h-5 cursor-pointer">
+                    <label for="f-isPopup" class="text-sm font-bold text-red-600 cursor-pointer">ตั้งเป็นป๊อปอัปแจ้งเตือนเมื่อเข้าเว็บ (Popup)</label>
+                </div>`; 
+            }
             else if(type === 'shop') { document.getElementById('modalTitle').innerText = '🛒 เพิ่มสินค้า'; html = `<input id="f1" placeholder="ชื่อสินค้า" required class="w-full border p-2 rounded"><input id="f2" type="number" placeholder="ราคา" required class="w-full border p-2 rounded"><textarea id="f3" placeholder="รายละเอียด" class="w-full border p-2 rounded h-20"></textarea>`; } 
             else if(type === 'brand') { document.getElementById('modalTitle').innerText = '🏎️ เพิ่มยี่ห้อรถ'; html = `<input id="f1" placeholder="ชื่อยี่ห้อ" required class="w-full border p-2 rounded"><input id="f2" placeholder="รุ่น (คั่นด้วยคอมมา)" class="w-full border p-2 rounded">`; } 
             else if(type === 'event') { document.getElementById('modalTitle').innerText = '📅 สร้างอีเวนต์'; html = `<input id="f1" placeholder="ชื่องาน" required class="w-full border p-2 rounded"><input id="f2" type="datetime-local" required class="w-full border p-2 rounded"><textarea id="f3" placeholder="รายละเอียดอีเวนต์" class="w-full border p-2 rounded h-16"></textarea><input id="f4" placeholder="ชื่อสถานที่" required class="w-full border p-2 rounded"><p class="text-xs font-bold text-red-500 mt-2">📍 คลิกบนแผนที่เพื่อปักหมุด</p><div id="mapPicker" class="w-full h-48 rounded border"></div><div class="flex gap-2"><input id="f5" placeholder="Lat" readonly class="w-1/2 border p-2 rounded text-xs bg-gray-100"><input id="f6" placeholder="Lng" readonly class="w-1/2 border p-2 rounded text-xs bg-gray-100"></div>`; }
@@ -204,7 +212,11 @@
         function editData(type, id) {
             openForm(type); document.getElementById('f-id').value = id; document.getElementById('modalTitle').innerText = '✏️ แก้ไขข้อมูล';
             if(type==='user') { let r = adminData.users.find(x => String(x[0])===String(id)); vSet('f1', r[0]); vSet('f2', r[1]); vSet('f3', r[2]); } 
-            else if(type==='news') { let r = adminData.news.find(x => String(x[0])===String(id)); vSet('f1', r[1]); vSet('f2', r[2]); vSet('f-oldImg', r[3]); } 
+           else if(type==='news') { 
+                let r = adminData.news.find(x => String(x[0])===String(id)); 
+                vSet('f1', r[1]); vSet('f2', r[2]); vSet('f-oldImg', r[3]); 
+                setTimeout(() => { if(document.getElementById('f-isPopup')) document.getElementById('f-isPopup').checked = (r[5] === 'true'); }, 100);
+            }
             else if (type==='shop') { let r = adminData.shop.find(x => String(x[0])===String(id)); vSet('f1', r[1]); vSet('f3', r[2]); vSet('f2', r[3]); vSet('f-oldImg', r[4]); } 
             else if (type==='event') { let r = adminData.events.find(x => String(x[0])===String(id)); vSet('f1', r[1]); vSet('f2', r[2]); vSet('f4', r[3]); vSet('f5', r[4]); vSet('f6', r[5]); vSet('f-oldImg', r[6]); vSet('f3', r[7]); setTimeout(() => pinMapPicker(r[4], r[5]), 300); } 
             else if (type==='brand') { let r = adminData.brands.find(x => String(x[0])===String(id)); vSet('f1', r[1]); vSet('f2', r[2]); vSet('f-oldImg', r[3]); }
@@ -215,7 +227,12 @@
             e.preventDefault(); Swal.fire({title:'บันทึก...', didOpen:()=>Swal.showLoading()});
             let type = document.getElementById('f-type').value; let payload = { pwd: pwd, id: document.getElementById('f-id').value, oldImg: document.getElementById('f-oldImg').value };
             if(type==='user')  { payload.action = 'admin_saveUser'; payload.phone=v('f1'); payload.name=v('f2'); payload.carData=v('f3'); }
-            if(type==='news')  { payload.action = 'admin_saveNews'; payload.title=v('f1'); payload.content=v('f2'); }
+            if(type==='news')  { 
+                payload.action = 'admin_saveNews'; 
+                payload.title=v('f1'); 
+                payload.content=v('f2'); 
+                payload.isPopup = document.getElementById('f-isPopup') ? document.getElementById('f-isPopup').checked : false;
+            }
             if(type==='shop')  { payload.action = 'admin_saveShop'; payload.name=v('f1'); payload.price=v('f2'); payload.desc=v('f3'); }
             if(type==='brand') { payload.action = 'admin_saveBrand'; payload.brandName=v('f1'); payload.models=v('f2'); }
             if(type==='event') { payload.action = 'admin_saveEvent'; payload.title=v('f1'); payload.date=v('f2'); payload.desc=v('f3'); payload.location=v('f4'); payload.lat=v('f5'); payload.lng=v('f6'); if(!payload.lat) return Swal.fire('แจ้งเตือน', 'กรุณาคลิกปักหมุดบนแผนที่', 'warning'); }
