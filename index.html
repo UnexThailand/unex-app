@@ -156,10 +156,20 @@
                 }
 
                 renderFeed(); renderBoard(); renderMembers(); renderEvents(); renderShop();
-                // --- ระบบแสดง Popup ข่าวสาร (ถ้ามีและแอดมินติ๊กไว้) ---
-                let popupNews = (appData.news || []).filter(n => n[5] === 'true').reverse()[0]; // ดึงข่าวล่าสุดที่ตั้งเป็น popup
+
+                // --- ระบบแสดง Popup ข่าวสาร พร้อมเช็ควันหมดอายุ ---
+                let now = new Date().getTime();
+                let popupNews = (appData.news || []).filter(n => {
+                    if (n[5] !== 'true') return false; 
+                    if (n[6] && String(n[6]).trim() !== '') {
+                        let expDate = new Date(n[6]).getTime();
+                        if (now > expDate) return false; 
+                    }
+                    return true;
+                }).reverse()[0]; 
+
                 if (popupNews && !sessionStorage.getItem('seenPopup_' + popupNews[0])) {
-                    sessionStorage.setItem('seenPopup_' + popupNews[0], 'true'); // บันทึกไว้ว่าดูแล้ว จะได้ไม่เด้งซ้ำรบกวนจนกว่าจะปิดเบราว์เซอร์
+                    sessionStorage.setItem('seenPopup_' + popupNews[0], 'true');
                     let imgTag = popupNews[3] ? `<img src="${fixImg(popupNews[3])}" class="w-full rounded-lg mb-3">` : '';
                     Swal.fire({
                         title: '📢 ' + popupNews[1],
@@ -251,15 +261,10 @@
             Swal.fire({ title: name, html: `${avatar}<p class="text-xs text-neutral-400 mb-4">สมาชิก UNEX CLUB</p><div class="border-t border-neutral-800 pt-2 text-left"><b class="text-xs">โรงรถของฉัน:</b><div class="max-h-60 overflow-y-auto">${carsHtml}</div></div>`, confirmButtonText: 'ปิด', confirmButtonColor: '#dc2626' });
         }
 
-        // --- หน้าโปรไฟล์ พร้อมเมนูประวัติการสั่งซื้อ ---
-        // --- หน้าโปรไฟล์ พร้อมแสดงประวัติการสั่งซื้อ ---
         async function openProfileModal() {
             let cleanUserPhone = String(userPhone || '').replace(/['\s]/g, '');
             let myCars = (appData.garage || []).filter(car => String(car[1]||'').replace(/['\s]/g,'') === cleanUserPhone); 
-            
-            // ดึงออเดอร์ของผู้ใช้ที่ตรงกับเบอร์โทร
             let myOrders = (appData.orders || []).filter(ord => String(ord[1]||'').replace(/['\s]/g,'') === cleanUserPhone);
-            
             let avatar = userImg ? `<img src="${fixImg(userImg)}" class="w-20 h-20 rounded-full object-cover mx-auto mb-2 border-2 border-primary">` : `<div class="w-20 h-20 rounded-full bg-neutral-700 flex items-center justify-center text-2xl mx-auto mb-2">👤</div>`;
             
             let carsHtml = myCars.map(car => { 
@@ -268,33 +273,23 @@
                 return `<div class="bg-neutral-900 border border-neutral-800 rounded-lg p-3 text-left text-xs mb-3"><div class="flex justify-between items-start mb-2"><div><b class="text-primary text-sm">${car[2]} ${car[3]}</b><br><span class="text-neutral-400">ปี: ${car[4]} | สี: ${car[5]}</span></div><button onclick="deleteCar('${car[0]}')" class="text-red-500 font-bold px-2 py-1 bg-red-500/10 rounded">ลบ</button></div><div class="text-neutral-300 mb-2 whitespace-pre-line">${car[6]}</div><div class="flex gap-2 overflow-x-auto pb-1">${thumbsHtml}</div></div>`; 
             }).join('');
 
-            // สร้างรายการประวัติออเดอร์
             let ordersHtml = myOrders.map(ord => {
                 let itemsObj = {};
                 try { itemsObj = JSON.parse(ord[2]); } catch(e) {}
                 let itemsList = '';
-                for(let k in itemsObj) {
-                    itemsList += `• ${itemsObj[k].name} (x${itemsObj[k].qty}) - ฿${itemsObj[k].price * itemsObj[k].qty}<br>`;
-                }
+                for(let k in itemsObj) { itemsList += `• ${itemsObj[k].name} (x${itemsObj[k].qty}) - ฿${itemsObj[k].price * itemsObj[k].qty}<br>`; }
                 let statusColor = ord[5] === 'สำเร็จ' ? 'text-green-500' : ord[5] === 'ยกเลิก' ? 'text-red-500' : 'text-yellow-500';
                 let slipBtn = ord[4] && ord[4].includes('http') ? `<a href="${fixImg(ord[4])}" target="_blank" class="text-blue-400 underline text-[11px] block mt-1">ดูสลิปที่แนบ</a>` : '';
-                return `<div class="bg-neutral-900 border border-neutral-800 rounded-lg p-3 text-left text-xs mb-2">
-                    <div class="flex justify-between font-bold mb-1"><span>รหัส: ${ord[0]}</span><span class="${statusColor}">สถานะ: ${ord[5]}</span></div>
-                    <div class="text-neutral-300 mb-1">${itemsList}</div>
-                    <div class="flex justify-between items-center text-neutral-400 pt-1 border-t border-neutral-800"><span>ยอดรวม: ฿${ord[3]}</span><span>${ord[6]||''}</span></div>
-                    ${slipBtn}
-                </div>`;
+                return `<div class="bg-neutral-900 border border-neutral-800 rounded-lg p-3 text-left text-xs mb-2"><div class="flex justify-between font-bold mb-1"><span>รหัส: ${ord[0]}</span><span class="${statusColor}">สถานะ: ${ord[5]}</span></div><div class="text-neutral-300 mb-1">${itemsList}</div><div class="flex justify-between items-center text-neutral-400 pt-1 border-t border-neutral-800"><span>ยอดรวม: ฿${ord[3]}</span><span>${ord[6]||''}</span></div>${slipBtn}</div>`;
             }).join('');
 
             const { value: action } = await Swal.fire({ 
                 title: 'โปรไฟล์ของฉัน', 
                 html: `${avatar}<b>${userName}</b><br><span class="text-xs text-neutral-400">โทร: ${userPhone}</span><br>
                 <button onclick="editProfileInfo()" class="bg-neutral-800 text-xs px-3 py-1 rounded mt-2 border border-neutral-700">✏️ แก้ไขชื่อ / รูปโปรไฟล์</button>
-                
                 <div class="border-t border-neutral-800 mt-4 pt-3 text-left">
                     <div class="flex justify-between items-center mb-2"><b class="text-xs font-bold text-primary">📦 ประวัติการสั่งซื้อและสถานะ</b></div>
                     <div class="max-h-44 overflow-y-auto mb-4">${ordersHtml || '<p class="text-xs text-neutral-500 text-center py-2">ยังไม่มีประวัติการสั่งซื้อ</p>'}</div>
-
                     <div class="flex justify-between items-center mb-2"><b class="text-xs font-bold">โรงรถของฉัน</b><button onclick="openAddCarModal()" class="bg-primary text-white text-[10px] px-2 py-1 rounded">+ เพิ่มรถ</button></div>
                     <div class="max-h-44 overflow-y-auto">${carsHtml || '<p class="text-xs text-neutral-500 text-center py-2">ยังไม่มีรถในโรงรถ</p>'}</div>
                 </div>
