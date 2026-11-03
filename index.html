@@ -3,98 +3,174 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UNEX CLUB</title>
+    <title>UNEX CLUB - Hi-Tech Hub</title>
     <style>
         :root {
             --theme-primary: #dc2626;
-            --theme-bg: #0a0a0a;
-            --theme-card: #171717;
+            --theme-bg: #050505;
+            --theme-card: rgba(255, 255, 255, 0.03);
             --theme-text: #f3f4f6;
+            --theme-glow: rgba(220, 38, 38, 0.4);
         }
-        body { font-family: 'Kanit', sans-serif; } 
-        .tab-content { display: none; } .tab-content.active { display: block; } 
-        #map { height: 350px; border-radius: 0.75rem; z-index: 1; } 
+        
+        body { 
+            font-family: 'Kanit', sans-serif; 
+            background-color: var(--theme-bg);
+            /* พื้นหลังสไตล์ Cyber Grid พร้อมแสง Neon สาดจากด้านบน */
+            background-image: 
+                radial-gradient(circle at 50% -10%, var(--theme-glow) 0%, transparent 60%),
+                linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size: 100% 100%, 30px 30px, 30px 30px;
+            background-attachment: fixed;
+            color: var(--theme-text);
+        } 
+        
+        .tab-content { display: none; opacity: 0; transition: opacity 0.4s ease-in-out; } 
+        .tab-content.active { display: block; opacity: 1; } 
+        #map { height: 350px; border-radius: 1rem; z-index: 1; filter: invert(90%) hue-rotate(180deg); /* ทำให้แผนที่เป็น Dark Mode อัตโนมัติ */ } 
+
+        /* Glassmorphism Classes */
+        .glass-panel {
+            background: var(--theme-card);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+        .glass-panel:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px 0 var(--theme-glow);
+        }
+        .glass-header {
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        /* Neon Button & Input */
+        .btn-neon {
+            background: linear-gradient(135deg, var(--theme-primary) 0%, #000000 150%);
+            box-shadow: 0 0 10px var(--theme-glow);
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .btn-neon:hover {
+            box-shadow: 0 0 20px var(--theme-glow), 0 0 40px var(--theme-glow);
+            transform: translateY(-2px);
+        }
+        .input-hi-tech {
+            background: rgba(0,0,0,0.4);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            transition: all 0.3s;
+        }
+        .input-hi-tech:focus {
+            border-color: var(--theme-primary);
+            box-shadow: 0 0 15px var(--theme-glow);
+            outline: none;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--theme-primary); }
+
+        /* SweetAlert Hi-Tech Override */
+        .swal2-popup {
+            background: rgba(10, 10, 15, 0.85) !important;
+            backdrop-filter: blur(20px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            color: var(--theme-text) !important;
+            box-shadow: 0 0 40px rgba(0,0,0,0.8), 0 0 10px var(--theme-glow) !important;
+            border-radius: 1.5rem !important;
+        }
+        .swal2-title, .swal2-html-container { color: var(--theme-text) !important; }
+        .swal2-input, .swal2-textarea, .swal2-file, .swal2-select {
+            background: rgba(0,0,0,0.5) !important;
+            border: 1px solid rgba(255,255,255,0.1) !important;
+            color: #fff !important;
+            border-radius: 0.75rem !important;
+        }
+        .swal2-input:focus, .swal2-textarea:focus, .swal2-select:focus {
+            border-color: var(--theme-primary) !important;
+            box-shadow: 0 0 10px var(--theme-glow) !important;
+        }
+        .swal2-confirm { background: var(--theme-primary) !important; box-shadow: 0 0 15px var(--theme-glow) !important; border-radius: 0.5rem !important; font-weight: bold; }
     </style>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        tailwind.config={
-            darkMode:'class',
-            theme:{
-                extend:{
-                    colors:{
-                        primary:'var(--theme-primary)',
-                        darkbg:'var(--theme-bg)',
-                        cardbg:'var(--theme-card)',
-                        textcolor:'var(--theme-text)'
-                    }
-                }
-            }
-        }
+        tailwind.config={ darkMode:'class', theme:{ extend:{ colors:{ primary:'var(--theme-primary)', textcolor:'var(--theme-text)' } } } }
     </script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
-<body class="bg-darkbg text-textcolor pb-24 transition-colors duration-500">
+<body class="pb-24 transition-colors duration-500">
 
-    <header class="bg-cardbg border-b border-neutral-800 p-4 sticky top-0 z-50 flex justify-between items-center transition-colors duration-500">
-        <div id="siteLogoArea"><h1 class="text-xl font-bold tracking-wider text-primary">UNEX CLUB</h1></div>
+    <header class="glass-header p-4 sticky top-0 z-50 flex justify-between items-center transition-colors duration-500 shadow-lg">
+        <div id="siteLogoArea" class="drop-shadow-[0_0_8px_var(--theme-glow)]"><h1 class="text-xl font-black tracking-widest text-primary uppercase">UNEX CLUB</h1></div>
         <div id="authArea"></div>
     </header>
 
-    <button onclick="viewCart()" id="cartBtn" class="hidden fixed bottom-24 right-4 bg-primary text-white p-4 rounded-full shadow-2xl z-50 flex items-center gap-2">🛒 <span id="cartCount" class="font-bold">0</span></button>
+    <button onclick="viewCart()" id="cartBtn" class="hidden btn-neon fixed bottom-24 right-4 text-white p-4 rounded-full z-50 flex items-center gap-2">🛒 <span id="cartCount" class="font-bold">0</span></button>
 
-    <main class="max-w-md mx-auto p-4">
+    <main class="max-w-lg mx-auto p-4">
         <!-- Tab 1: Community News -->
-        <section id="tab-feed" class="tab-content active space-y-4">
-            <h2 class="text-lg font-bold">📰 Community News</h2>
-            <input type="text" id="search-news" onkeyup="renderFeed()" placeholder="🔍 ค้นหาหัวข้อข่าว, เนื้อหา..." class="w-full bg-neutral-900 border border-neutral-800 rounded-lg p-2.5 text-sm text-textcolor outline-none focus:border-primary transition-colors shadow-inner">
-            <div id="feedList" class="space-y-4">กำลังโหลด...</div>
+        <section id="tab-feed" class="tab-content active space-y-5">
+            <div class="flex items-center gap-2 border-l-4 border-primary pl-3"><h2 class="text-xl font-bold tracking-wide">SYSTEM FEED</h2></div>
+            <input type="text" id="search-news" onkeyup="renderFeed()" placeholder="🔍 ค้นหาหัวข้อข่าว, เนื้อหา..." class="w-full input-hi-tech rounded-xl p-3 text-sm">
+            <div id="feedList" class="space-y-5">กำลังโหลด...</div>
         </section>
 
         <!-- Tab 2: Community Board -->
-        <section id="tab-board" class="tab-content space-y-4">
-            <div class="flex justify-between items-center">
-                <h2 class="text-lg font-bold">💬 Community Board</h2>
-                <button onclick="openCreatePostModal()" class="bg-primary text-white text-xs px-3 py-1.5 rounded-full font-bold shadow-lg border border-red-700">+ โพสต์ใหม่</button>
+        <section id="tab-board" class="tab-content space-y-5">
+            <div class="flex justify-between items-center border-l-4 border-primary pl-3">
+                <h2 class="text-xl font-bold tracking-wide">COMMUNITY</h2>
+                <button onclick="openCreatePostModal()" class="btn-neon text-white text-xs px-4 py-2 rounded-full font-bold uppercase tracking-wider">+ Create Data</button>
             </div>
-            <div id="boardList" class="space-y-4">กำลังโหลด...</div>
+            <div id="boardList" class="space-y-5">กำลังโหลด...</div>
         </section>
 
-        <!-- Tab 3: Brands (แทนที่ Members เดิม) -->
-        <section id="tab-brands" class="tab-content space-y-4">
-            <h2 class="text-lg font-bold">🏎️ Car Brands In Garage</h2>
-            <p class="text-xs text-neutral-400">เลือกยี่ห้อรถเพื่อดูรายชื่อเพื่อนของเรา</p>
-            <div id="brandsList" class="grid grid-cols-2 md:grid-cols-3 gap-3">กำลังโหลด...</div>
+        <!-- Tab 3: Brands -->
+        <section id="tab-brands" class="tab-content space-y-5">
+            <div class="border-l-4 border-primary pl-3">
+                <h2 class="text-xl font-bold tracking-wide">DATABASE: BRANDS</h2>
+                <p class="text-xs text-neutral-400 mt-1">Access vehicle specifications and owner registry</p>
+            </div>
+            <div id="brandsList" class="grid grid-cols-2 md:grid-cols-3 gap-4">กำลังโหลด...</div>
         </section>
 
         <!-- Tab 4: Events -->
-        <section id="tab-events" class="tab-content space-y-4">
-            <h2 class="text-lg font-bold">📍 Events & Meetups</h2>
-            <div id="eventList" class="space-y-3">กำลังโหลด...</div>
-            <div class="bg-cardbg p-3 rounded-xl border border-neutral-800"><div id="map"></div></div>
+        <section id="tab-events" class="tab-content space-y-5">
+            <div class="border-l-4 border-primary pl-3"><h2 class="text-xl font-bold tracking-wide">MISSION / EVENTS</h2></div>
+            <div id="eventList" class="space-y-4">กำลังโหลด...</div>
+            <div class="glass-panel p-2 rounded-2xl"><div id="map"></div></div>
         </section>
 
         <!-- Tab 5: Shop -->
-        <section id="tab-shop" class="tab-content space-y-4">
-            <h2 class="text-lg font-bold">🛒 Official Shop</h2>
-            <div id="shopList" class="grid grid-cols-2 gap-3">กำลังโหลด...</div>
+        <section id="tab-shop" class="tab-content space-y-5">
+            <div class="border-l-4 border-primary pl-3"><h2 class="text-xl font-bold tracking-wide">MARKETPLACE</h2></div>
+            <div id="shopList" class="grid grid-cols-2 gap-4">กำลังโหลด...</div>
         </section>
     </main>
 
-    <!-- Navigation Bar เปลี่ยนปุ่มเป็น Brands -->
-    <nav class="fixed bottom-0 w-full bg-cardbg border-t border-neutral-800 pb-safe z-40 flex justify-around p-1 transition-colors duration-500">
-        <button onclick="switchTab('feed')" class="nav-btn text-primary text-[10px] w-1/5 p-2 font-bold flex flex-col items-center gap-1"><span class="text-lg">📰</span>News</button>
-        <button onclick="switchTab('board')" class="nav-btn text-neutral-500 text-[10px] w-1/5 p-2 font-bold flex flex-col items-center gap-1"><span class="text-lg">💬</span>Board</button>
-        <button onclick="switchTab('brands')" class="nav-btn text-neutral-500 text-[10px] w-1/5 p-2 font-bold flex flex-col items-center gap-1"><span class="text-lg">🏎️</span>Brands</button>
-        <button onclick="switchTab('events')" class="nav-btn text-neutral-500 text-[10px] w-1/5 p-2 font-bold flex flex-col items-center gap-1"><span class="text-lg">📅</span>Events</button>
-        <button onclick="switchTab('shop')" class="nav-btn text-neutral-500 text-[10px] w-1/5 p-2 font-bold flex flex-col items-center gap-1"><span class="text-lg">🛍️</span>Shop</button>
+    <!-- Navigation Bar -->
+    <nav class="glass-header fixed bottom-0 w-full pb-safe z-40 flex justify-around p-2 transition-colors duration-500 rounded-t-3xl shadow-[0_-5px_25px_rgba(0,0,0,0.5)]">
+        <button onclick="switchTab('feed')" class="nav-btn text-primary text-[10px] w-1/5 p-2 font-bold flex flex-col items-center gap-1 drop-shadow-[0_0_5px_var(--theme-glow)]"><span class="text-xl mb-1">📰</span>News</button>
+        <button onclick="switchTab('board')" class="nav-btn text-neutral-500 text-[10px] w-1/5 p-2 font-bold flex flex-col items-center gap-1 hover:text-white transition-colors"><span class="text-xl mb-1">💬</span>Board</button>
+        <button onclick="switchTab('brands')" class="nav-btn text-neutral-500 text-[10px] w-1/5 p-2 font-bold flex flex-col items-center gap-1 hover:text-white transition-colors"><span class="text-xl mb-1">🏎️</span>Brands</button>
+        <button onclick="switchTab('events')" class="nav-btn text-neutral-500 text-[10px] w-1/5 p-2 font-bold flex flex-col items-center gap-1 hover:text-white transition-colors"><span class="text-xl mb-1">📍</span>Events</button>
+        <button onclick="switchTab('shop')" class="nav-btn text-neutral-500 text-[10px] w-1/5 p-2 font-bold flex flex-col items-center gap-1 hover:text-white transition-colors"><span class="text-xl mb-1">🛒</span>Shop</button>
     </nav>
 
     <!-- Lightbox -->
-    <div id="lightbox" class="fixed inset-0 bg-black/95 z-[9999] hidden flex justify-center items-center p-4 cursor-pointer" onclick="this.classList.add('hidden')">
-        <img id="lightbox-img" src="" class="max-w-full max-h-[90vh] rounded-lg object-contain pointer-events-none shadow-2xl">
-        <button class="absolute top-6 right-6 text-white text-3xl font-bold bg-black/50 w-10 h-10 rounded-full flex items-center justify-center">&times;</button>
+    <div id="lightbox" class="fixed inset-0 bg-black/95 backdrop-blur-md z-[9999] hidden flex justify-center items-center p-4 cursor-pointer" onclick="this.classList.add('hidden')">
+        <img id="lightbox-img" src="" class="max-w-full max-h-[90vh] rounded-2xl object-contain pointer-events-none shadow-[0_0_50px_rgba(255,255,255,0.1)]">
+        <button class="absolute top-6 right-6 text-white text-3xl font-bold bg-white/10 w-12 h-12 rounded-full flex items-center justify-center hover:bg-white/20 transition-all border border-white/20">&times;</button>
     </div>
 
     <script>
@@ -120,10 +196,27 @@
 
         function switchTab(tab) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.getElementById(`tab-${tab}`).classList.add('active');
-            document.querySelectorAll('.nav-btn').forEach(btn => btn.className = 'nav-btn text-neutral-500 text-[10px] w-1/5 p-2 font-bold flex flex-col items-center gap-1');
-            event.currentTarget.className = 'nav-btn text-primary text-[10px] w-1/5 p-2 font-bold flex flex-col items-center gap-1';
+            setTimeout(() => document.getElementById(`tab-${tab}`).classList.add('active'), 50); // slight delay for smooth fade
+            
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.className = 'nav-btn text-neutral-500 text-[10px] w-1/5 p-2 font-bold flex flex-col items-center gap-1 hover:text-white transition-colors';
+                btn.style.filter = 'none';
+            });
+            let activeBtn = event.currentTarget;
+            activeBtn.className = 'nav-btn text-primary text-[10px] w-1/5 p-2 font-bold flex flex-col items-center gap-1 drop-shadow-[0_0_8px_var(--theme-glow)] transition-all';
+            
             if(tab==='events' && map) setTimeout(()=>map.invalidateSize(), 100);
+        }
+
+        function hexToRgba(hex, alpha) {
+            let c;
+            if(/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)){
+                c = hex.substring(1).split('');
+                if(c.length === 3){ c = [c[0], c[0], c[1], c[1], c[2], c[2]]; }
+                c = '0x' + c.join('');
+                return 'rgba('+[(c>>16)&255, (c>>8)&255, c&255].join(',')+','+alpha+')';
+            }
+            return `rgba(220,38,38,${alpha})`;
         }
 
         async function init() {
@@ -133,15 +226,18 @@
                 appData = await res.json();
                 
                 const root = document.documentElement;
-                if(appData.config.ColorPrimary) root.style.setProperty('--theme-primary', appData.config.ColorPrimary);
+                if(appData.config.ColorPrimary) {
+                    root.style.setProperty('--theme-primary', appData.config.ColorPrimary);
+                    root.style.setProperty('--theme-glow', hexToRgba(appData.config.ColorPrimary, 0.5));
+                }
                 if(appData.config.ColorBg) root.style.setProperty('--theme-bg', appData.config.ColorBg);
                 if(appData.config.ColorCard) root.style.setProperty('--theme-card', appData.config.ColorCard);
                 if(appData.config.ColorText) root.style.setProperty('--theme-text', appData.config.ColorText);
                 
                 if(appData.config.LogoImg) {
-                    document.getElementById('siteLogoArea').innerHTML = `<img src="${fixImg(appData.config.LogoImg)}" class="h-10 object-contain">`;
+                    document.getElementById('siteLogoArea').innerHTML = `<img src="${fixImg(appData.config.LogoImg)}" class="h-10 object-contain drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]">`;
                 } else if(appData.config.SiteName) {
-                    document.getElementById('siteLogoArea').innerHTML = `<h1 class="text-xl font-bold tracking-wider text-primary">${appData.config.SiteName}</h1>`;
+                    document.getElementById('siteLogoArea').innerHTML = `<h1 class="text-xl font-black tracking-widest text-primary uppercase">${appData.config.SiteName}</h1>`;
                 }
                 
                 if(userPhone && appData.users) {
@@ -155,13 +251,10 @@
                     }
                 }
 
-                // โหลดทุกหน้า รวมถึงหน้า Brands ด้วย
                 renderFeed(); renderBoard(); renderBrands(); renderEvents(); renderShop();
 
-                // --- ระบบแสดง Popup ข่าวสารแบบแยกชีต ---
                 let now = new Date().getTime();
                 let popupList = (appData.popups || []).filter(p => {
-                    // p[4] คือ ExpDate
                     if (p[4] && String(p[4]).trim() !== '') {
                         let expDate = new Date(p[4]).getTime();
                         if (now > expDate) return false; 
@@ -169,29 +262,28 @@
                     return true;
                 }); 
                 
-                let activePopup = popupList[popupList.length - 1]; // ดึงรายการล่าสุดที่ยังไม่หมดอายุมาโชว์
+                let activePopup = popupList[popupList.length - 1]; 
 
                 if (activePopup && !sessionStorage.getItem('seenPopup_' + activePopup[0])) {
                     sessionStorage.setItem('seenPopup_' + activePopup[0], 'true');
-                    let imgTag = activePopup[3] ? `<img src="${fixImg(activePopup[3])}" class="w-full rounded-lg mb-3">` : '';
+                    let imgTag = activePopup[3] ? `<img src="${fixImg(activePopup[3])}" class="w-full rounded-xl mb-3 shadow-[0_0_15px_rgba(0,0,0,0.5)]">` : '';
                     Swal.fire({
-                        title: '📢 ' + activePopup[1],
-                        html: `${imgTag}<div class="text-left text-sm text-gray-800 whitespace-pre-line">${activePopup[2]}</div>`,
-                        confirmButtonText: 'รับทราบ',
-                        confirmButtonColor: 'var(--theme-primary)'
+                        title: `<span class="text-primary font-black uppercase tracking-widest">📢 ${activePopup[1]}</span>`,
+                        html: `${imgTag}<div class="text-left text-sm text-neutral-300 whitespace-pre-line leading-relaxed">${activePopup[2]}</div>`,
+                        confirmButtonText: 'ACKNOWLEDGE',
+                        customClass: { confirmButton: 'btn-neon px-6 py-2 rounded-lg font-bold' }
                     });
                 }
-                // ---------------------------------------------------
             } catch(e) { console.log("Init Error:", e); }
         }
 
         function renderAuthUI() {
             const area = document.getElementById('authArea');
             if(userPhone) {
-                let avatar = userImg ? `<img src="${fixImg(userImg)}" class="w-8 h-8 rounded-full object-cover border border-primary">` : `<div class="w-8 h-8 rounded-full bg-neutral-700 flex items-center justify-center text-xs">👤</div>`;
-                area.innerHTML = `<div class="flex items-center gap-2 cursor-pointer" onclick="openProfileModal()">${avatar}<span class="text-xs font-semibold text-textcolor">${userName}</span></div>`;
+                let avatar = userImg ? `<img src="${fixImg(userImg)}" class="w-9 h-9 rounded-full object-cover border-2 border-primary shadow-[0_0_10px_var(--theme-glow)]">` : `<div class="w-9 h-9 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-xs">👤</div>`;
+                area.innerHTML = `<div class="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity" onclick="openProfileModal()">${avatar}<span class="text-sm font-bold tracking-wide text-textcolor">${userName}</span></div>`;
             } else {
-                area.innerHTML = `<div class="flex gap-2"><button onclick="showLoginForm()" class="text-[10px] md:text-xs bg-primary text-white px-3 py-1.5 rounded-full border border-primary font-bold shadow-sm">เข้าสู่ระบบ</button><button onclick="showRegisterForm()" class="text-[10px] md:text-xs bg-neutral-800 text-white px-3 py-1.5 rounded-full border border-neutral-700 font-bold shadow-sm">สมัครสมาชิก</button></div>`;
+                area.innerHTML = `<div class="flex gap-2"><button onclick="showLoginForm()" class="text-[10px] md:text-xs btn-neon text-white px-4 py-2 rounded-lg font-bold uppercase tracking-wider">LOGIN</button><button onclick="showRegisterForm()" class="text-[10px] md:text-xs bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg border border-white/20 font-bold uppercase tracking-wider transition-all">REGISTER</button></div>`;
             }
         }
 
@@ -203,9 +295,9 @@
             filteredNews.forEach(n => { 
                 let postComments = (appData.comments || []).filter(c => String(c[1]) === String(n[0]));
                 let imgHtml = (n[3] && String(n[3]).trim() !== '') ? `<img src="${fixImg(n[3])}" class="w-full object-cover max-h-96">` : '';
-                html += `<div class="bg-cardbg border border-neutral-800 rounded-xl overflow-hidden"><div class="p-3 font-semibold text-sm border-b border-neutral-800">${n[1]||''} <span class="text-xs text-neutral-500 font-normal ml-2">${n[4]||n[3]||''}</span></div>${imgHtml}<div class="p-3 space-y-2 text-sm"><p class="text-neutral-300 line-clamp-3">${n[2]||''}</p><button onclick="readMore('news', '${n[0]}')" class="text-primary text-xs underline">อ่านเพิ่มเติม</button><div class="border-t border-neutral-800 pt-2 space-y-1">${postComments.map(c => { let cImg = c[6] ? `<img src="${fixImg(c[6])}" class="w-5 h-5 rounded-full object-cover">` : `<div class="w-5 h-5 rounded-full bg-neutral-700 flex items-center justify-center text-[10px]">👤</div>`; let cleanCPhone = String(c[2]||'').replace(/'/g, ''); let cleanUserPhone = String(userPhone||'').replace(/'/g, ''); return `<div class="text-xs bg-neutral-900 p-2 rounded flex justify-between items-center"><div class="flex items-center gap-2 cursor-pointer" onclick="viewUserProfile('${cleanCPhone}', '${c[3]}', '${c[6]||''}')">${cImg}<span><b class="text-primary">${c[3]}:</b> ${c[4]}</span></div>${cleanCPhone === cleanUserPhone ? `<button onclick="editComment('${c[0]}', '${c[4]}')" class="text-neutral-500 hover:text-white">✏️</button>` : ''}</div>`; }).join('')}</div><div class="flex gap-2 pt-2"><input type="text" id="cmt-${n[0]}" placeholder="แสดงความคิดเห็น..." class="w-full bg-neutral-900 border border-neutral-800 rounded px-2 py-1 text-xs outline-none"><button onclick="postComment('${n[0]}')" class="bg-primary text-white text-xs px-3 py-1 rounded">ส่ง</button></div></div></div>`;
+                html += `<div class="glass-panel rounded-2xl overflow-hidden mb-5 flex flex-col"><div class="p-4 font-bold text-sm border-b border-white/10 flex justify-between items-center"><span class="text-primary text-base uppercase tracking-wide drop-shadow-[0_0_5px_var(--theme-glow)]">${n[1]||''}</span><span class="text-[10px] text-neutral-400 bg-black/40 px-2 py-1 rounded-full">${n[4]||n[3]||''}</span></div>${imgHtml}<div class="p-4 space-y-3 text-sm"><p class="text-neutral-300 line-clamp-3 leading-relaxed">${n[2]||''}</p><button onclick="readMore('news', '${n[0]}')" class="text-primary text-xs font-bold uppercase tracking-wider hover:drop-shadow-[0_0_5px_var(--theme-glow)] transition-all">➔ READ MORE</button><div class="border-t border-white/10 pt-3 space-y-2">${postComments.map(c => { let cImg = c[6] ? `<img src="${fixImg(c[6])}" class="w-6 h-6 rounded-full object-cover border border-white/10">` : `<div class="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center text-[10px]">👤</div>`; let cleanCPhone = String(c[2]||'').replace(/'/g, ''); let cleanUserPhone = String(userPhone||'').replace(/'/g, ''); return `<div class="text-xs bg-black/30 p-2 rounded-xl border border-white/5 flex justify-between items-center"><div class="flex items-center gap-2 cursor-pointer" onclick="viewUserProfile('${cleanCPhone}', '${c[3]}', '${c[6]||''}')">${cImg}<span><b class="text-primary">${c[3]}:</b> ${c[4]}</span></div>${cleanCPhone === cleanUserPhone ? `<button onclick="editComment('${c[0]}', '${c[4]}')" class="text-neutral-500 hover:text-white transition-colors">✏️</button>` : ''}</div>`; }).join('')}</div><div class="flex gap-2 pt-2"><input type="text" id="cmt-${n[0]}" placeholder="Transmitting message..." class="w-full input-hi-tech rounded-xl px-3 py-2 text-xs"><button onclick="postComment('${n[0]}')" class="btn-neon text-white text-xs px-4 py-2 rounded-xl font-bold uppercase">Send</button></div></div></div>`;
             });
-            document.getElementById('feedList').innerHTML = html || '<p class="text-center text-sm text-neutral-500 py-4">ไม่พบข่าวสาร</p>';
+            document.getElementById('feedList').innerHTML = html || '<p class="text-center text-sm text-neutral-500 py-8">NO DATA FOUND</p>';
         }
 
         function renderBoard() {
@@ -213,71 +305,71 @@
             let posts = [...(appData.communityPosts || [])].reverse(); 
             posts.forEach(p => {
                 let postComments = (appData.communityComments || []).filter(c => String(c[0]) === String(p[0]));
-                let imgHtml = (p[3] && String(p[3]).trim() !== '') ? `<img src="${fixImg(p[3])}" onclick="viewFullImg('${p[3]}')" class="w-full object-cover max-h-96 mt-2 rounded cursor-pointer border border-neutral-800">` : '';
+                let imgHtml = (p[3] && String(p[3]).trim() !== '') ? `<img src="${fixImg(p[3])}" onclick="viewFullImg('${p[3]}')" class="w-full object-cover max-h-[28rem] mt-3 rounded-xl cursor-pointer border border-white/10 shadow-[0_5px_15px_rgba(0,0,0,0.5)]">` : '';
                 let cleanPhone = String(p[1]||'').replace(/'/g, '');
                 let author = (appData.users || []).find(u => String(u[0]||'').replace(/'/g, '') === cleanPhone);
-                let authorImg = author && author[3] ? `<img src="${fixImg(author[3])}" class="w-8 h-8 rounded-full object-cover border border-neutral-600">` : `<div class="w-8 h-8 rounded-full bg-neutral-700 flex items-center justify-center text-xs">👤</div>`;
+                let authorImg = author && author[3] ? `<img src="${fixImg(author[3])}" class="w-10 h-10 rounded-full object-cover border-2 border-white/20">` : `<div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-sm border border-white/20">👤</div>`;
 
-                html += `<div class="bg-cardbg border border-neutral-800 rounded-xl p-3 mb-4"><div class="flex items-center gap-2 mb-2 cursor-pointer" onclick="viewUserProfile('${cleanPhone}', '${p[2]}', '${author?author[3]:''}')">${authorImg}<div class="font-semibold text-sm text-primary">${p[2]}</div></div><p class="text-sm text-neutral-200 whitespace-pre-line">${p[4] || ''}</p>${imgHtml}<div class="flex items-center gap-4 mt-3 border-t border-neutral-800 pt-2"><button onclick="likePost('${p[0]}')" class="text-xs text-neutral-400 hover:text-primary flex items-center gap-1 transition-colors">❤️ <span id="like-${p[0]}">${p[5] || 0}</span></button><span class="text-xs text-neutral-400">💬 ${postComments.length} คอมเมนต์</span></div><div class="mt-2 space-y-1">${postComments.map(c => { let cCleanPhone = String(c[1]||'').replace(/'/g, ''); let cAuthor = (appData.users || []).find(u => String(u[0]||'').replace(/'/g, '') === cCleanPhone); let cImg = cAuthor && cAuthor[3] ? `<img src="${fixImg(cAuthor[3])}" class="w-5 h-5 rounded-full object-cover">` : `<div class="w-5 h-5 rounded-full bg-neutral-700 flex items-center justify-center text-[10px]">👤</div>`; return `<div class="text-xs bg-neutral-900 p-2 rounded flex items-center gap-2">${cImg} <span><b class="text-primary cursor-pointer hover:underline" onclick="viewUserProfile('${cCleanPhone}', '${c[2]}', '${cAuthor?cAuthor[3]:''}')">${c[2]}:</b> ${c[3]}</span></div>`; }).join('')}</div><div class="flex gap-2 pt-2"><input type="text" id="bc-${p[0]}" placeholder="แสดงความคิดเห็น..." class="w-full bg-neutral-900 border border-neutral-800 rounded px-2 py-1 text-xs outline-none focus:border-primary transition-colors"><button onclick="postBoardComment('${p[0]}')" class="bg-primary text-white text-xs px-3 py-1 rounded font-bold">ส่ง</button></div></div>`;
+                html += `<div class="glass-panel rounded-2xl p-4 mb-5"><div class="flex items-center gap-3 mb-3 cursor-pointer" onclick="viewUserProfile('${cleanPhone}', '${p[2]}', '${author?author[3]:''}')">${authorImg}<div><div class="font-bold text-sm text-primary tracking-wider uppercase">${p[2]}</div><div class="text-[10px] text-neutral-500 font-mono">ID: ${p[0]}</div></div></div><p class="text-sm text-neutral-200 whitespace-pre-line leading-relaxed">${p[4] || ''}</p>${imgHtml}<div class="flex items-center gap-4 mt-4 border-t border-white/10 pt-3"><button onclick="likePost('${p[0]}')" class="text-xs text-neutral-400 hover:text-primary hover:drop-shadow-[0_0_5px_var(--theme-glow)] flex items-center gap-1 transition-all"><span class="text-lg">⚡</span> <span id="like-${p[0]}" class="font-mono text-sm">${p[5] || 0}</span></button><span class="text-xs text-neutral-400 font-mono">💬 ${postComments.length}</span></div><div class="mt-3 space-y-2">${postComments.map(c => { let cCleanPhone = String(c[1]||'').replace(/'/g, ''); let cAuthor = (appData.users || []).find(u => String(u[0]||'').replace(/'/g, '') === cCleanPhone); let cImg = cAuthor && cAuthor[3] ? `<img src="${fixImg(cAuthor[3])}" class="w-6 h-6 rounded-full object-cover border border-white/10">` : `<div class="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center text-[10px]">👤</div>`; return `<div class="text-xs bg-black/30 p-2.5 rounded-xl border border-white/5 flex items-start gap-2">${cImg} <span class="leading-relaxed mt-0.5"><b class="text-primary cursor-pointer hover:underline uppercase tracking-wide" onclick="viewUserProfile('${cCleanPhone}', '${c[2]}', '${cAuthor?cAuthor[3]:''}')">${c[2]}:</b> ${c[3]}</span></div>`; }).join('')}</div><div class="flex gap-2 pt-3 mt-2 border-t border-white/5"><input type="text" id="bc-${p[0]}" placeholder="Add comment..." class="w-full input-hi-tech rounded-xl px-3 py-2 text-xs"><button onclick="postBoardComment('${p[0]}')" class="bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs px-4 py-2 rounded-xl font-bold uppercase transition-all">Reply</button></div></div>`;
             });
-            document.getElementById('boardList').innerHTML = html || '<p class="text-center text-sm text-neutral-500 py-4">ยังไม่มีโพสต์ เริ่มแชร์รูปรถเป็นคนแรกเลย!</p>';
+            document.getElementById('boardList').innerHTML = html || '<p class="text-center text-sm text-neutral-500 py-8 font-mono">NO DATA IN LOG</p>';
         }
 
-        // --- เพิ่มฟังก์ชัน Render Brands ---
         function renderBrands() {
             let html = '';
             (appData.brands || []).forEach(b => {
-                let imgHtml = (b[3] && String(b[3]).trim() !== '') ? `<img src="${fixImg(b[3])}" class="w-full h-24 object-cover rounded-t-lg bg-white">` : `<div class="w-full h-24 bg-neutral-800 flex items-center justify-center text-xs text-neutral-500 rounded-t-lg">ไม่มีโลโก้</div>`;
+                let imgHtml = (b[3] && String(b[3]).trim() !== '') ? `<img src="${fixImg(b[3])}" class="w-full h-24 object-cover rounded-t-xl opacity-80 group-hover:opacity-100 transition-opacity">` : `<div class="w-full h-24 bg-black/50 flex items-center justify-center text-xs text-neutral-600 rounded-t-xl font-mono uppercase tracking-widest">No Image</div>`;
                 html += `
-                <div class="bg-cardbg border border-neutral-800 rounded-lg overflow-hidden cursor-pointer hover:border-primary transition-colors shadow flex flex-col" onclick="viewBrandCars('${b[1]}')">
+                <div class="glass-panel group rounded-xl overflow-hidden cursor-pointer flex flex-col relative" onclick="viewBrandCars('${b[1]}')">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent z-10"></div>
                     ${imgHtml}
-                    <div class="p-2 text-center flex-1 flex items-center justify-center">
-                        <h4 class="font-bold text-sm text-white">${b[1]}</h4>
+                    <div class="absolute bottom-0 w-full p-2 text-center z-20">
+                        <h4 class="font-black text-sm text-white tracking-widest uppercase drop-shadow-[0_0_5px_var(--theme-primary)] group-hover:text-primary transition-colors">${b[1]}</h4>
                     </div>
                 </div>`;
             });
-            document.getElementById('brandsList').innerHTML = html || '<p class="text-center text-sm text-neutral-500 py-4 w-full col-span-2 md:col-span-3">ไม่มีข้อมูลยี่ห้อรถ</p>';
+            document.getElementById('brandsList').innerHTML = html || '<p class="text-center text-sm text-neutral-500 py-8 w-full col-span-2 md:col-span-3 font-mono">NO BRANDS REGISTERED</p>';
         }
 
-        // --- เปิดหน้ารวมรถแยกตามยี่ห้อ ---
         function viewBrandCars(brandName) {
             let cars = (appData.garage || []).filter(c => String(c[2]).toLowerCase() === String(brandName).toLowerCase());
             let html = '';
             
             if(cars.length === 0) {
-                html = '<p class="text-xs text-neutral-500 text-center py-4">ยังไม่มีรถยี่ห้อนี้ในระบบ</p>';
+                html = '<p class="text-xs text-neutral-500 text-center py-6 font-mono">NO VEHICLES DETECTED</p>';
             } else {
                 html = cars.map(car => {
                     let owner = (appData.users||[]).find(u => String(u[0]).replace(/'/g,'') === String(car[1]).replace(/'/g,''));
-                    let ownerName = owner ? owner[1] : 'ไม่ทราบชื่อ';
-                    let ownerImg = owner && owner[3] ? `<img src="${fixImg(owner[3])}" class="w-6 h-6 rounded-full object-cover inline-block mr-1 border border-neutral-600">` : '👤 ';
+                    let ownerName = owner ? owner[1] : 'Unknown Entity';
+                    let ownerImg = owner && owner[3] ? `<img src="${fixImg(owner[3])}" class="w-7 h-7 rounded-full object-cover inline-block mr-2 border border-white/20">` : '<span class="mr-2">👤</span>';
                     let imgs = parseImages(car[7]);
-                    let thumb = imgs.length > 0 ? `<img src="${fixImg(imgs[0])}" class="w-16 h-16 object-cover rounded-lg mr-3 border border-neutral-700">` : `<div class="w-16 h-16 bg-neutral-800 rounded-lg flex items-center justify-center text-xs text-neutral-500 mr-3 border border-neutral-700">No img</div>`;
+                    let thumb = imgs.length > 0 ? `<img src="${fixImg(imgs[0])}" class="w-20 h-20 object-cover rounded-xl mr-3 border border-white/10 shadow-[0_0_10px_rgba(0,0,0,0.5)]">` : `<div class="w-20 h-20 bg-black/40 rounded-xl flex items-center justify-center text-[10px] text-neutral-600 mr-3 border border-white/5 font-mono">NO SCAN</div>`;
                     
                     return `
-                    <div class="flex bg-neutral-900 border border-neutral-800 p-2 rounded-lg mb-2 text-left items-center cursor-pointer hover:border-primary transition-colors" onclick="Swal.close(); setTimeout(()=>viewUserProfile('${String(car[1]).replace(/'/g,'')}', '${ownerName}', '${owner?owner[3]:''}'), 300)">
+                    <div class="flex bg-black/30 border border-white/5 p-3 rounded-xl mb-3 text-left items-center cursor-pointer hover:border-primary/50 hover:bg-black/50 transition-all group" onclick="Swal.close(); setTimeout(()=>viewUserProfile('${String(car[1]).replace(/'/g,'')}', '${ownerName}', '${owner?owner[3]:''}'), 300)">
                         ${thumb}
                         <div class="flex-1 overflow-hidden">
-                            <h4 class="text-sm font-bold text-primary truncate">${car[3]} (${car[4] || '-'})</h4>
-                            <p class="text-[10px] text-neutral-400 mt-1 flex items-center">${ownerImg} <span class="truncate">${ownerName}</span></p>
+                            <h4 class="text-sm font-bold text-white uppercase tracking-wide group-hover:text-primary transition-colors truncate">${car[3]} <span class="text-xs text-neutral-500 ml-1">(${car[4] || 'N/A'})</span></h4>
+                            <div class="h-[1px] w-full bg-gradient-to-r from-white/10 to-transparent my-1.5"></div>
+                            <p class="text-xs text-neutral-400 mt-1 flex items-center">${ownerImg} <span class="truncate uppercase tracking-wider">${ownerName}</span></p>
                         </div>
+                        <div class="text-neutral-600 group-hover:text-primary transition-colors pl-2">➔</div>
                     </div>`;
                 }).join('');
             }
             
             Swal.fire({
-                title: `<span class="text-primary text-lg">รถ ${brandName} ในระบบ</span>`, 
-                html: `<div class="max-h-96 overflow-y-auto pr-1">${html}</div>`, 
+                title: `<span class="text-primary text-xl font-black uppercase tracking-widest drop-shadow-[0_0_5px_var(--theme-glow)]">${brandName} FLEET</span>`, 
+                html: `<div class="max-h-96 overflow-y-auto pr-2 custom-scrollbar">${html}</div>`, 
                 showConfirmButton: false, 
-                showCloseButton: true,
-                customClass: { popup: 'bg-cardbg rounded-xl border border-neutral-800' }
+                showCloseButton: true
             });
         }
 
         async function openCreatePostModal() {
             if(!checkAuth()) return;
-            const { value: form } = await Swal.fire({ title: 'สร้างโพสต์ใหม่', html: `<textarea id="cp-text" placeholder="คุณกำลังคิดอะไรอยู่? หรืออยากโชว์รูปรถ..." class="swal2-textarea h-24 text-sm"></textarea><label class="text-xs text-left block mt-2 text-primary font-bold">แนบรูปภาพ (ทางเลือก)</label><input id="cp-img" type="file" class="swal2-file text-sm" accept="image/*">`, preConfirm: () => { if(!v('cp-text') && !document.getElementById('cp-img').files[0]) { Swal.showValidationMessage('กรุณาพิมพ์ข้อความหรือใส่รูปภาพ'); return false; } return { text: v('cp-text'), file: document.getElementById('cp-img').files[0] } }, confirmButtonText: 'แชร์เลย', confirmButtonColor: '#dc2626', showCancelButton: true, cancelButtonText: 'ยกเลิก' });
-            if(form) { Swal.fire({title:'กำลังโพสต์...', didOpen:()=>Swal.showLoading()}); const proc = async (b64) => { let newId = new Date().getTime(); await fetch(GAS_URL, {method:'POST', mode:'no-cors', body: JSON.stringify({action:'addCommunityPost', postId: newId, phone:userPhone, name:userName, caption:form.text, imgBase64:b64})}); Swal.fire('สำเร็จ', 'โพสต์ของคุณถูกแชร์แล้ว', 'success').then(()=>location.reload()); }; if(form.file) { const r = new FileReader(); r.onload=(e)=>proc(e.target.result); r.readAsDataURL(form.file); } else proc(''); }
+            const { value: form } = await Swal.fire({ title: '<span class="text-primary font-black uppercase tracking-widest">TRANSMIT DATA</span>', html: `<textarea id="cp-text" placeholder="Enter log entry or attach visual data..." class="swal2-textarea h-24 text-sm"></textarea><label class="text-[10px] uppercase tracking-widest text-left block mt-3 text-primary font-bold">Attach Visual Media</label><input id="cp-img" type="file" class="swal2-file text-sm mt-1" accept="image/*">`, preConfirm: () => { if(!v('cp-text') && !document.getElementById('cp-img').files[0]) { Swal.showValidationMessage('Input required'); return false; } return { text: v('cp-text'), file: document.getElementById('cp-img').files[0] } }, confirmButtonText: 'EXECUTE', customClass: { confirmButton: 'btn-neon px-6 py-2 rounded-lg font-bold' }, showCancelButton: true, cancelButtonText: 'ABORT' });
+            if(form) { Swal.fire({title:'UPLOADING...', didOpen:()=>Swal.showLoading()}); const proc = async (b64) => { let newId = new Date().getTime(); await fetch(GAS_URL, {method:'POST', mode:'no-cors', body: JSON.stringify({action:'addCommunityPost', postId: newId, phone:userPhone, name:userName, caption:form.text, imgBase64:b64})}); Swal.fire({title: 'SUCCESS', text: 'Data transmitted.', icon: 'success', customClass: { confirmButton: 'btn-neon px-6 py-2 rounded-lg' }}).then(()=>location.reload()); }; if(form.file) { const r = new FileReader(); r.onload=(e)=>proc(e.target.result); r.readAsDataURL(form.file); } else proc(''); }
         }
 
         async function likePost(postId) {
@@ -293,54 +385,54 @@
         }
 
         function renderEvents() {
-            let html = ''; (appData.events || []).forEach(e => { let imgHtml = (e[6] && String(e[6]).trim() !== '') ? `<img src="${fixImg(e[6])}" class="w-24 h-24 rounded-lg object-cover">` : ''; html += `<div class="bg-cardbg border border-neutral-800 rounded-xl p-3 flex gap-3 cursor-pointer" onclick="pinMap(${e[4]||0}, ${e[5]||0}, '${e[1]||''}')">${imgHtml}<div class="flex-1"><span class="text-xs text-primary font-bold">📅 ${e[2] ? new Date(e[2]).toLocaleString('th-TH') : ''}</span><h3 class="font-semibold text-sm leading-tight my-1">${e[1]||''}</h3><p class="text-xs text-neutral-400 line-clamp-2">${e[7] || ''}</p><button onclick="readMore('event', '${e[0]}'); event.stopPropagation();" class="text-primary text-[10px] underline mt-1 block">รายละเอียดจัดงาน</button></div></div>`; });
-            document.getElementById('eventList').innerHTML = html || '<p class="text-center text-sm text-neutral-500 py-4">ไม่มีอีเวนต์</p>';
+            let html = ''; (appData.events || []).forEach(e => { let imgHtml = (e[6] && String(e[6]).trim() !== '') ? `<img src="${fixImg(e[6])}" class="w-24 h-28 rounded-xl object-cover border border-white/10 shadow-lg">` : ''; html += `<div class="glass-panel rounded-2xl p-4 flex gap-4 cursor-pointer relative overflow-hidden group" onclick="pinMap(${e[4]||0}, ${e[5]||0}, '${e[1]||''}')"><div class="absolute left-0 top-0 w-1 h-full bg-primary opacity-50 group-hover:opacity-100 transition-opacity drop-shadow-[0_0_5px_var(--theme-primary)]"></div>${imgHtml}<div class="flex-1 flex flex-col justify-center"><span class="text-[10px] text-primary font-bold uppercase tracking-widest bg-primary/10 inline-block px-2 py-0.5 rounded-full w-max mb-1 border border-primary/20">📅 ${e[2] ? new Date(e[2]).toLocaleString('th-TH') : ''}</span><h3 class="font-black text-base leading-tight my-1 uppercase tracking-wide text-white drop-shadow-md group-hover:text-primary transition-colors">${e[1]||''}</h3><p class="text-xs text-neutral-400 line-clamp-2 mt-1">${e[7] || ''}</p><button onclick="readMore('event', '${e[0]}'); event.stopPropagation();" class="text-primary text-[10px] font-bold uppercase tracking-wider mt-2 flex items-center gap-1 hover:drop-shadow-[0_0_5px_var(--theme-glow)] transition-all">Details ➔</button></div></div>`; });
+            document.getElementById('eventList').innerHTML = html || '<p class="text-center text-sm text-neutral-500 py-8 font-mono">NO MISSIONS SCHEDULED</p>';
             if(appData.events && appData.events.length > 0 && appData.events[0][4]) { initMap(appData.events[0][4], appData.events[0][5], appData.events[0][1]); }
         }
 
         function renderShop() {
-            let html = ''; (appData.shop || []).forEach(s => { if(s[5] !== 'Active') return; let imgHtml = (s[4] && String(s[4]).trim() !== '') ? `<img src="${fixImg(s[4])}" onclick="readMore('shop', '${s[0]}')" class="h-32 w-full object-cover cursor-pointer">` : `<div onclick="readMore('shop', '${s[0]}')" class="h-32 bg-neutral-800 flex items-center justify-center cursor-pointer text-xs text-gray-500">ไม่มีรูปภาพ</div>`; html += `<div class="bg-cardbg border border-neutral-800 rounded-xl overflow-hidden flex flex-col justify-between h-auto pb-2">${imgHtml}<div class="p-3 flex flex-col flex-1 justify-between"><div><h4 class="font-semibold text-xs line-clamp-2">${s[1]||''}</h4><button onclick="readMore('shop', '${s[0]}')" class="text-primary text-[10px] underline mt-1">รายละเอียดสินค้า</button></div><div class="mt-2"><p class="text-primary font-bold text-sm mb-1">฿${s[3]||0}</p><button onclick="addCart('${s[0]}', '${s[1]}', ${s[3]||0})" class="bg-primary text-white text-xs w-full py-1.5 rounded">เพิ่มลงตะกร้า</button></div></div></div>`; }); document.getElementById('shopList').innerHTML = html || '<p class="text-center text-sm text-neutral-500 py-4">ไม่มีสินค้า</p>';
+            let html = ''; (appData.shop || []).forEach(s => { if(s[5] !== 'Active') return; let imgHtml = (s[4] && String(s[4]).trim() !== '') ? `<img src="${fixImg(s[4])}" onclick="readMore('shop', '${s[0]}')" class="h-36 w-full object-cover cursor-pointer hover:scale-105 transition-transform duration-500">` : `<div onclick="readMore('shop', '${s[0]}')" class="h-36 bg-black/40 flex items-center justify-center cursor-pointer text-xs text-neutral-600 font-mono uppercase tracking-widest">No Image</div>`; html += `<div class="glass-panel rounded-2xl overflow-hidden flex flex-col justify-between h-auto pb-3"><div class="overflow-hidden relative">${imgHtml}<div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent pointer-events-none"></div></div><div class="p-4 flex flex-col flex-1 justify-between -mt-6 relative z-10"><div><h4 class="font-bold text-sm text-white uppercase tracking-wide line-clamp-2 drop-shadow-md">${s[1]||''}</h4><button onclick="readMore('shop', '${s[0]}')" class="text-neutral-400 text-[10px] uppercase font-bold tracking-widest hover:text-primary transition-colors mt-1">Specs ℹ</button></div><div class="mt-4"><p class="text-primary font-black text-lg mb-2 drop-shadow-[0_0_5px_var(--theme-glow)]">฿${s[3]||0}</p><button onclick="addCart('${s[0]}', '${s[1]}', ${s[3]||0})" class="btn-neon text-white text-xs font-bold uppercase tracking-wider w-full py-2.5 rounded-xl shadow-lg">Add to Cart</button></div></div></div>`; }); document.getElementById('shopList').innerHTML = html || '<p class="text-center text-sm text-neutral-500 py-8 font-mono col-span-2">MARKETPLACE EMPTY</p>';
         }
 
         function viewUserProfile(phone, name, img) {
-            let myCars = (appData.garage || []).filter(car => String(car[1]||'').replace(/'/g,'') === String(phone).replace(/'/g,'')); let avatar = img ? `<img src="${fixImg(img)}" class="w-20 h-20 rounded-full object-cover mx-auto mb-2 border-2 border-primary">` : `<div class="w-20 h-20 rounded-full bg-neutral-700 flex items-center justify-center text-2xl mx-auto mb-2">👤</div>`;
-            let carsHtml = myCars.length > 0 ? myCars.map(car => { let imgs = parseImages(car[7]); let thumbsHtml = imgs.map(i => `<img src="${fixImg(i)}" onclick="viewFullImg('${i}')" class="w-14 h-14 rounded object-cover shrink-0 cursor-pointer border border-neutral-700">`).join(''); return `<div class="bg-neutral-900 border border-neutral-800 rounded-lg p-3 text-left mt-2"><b class="text-primary text-sm">${car[2]} ${car[3]}</b><br><span class="text-xs text-neutral-400">ปี: ${car[4]} | สี: ${car[5]}</span><br><div class="text-xs text-neutral-300 mt-1 mb-2 whitespace-pre-line">${car[6]}</div><div class="flex gap-2 overflow-x-auto pb-2">${thumbsHtml}</div></div>`; }).join('') : '<p class="text-xs text-neutral-500 mt-2 text-center">ยังไม่ได้เพิ่มรถในโรงรถ</p>';
-            Swal.fire({ title: name, html: `${avatar}<p class="text-xs text-neutral-400 mb-4">สมาชิก UNEX CLUB</p><div class="border-t border-neutral-800 pt-2 text-left"><b class="text-xs">โรงรถของฉัน:</b><div class="max-h-60 overflow-y-auto">${carsHtml}</div></div>`, confirmButtonText: 'ปิด', confirmButtonColor: '#dc2626' });
+            let myCars = (appData.garage || []).filter(car => String(car[1]||'').replace(/'/g,'') === String(phone).replace(/'/g,'')); let avatar = img ? `<img src="${fixImg(img)}" class="w-24 h-24 rounded-full object-cover mx-auto mb-3 border-2 border-primary shadow-[0_0_15px_var(--theme-glow)]">` : `<div class="w-24 h-24 rounded-full bg-white/10 flex items-center justify-center text-3xl mx-auto mb-3 border border-white/20 shadow-lg">👤</div>`;
+            let carsHtml = myCars.length > 0 ? myCars.map(car => { let imgs = parseImages(car[7]); let thumbsHtml = imgs.map(i => `<img src="${fixImg(i)}" onclick="viewFullImg('${i}')" class="w-16 h-16 rounded-xl object-cover shrink-0 cursor-pointer border border-white/10 hover:border-primary transition-colors">`).join(''); return `<div class="bg-black/30 border border-white/5 rounded-xl p-4 text-left mt-3 relative overflow-hidden"><div class="absolute right-0 top-0 text-[50px] opacity-5 font-black leading-none">${car[4]||''}</div><b class="text-primary text-base uppercase tracking-wider drop-shadow-md">${car[2]} ${car[3]}</b><br><span class="text-xs text-neutral-400 font-mono">COLOR: ${car[5] || 'N/A'}</span><br><div class="h-[1px] w-full bg-gradient-to-r from-white/10 to-transparent my-2"></div><div class="text-xs text-neutral-300 mb-3 whitespace-pre-line leading-relaxed">${car[6]}</div><div class="flex gap-2 overflow-x-auto pb-2 custom-scrollbar">${thumbsHtml}</div></div>`; }).join('') : '<p class="text-xs text-neutral-500 mt-4 text-center font-mono">NO VEHICLES REGISTERED</p>';
+            Swal.fire({ title: `<span class="uppercase tracking-widest font-black text-white">${name}</span>`, html: `${avatar}<p class="text-[10px] font-bold text-primary tracking-widest uppercase mb-4 drop-shadow-[0_0_5px_var(--theme-glow)] border border-primary/30 inline-block px-3 py-1 rounded-full bg-primary/10">UNEX OPERATIVE</p><div class="text-left mt-2"><div class="flex items-center gap-2 mb-2"><span class="text-xl">🏎️</span><b class="text-sm uppercase tracking-widest text-white">GARAGE DATA:</b></div><div class="max-h-72 overflow-y-auto pr-2 custom-scrollbar">${carsHtml}</div></div>`, confirmButtonText: 'CLOSE', customClass: { confirmButton: 'btn-neon px-6 py-2 rounded-lg font-bold' } });
         }
 
         async function openProfileModal() {
             let cleanUserPhone = String(userPhone || '').replace(/['\s]/g, '');
             let myCars = (appData.garage || []).filter(car => String(car[1]||'').replace(/['\s]/g,'') === cleanUserPhone); 
             let myOrders = (appData.orders || []).filter(ord => String(ord[1]||'').replace(/['\s]/g,'') === cleanUserPhone);
-            let avatar = userImg ? `<img src="${fixImg(userImg)}" class="w-20 h-20 rounded-full object-cover mx-auto mb-2 border-2 border-primary">` : `<div class="w-20 h-20 rounded-full bg-neutral-700 flex items-center justify-center text-2xl mx-auto mb-2">👤</div>`;
+            let avatar = userImg ? `<img src="${fixImg(userImg)}" class="w-24 h-24 rounded-full object-cover mx-auto mb-3 border-2 border-primary shadow-[0_0_15px_var(--theme-glow)]">` : `<div class="w-24 h-24 rounded-full bg-white/10 flex items-center justify-center text-3xl mx-auto mb-3 border border-white/20">👤</div>`;
             
             let carsHtml = myCars.map(car => { 
                 let imgs = parseImages(car[7]); 
-                let thumbsHtml = imgs.map(i => `<img src="${fixImg(i)}" onclick="viewFullImg('${i}')" class="w-12 h-12 rounded object-cover shrink-0 cursor-pointer border border-neutral-700">`).join(''); 
-                return `<div class="bg-neutral-900 border border-neutral-800 rounded-lg p-3 text-left text-xs mb-3"><div class="flex justify-between items-start mb-2"><div><b class="text-primary text-sm">${car[2]} ${car[3]}</b><br><span class="text-neutral-400">ปี: ${car[4]} | สี: ${car[5]}</span></div><button onclick="deleteCar('${car[0]}')" class="text-red-500 font-bold px-2 py-1 bg-red-500/10 rounded">ลบ</button></div><div class="text-neutral-300 mb-2 whitespace-pre-line">${car[6]}</div><div class="flex gap-2 overflow-x-auto pb-1">${thumbsHtml}</div></div>`; 
+                let thumbsHtml = imgs.map(i => `<img src="${fixImg(i)}" onclick="viewFullImg('${i}')" class="w-14 h-14 rounded-xl object-cover shrink-0 cursor-pointer border border-white/10">`).join(''); 
+                return `<div class="bg-black/40 border border-white/10 rounded-xl p-4 text-left text-xs mb-3"><div class="flex justify-between items-start mb-2"><div><b class="text-primary text-sm uppercase tracking-widest">${car[2]} ${car[3]}</b><br><span class="text-neutral-400 font-mono text-[10px]">YEAR: ${car[4]} | COLOR: ${car[5]}</span></div><button onclick="deleteCar('${car[0]}')" class="text-red-500 font-bold px-3 py-1 bg-red-500/10 border border-red-500/20 rounded-lg hover:bg-red-500/20 transition-colors uppercase tracking-wider text-[10px]">Delete</button></div><div class="text-neutral-300 mb-3 whitespace-pre-line leading-relaxed">${car[6]}</div><div class="flex gap-2 overflow-x-auto pb-1 custom-scrollbar">${thumbsHtml}</div></div>`; 
             }).join('');
 
             let ordersHtml = myOrders.map(ord => {
                 let itemsObj = {};
                 try { itemsObj = JSON.parse(ord[2]); } catch(e) {}
                 let itemsList = '';
-                for(let k in itemsObj) { itemsList += `• ${itemsObj[k].name} (x${itemsObj[k].qty}) - ฿${itemsObj[k].price * itemsObj[k].qty}<br>`; }
-                let statusColor = ord[5] === 'สำเร็จ' ? 'text-green-500' : ord[5] === 'ยกเลิก' ? 'text-red-500' : 'text-yellow-500';
-                let slipBtn = ord[4] && ord[4].includes('http') ? `<a href="${fixImg(ord[4])}" target="_blank" class="text-blue-400 underline text-[11px] block mt-1">ดูสลิปที่แนบ</a>` : '';
-                return `<div class="bg-neutral-900 border border-neutral-800 rounded-lg p-3 text-left text-xs mb-2"><div class="flex justify-between font-bold mb-1"><span>รหัส: ${ord[0]}</span><span class="${statusColor}">สถานะ: ${ord[5]}</span></div><div class="text-neutral-300 mb-1">${itemsList}</div><div class="flex justify-between items-center text-neutral-400 pt-1 border-t border-neutral-800"><span>ยอดรวม: ฿${ord[3]}</span><span>${ord[6]||''}</span></div>${slipBtn}</div>`;
+                for(let k in itemsObj) { itemsList += `<div class="flex justify-between border-b border-white/5 py-1"><span>${itemsObj[k].name} <span class="text-neutral-500">x${itemsObj[k].qty}</span></span><span>฿${itemsObj[k].price * itemsObj[k].qty}</span></div>`; }
+                let statusColor = ord[5] === 'สำเร็จ' ? 'text-green-400 drop-shadow-[0_0_5px_rgba(74,222,128,0.5)]' : ord[5] === 'ยกเลิก' ? 'text-red-500' : 'text-yellow-400 drop-shadow-[0_0_5px_rgba(250,204,21,0.5)]';
+                let slipBtn = ord[4] && ord[4].includes('http') ? `<a href="${fixImg(ord[4])}" target="_blank" class="text-blue-400 font-bold tracking-wider hover:text-blue-300 transition-colors text-[10px] uppercase flex items-center gap-1 mt-2"><span>📎</span> View Slip</a>` : '';
+                return `<div class="bg-black/40 border border-white/10 rounded-xl p-3 text-left text-xs mb-3 font-mono"><div class="flex justify-between font-bold mb-2 pb-2 border-b border-white/10"><span class="text-neutral-300">ID: ${ord[0]}</span><span class="${statusColor} uppercase">${ord[5]}</span></div><div class="text-neutral-300 mb-2">${itemsList}</div><div class="flex justify-between items-center text-primary pt-1 font-black text-sm"><span>TOTAL</span><span>฿${ord[3]}</span></div>${slipBtn}</div>`;
             }).join('');
 
             const { value: action } = await Swal.fire({ 
-                title: 'โปรไฟล์ของฉัน', 
-                html: `${avatar}<b>${userName}</b><br><span class="text-xs text-neutral-400">โทร: ${userPhone}</span><br>
-                <button onclick="editProfileInfo()" class="bg-neutral-800 text-xs px-3 py-1 rounded mt-2 border border-neutral-700">✏️ แก้ไขชื่อ / รูปโปรไฟล์</button>
-                <div class="border-t border-neutral-800 mt-4 pt-3 text-left">
-                    <div class="flex justify-between items-center mb-2"><b class="text-xs font-bold text-primary">📦 ประวัติการสั่งซื้อและสถานะ</b></div>
-                    <div class="max-h-44 overflow-y-auto mb-4">${ordersHtml || '<p class="text-xs text-neutral-500 text-center py-2">ยังไม่มีประวัติการสั่งซื้อ</p>'}</div>
-                    <div class="flex justify-between items-center mb-2"><b class="text-xs font-bold">โรงรถของฉัน</b><button onclick="openAddCarModal()" class="bg-primary text-white text-[10px] px-2 py-1 rounded">+ เพิ่มรถ</button></div>
-                    <div class="max-h-44 overflow-y-auto">${carsHtml || '<p class="text-xs text-neutral-500 text-center py-2">ยังไม่มีรถในโรงรถ</p>'}</div>
+                title: '<span class="uppercase tracking-widest font-black text-white">USER PROFILE</span>', 
+                html: `${avatar}<b class="text-lg uppercase tracking-widest text-primary drop-shadow-[0_0_5px_var(--theme-glow)]">${userName}</b><br><span class="text-[10px] text-neutral-400 font-mono tracking-widest">ID: ${userPhone}</span><br>
+                <button onclick="editProfileInfo()" class="bg-white/10 hover:bg-white/20 text-xs px-4 py-2 rounded-xl mt-3 border border-white/20 font-bold uppercase tracking-wider transition-all">✏️ Edit Profile</button>
+                <div class="border-t border-white/10 mt-6 pt-4 text-left">
+                    <div class="flex justify-between items-center mb-3"><b class="text-sm font-black uppercase tracking-widest text-white border-l-2 border-primary pl-2">📦 Order History</b></div>
+                    <div class="max-h-52 overflow-y-auto mb-5 pr-2 custom-scrollbar">${ordersHtml || '<p class="text-xs text-neutral-500 text-center py-4 font-mono border border-dashed border-white/10 rounded-xl">NO ORDERS</p>'}</div>
+                    <div class="flex justify-between items-center mb-3"><b class="text-sm font-black uppercase tracking-widest text-white border-l-2 border-primary pl-2">🏎️ My Garage</b><button onclick="openAddCarModal()" class="btn-neon text-white text-[10px] px-3 py-1.5 rounded-lg uppercase tracking-wider font-bold">+ Add Vehicle</button></div>
+                    <div class="max-h-52 overflow-y-auto pr-2 custom-scrollbar">${carsHtml || '<p class="text-xs text-neutral-500 text-center py-4 font-mono border border-dashed border-white/10 rounded-xl">GARAGE EMPTY</p>'}</div>
                 </div>
-                <div class="mt-4"><button onclick="logout()" class="text-red-500 text-xs underline font-bold">ออกจากระบบ</button></div>`, 
+                <div class="mt-6 pt-4 border-t border-white/10"><button onclick="logout()" class="text-red-500 text-xs font-black tracking-widest uppercase hover:text-red-400 transition-colors drop-shadow-[0_0_5px_rgba(239,68,68,0.5)]">🛑 SYSTEM LOGOUT</button></div>`, 
                 width: '450px',
                 showConfirmButton: false, 
                 showCloseButton: true 
@@ -348,29 +440,29 @@
         }
 
         async function editProfileInfo() {
-            const { value: form } = await Swal.fire({ title: 'แก้ไขโปรไฟล์', html: `<input id="e-name" value="${userName}" class="swal2-input" placeholder="ชื่อ-นามสกุล"><label class="text-xs text-left block mt-2">เปลี่ยนรูปโปรไฟล์</label><input id="e-img" type="file" class="swal2-file" accept="image/*">`, preConfirm: () => { return { name: document.getElementById('e-name').value, file: document.getElementById('e-img').files[0] } } });
-            if(form) { Swal.fire({title:'กำลังบันทึก...', didOpen:()=>Swal.showLoading()}); const proc = async (b64) => { await fetch(GAS_URL, {method:'POST', mode:'no-cors', body: JSON.stringify({action:'updateProfile', phone:userPhone, name:form.name, oldImg:userImg, imgBase64:b64})}); Swal.fire('สำเร็จ', 'อัปเดตโปรไฟล์เรียบร้อย', 'success').then(() => location.reload()); }; if(form.file) { const r = new FileReader(); r.onload=(e)=>proc(e.target.result); r.readAsDataURL(form.file); } else proc(''); }
+            const { value: form } = await Swal.fire({ title: '<span class="uppercase tracking-widest">UPDATE PROFILE</span>', html: `<input id="e-name" value="${userName}" class="swal2-input font-bold" placeholder="OPERATIVE NAME"><label class="text-[10px] font-bold uppercase tracking-widest text-left block mt-3 text-primary">UPLOAD AVATAR</label><input id="e-img" type="file" class="swal2-file text-sm mt-1" accept="image/*">`, preConfirm: () => { return { name: document.getElementById('e-name').value, file: document.getElementById('e-img').files[0] } }, confirmButtonText: 'SAVE', customClass: { confirmButton: 'btn-neon px-6 py-2 rounded-lg font-bold' } });
+            if(form) { Swal.fire({title:'SAVING...', didOpen:()=>Swal.showLoading()}); const proc = async (b64) => { await fetch(GAS_URL, {method:'POST', mode:'no-cors', body: JSON.stringify({action:'updateProfile', phone:userPhone, name:form.name, oldImg:userImg, imgBase64:b64})}); Swal.fire({title: 'SUCCESS', icon: 'success', customClass: { confirmButton: 'btn-neon px-6 py-2 rounded-lg' }}).then(() => location.reload()); }; if(form.file) { const r = new FileReader(); r.onload=(e)=>proc(e.target.result); r.readAsDataURL(form.file); } else proc(''); }
         }
 
         function toBase64(file) { return new Promise((res) => { const r = new FileReader(); r.onload=()=>res(r.result); r.readAsDataURL(file); }); }
 
         async function openAddCarModal() {
-            const { value: car } = await Swal.fire({ title: 'เพิ่มรถในโรงรถ', html: `<input id="c-brand" placeholder="ยี่ห้อ (เช่น BMW)" class="swal2-input"><input id="c-model" placeholder="รุ่น (เช่น E46 320i)" class="swal2-input"><input id="c-year" placeholder="ปี ค.ศ. (เช่น 2004)" class="swal2-input"><input id="c-color" placeholder="สีรถ" class="swal2-input"><textarea id="c-detail" placeholder="รายละเอียดแต่งรถ (ล้อ, ช่วงล่าง, เครื่อง)" class="swal2-textarea"></textarea><label class="text-xs text-left block mt-2 text-primary font-bold">อัปโหลดรูปรถ (เลือกได้สูงสุด 10 รูป)</label><input id="c-img" type="file" multiple class="swal2-file" accept="image/*" onchange="if(this.files.length>10){Swal.showValidationMessage('เลือกได้สูงสุด 10 รูปเท่านั้น'); this.value='';}">`, preConfirm: () => { return { brand: v('c-brand'), model: v('c-model'), year: v('c-year'), color: v('c-color'), detail: v('c-detail'), files: document.getElementById('c-img').files } } });
-            if(car) { let b64Array = []; if(car.files && car.files.length > 0) { Swal.fire({title:'กำลังเตรียมรูปภาพ...', text: 'อาจใช้เวลาสักครู่หากมีรูปจำนวนมาก', didOpen:()=>Swal.showLoading()}); for(let i=0; i<car.files.length; i++) { b64Array.push(await toBase64(car.files[i])); } } Swal.fire({title:'กำลังบันทึกข้อมูล...', didOpen:()=>Swal.showLoading()}); await fetch(GAS_URL, {method:'POST', mode:'no-cors', body: JSON.stringify({action:'addCar', phone:userPhone, brand:car.brand, model:car.model, year:car.year, color:car.color, detail:car.detail, imgBase64Array:b64Array})}); Swal.fire('สำเร็จ', 'เพิ่มรถสำเร็จ', 'success').then(()=>location.reload()); }
+            const { value: car } = await Swal.fire({ title: '<span class="uppercase tracking-widest text-primary font-black">REGISTER VEHICLE</span>', html: `<input id="c-brand" placeholder="BRAND (e.g. BMW)" class="swal2-input"><input id="c-model" placeholder="MODEL (e.g. E46)" class="swal2-input"><input id="c-year" placeholder="YEAR" class="swal2-input"><input id="c-color" placeholder="COLOR" class="swal2-input"><textarea id="c-detail" placeholder="MODIFICATIONS / SPECS" class="swal2-textarea h-24 text-sm"></textarea><label class="text-[10px] uppercase tracking-widest text-left block mt-3 text-primary font-bold">UPLOAD SCANS (MAX 10)</label><input id="c-img" type="file" multiple class="swal2-file text-sm mt-1" accept="image/*" onchange="if(this.files.length>10){Swal.showValidationMessage('MAX 10 FILES ALLOWED'); this.value='';}">`, confirmButtonText: 'REGISTER', customClass: { confirmButton: 'btn-neon px-6 py-2 rounded-lg font-bold' }, preConfirm: () => { return { brand: v('c-brand'), model: v('c-model'), year: v('c-year'), color: v('c-color'), detail: v('c-detail'), files: document.getElementById('c-img').files } } });
+            if(car) { let b64Array = []; if(car.files && car.files.length > 0) { Swal.fire({title:'PROCESSING SCANS...', text: 'Standby.', didOpen:()=>Swal.showLoading()}); for(let i=0; i<car.files.length; i++) { b64Array.push(await toBase64(car.files[i])); } } Swal.fire({title:'TRANSMITTING DATA...', didOpen:()=>Swal.showLoading()}); await fetch(GAS_URL, {method:'POST', mode:'no-cors', body: JSON.stringify({action:'addCar', phone:userPhone, brand:car.brand, model:car.model, year:car.year, color:car.color, detail:car.detail, imgBase64Array:b64Array})}); Swal.fire({title: 'SUCCESS', icon: 'success', customClass: { confirmButton: 'btn-neon px-6 py-2 rounded-lg' }}).then(()=>location.reload()); }
         }
 
-        async function deleteCar(carId) { if((await Swal.fire({title:'ลบรถคันนี้?', icon:'warning', showCancelButton:true})).isConfirmed) { await fetch(GAS_URL, {method:'POST', mode:'no-cors', body: JSON.stringify({action:'deleteCar', carId:carId})}); Swal.fire('ลบสำเร็จ', '', 'success').then(()=>location.reload()); } }
+        async function deleteCar(carId) { if((await Swal.fire({title:'<span class="text-red-500 font-black tracking-widest uppercase">DELETE VEHICLE?</span>', icon:'warning', showCancelButton:true, confirmButtonText: 'CONFIRM', customClass: { confirmButton: 'bg-red-600 px-6 py-2 rounded-lg text-white font-bold', cancelButton: 'bg-neutral-600 px-6 py-2 rounded-lg text-white font-bold' }})).isConfirmed) { await fetch(GAS_URL, {method:'POST', mode:'no-cors', body: JSON.stringify({action:'deleteCar', carId:carId})}); Swal.fire({title: 'DELETED', icon: 'success', customClass: { confirmButton: 'btn-neon px-6 py-2 rounded-lg' }}).then(()=>location.reload()); } }
 
         async function showLoginForm() {
-            const { value: loginData } = await Swal.fire({ title: 'เข้าสู่ระบบ', html: `<input id="l-phone" type="tel" class="swal2-input" placeholder="เบอร์โทรศัพท์"><input id="l-pwd" type="password" class="swal2-input" placeholder="รหัสผ่าน">`, focusConfirm: false, showCancelButton: true, confirmButtonText: 'เข้าสู่ระบบ', cancelButtonText: 'ยกเลิก', preConfirm: () => { if(!v('l-phone') || !v('l-pwd')) { Swal.showValidationMessage('กรุณากรอกเบอร์โทรศัพท์และรหัสผ่าน'); return false; } return { phone: v('l-phone'), pwd: v('l-pwd') } } });
-            if (!loginData) return; Swal.fire({title:'กำลังตรวจสอบ...', didOpen:()=>Swal.showLoading()}); const res = await fetch(`${GAS_URL}?action=checkUser&phone=${loginData.phone}&pwd=${loginData.pwd}`); const data = await res.json();
-            if(data.status === 'success') { localStorage.setItem('unexPhone', loginData.phone); localStorage.setItem('unexName', data.name); localStorage.setItem('unexImg', data.profileImg||''); userPhone = loginData.phone; userName = data.name; userImg = data.profileImg||''; Swal.fire('สำเร็จ', `ยินดีต้อนรับคุณ ${userName}`, 'success').then(()=>location.reload()); } else if (data.status === 'error') { Swal.fire('เกิดข้อผิดพลาด', data.message, 'error'); } else { Swal.fire('ไม่พบผู้ใช้', 'ไม่พบเบอร์โทรศัพท์นี้ในระบบ กรุณาสมัครสมาชิก', 'warning'); }
+            const { value: loginData } = await Swal.fire({ title: '<span class="uppercase tracking-widest font-black text-primary">SYSTEM LOGIN</span>', html: `<input id="l-phone" type="tel" class="swal2-input font-mono text-center tracking-widest" placeholder="ENTER ID (PHONE)"><input id="l-pwd" type="password" class="swal2-input font-mono text-center tracking-widest mt-3" placeholder="ENTER PIN">`, focusConfirm: false, showCancelButton: true, confirmButtonText: 'ACCESS', cancelButtonText: 'ABORT', customClass: { confirmButton: 'btn-neon px-8 py-2 rounded-lg font-bold tracking-widest', cancelButton: 'bg-transparent border border-white/20 px-8 py-2 rounded-lg font-bold tracking-widest' }, preConfirm: () => { if(!v('l-phone') || !v('l-pwd')) { Swal.showValidationMessage('CREDENTIALS REQUIRED'); return false; } return { phone: v('l-phone'), pwd: v('l-pwd') } } });
+            if (!loginData) return; Swal.fire({title:'AUTHENTICATING...', didOpen:()=>Swal.showLoading()}); const res = await fetch(`${GAS_URL}?action=checkUser&phone=${loginData.phone}&pwd=${loginData.pwd}`); const data = await res.json();
+            if(data.status === 'success') { localStorage.setItem('unexPhone', loginData.phone); localStorage.setItem('unexName', data.name); localStorage.setItem('unexImg', data.profileImg||''); userPhone = loginData.phone; userName = data.name; userImg = data.profileImg||''; Swal.fire({title: 'ACCESS GRANTED', html: `<span class="uppercase tracking-widest">WELCOME ${userName}</span>`, icon: 'success', customClass: { confirmButton: 'btn-neon px-6 py-2 rounded-lg' }}).then(()=>location.reload()); } else if (data.status === 'error') { Swal.fire({title: 'ACCESS DENIED', text: data.message, icon: 'error', customClass: { confirmButton: 'bg-red-600 px-6 py-2 rounded-lg text-white font-bold' }}); } else { Swal.fire({title: 'UNKNOWN ENTITY', text: 'ID not found. Please register.', icon: 'warning', customClass: { confirmButton: 'bg-yellow-600 px-6 py-2 rounded-lg text-white font-bold' }}); }
         }
 
         async function showRegisterForm() {
             let brandOpts = (appData.brands||[]).map(b => `<option value="${b[1]}">${b[1]}</option>`).join('');
-            const { value: form } = await Swal.fire({ title: 'ลงทะเบียนสมาชิกใหม่', html: `<input id="r-phone" type="tel" placeholder="เบอร์โทรศัพท์ (ใช้เป็น ID เข้าสู่ระบบ)" class="swal2-input"><input id="r-name" placeholder="ชื่อ-นามสกุล" class="swal2-input"><select id="r-brand" class="swal2-input"><option value="">เลือกแบรนด์รถที่ขับ</option>${brandOpts}</select><input id="r-car" placeholder="รุ่นรถ - ทะเบียน" class="swal2-input"><input id="r-pwd" type="password" placeholder="ตั้งรหัสผ่านสำหรับเข้าสู่ระบบ" class="swal2-input border-red-500 border">`, showCancelButton: true, confirmButtonText: 'สมัครสมาชิก', cancelButtonText: 'ยกเลิก', preConfirm: () => { if(!v('r-phone') || !v('r-name') || !v('r-pwd')) { Swal.showValidationMessage('กรุณากรอกเบอร์โทร, ชื่อ และรหัสผ่าน'); return false; } return { phone: v('r-phone'), name: v('r-name'), brand: v('r-brand'), car: v('r-car'), pwd: v('r-pwd') } } });
-            if(form) { Swal.fire({title:'กำลังลงทะเบียน...', didOpen:()=>Swal.showLoading()}); await fetch(GAS_URL, {method:'POST', mode:'no-cors', body: JSON.stringify({action:'register', phone:form.phone, name:form.name, carData: `${form.brand} ${form.car}`, pwd:form.pwd})}); localStorage.setItem('unexPhone', form.phone); localStorage.setItem('unexName', form.name); localStorage.setItem('unexImg', ''); Swal.fire('สำเร็จ', 'ลงทะเบียนเรียบร้อย', 'success').then(()=>location.reload()); }
+            const { value: form } = await Swal.fire({ title: '<span class="uppercase tracking-widest font-black text-primary">NEW OPERATIVE</span>', html: `<input id="r-phone" type="tel" placeholder="ID (PHONE NUMBER)" class="swal2-input uppercase tracking-wider text-sm"><input id="r-name" placeholder="CALLSIGN / NAME" class="swal2-input uppercase tracking-wider text-sm"><select id="r-brand" class="swal2-select text-sm w-[80%] mx-auto mt-4"><option value="">-- SELECT BRAND --</option>${brandOpts}</select><input id="r-car" placeholder="VEHICLE MODEL / PLATE" class="swal2-input uppercase tracking-wider text-sm"><input id="r-pwd" type="password" placeholder="CREATE PIN" class="swal2-input border-primary/50 text-sm">`, showCancelButton: true, confirmButtonText: 'REGISTER', cancelButtonText: 'ABORT', customClass: { confirmButton: 'btn-neon px-6 py-2 rounded-lg font-bold tracking-widest', cancelButton: 'bg-transparent border border-white/20 px-6 py-2 rounded-lg font-bold' }, preConfirm: () => { if(!v('r-phone') || !v('r-name') || !v('r-pwd')) { Swal.showValidationMessage('ID, NAME AND PIN REQUIRED'); return false; } return { phone: v('r-phone'), name: v('r-name'), brand: v('r-brand'), car: v('r-car'), pwd: v('r-pwd') } } });
+            if(form) { Swal.fire({title:'REGISTERING...', didOpen:()=>Swal.showLoading()}); await fetch(GAS_URL, {method:'POST', mode:'no-cors', body: JSON.stringify({action:'register', phone:form.phone, name:form.name, carData: `${form.brand} ${form.car}`, pwd:form.pwd})}); localStorage.setItem('unexPhone', form.phone); localStorage.setItem('unexName', form.name); localStorage.setItem('unexImg', ''); Swal.fire({title: 'REGISTRATION COMPLETE', icon: 'success', customClass: { confirmButton: 'btn-neon px-6 py-2 rounded-lg' }}).then(()=>location.reload()); }
         }
 
         function logout() { localStorage.clear(); location.reload(); }
@@ -378,35 +470,35 @@
 
         function readMore(type, id) {
             let title = '', html = '', imgTag = '';
-            if (type === 'news') { let r = appData.news.find(x => String(x[0])===String(id)); title = r[1]||''; imgTag = r[3] ? `<img src="${fixImg(r[3])}" class="w-full rounded-lg mb-3">` : ''; html = `${imgTag}<div class="text-left text-sm text-gray-800 whitespace-pre-line">${r[2]||''}</div>`; } else if (type === 'event') { let r = appData.events.find(x => String(x[0])===String(id)); title = r[1]||''; imgTag = r[6] ? `<img src="${fixImg(r[6])}" class="w-full rounded-lg mb-3">` : ''; let dateStr = r[2] ? new Date(r[2]).toLocaleString('th-TH') : ''; html = `${imgTag}<div class="text-left text-sm text-gray-800 whitespace-pre-line"><b>สถานที่:</b> ${r[3]||''}<br><b>วันที่:</b> ${dateStr}<br><br>${r[7]||'ไม่มีรายละเอียดเพิ่มเติม'}</div>`; } else if (type === 'shop') { let r = appData.shop.find(x => String(x[0])===String(id)); title = r[1]||''; imgTag = r[4] ? `<img src="${fixImg(r[4])}" class="w-full rounded-lg mb-3">` : ''; html = `${imgTag}<div class="text-left text-sm text-gray-800 whitespace-pre-line mb-3">${r[2]||'ไม่มีรายละเอียด'}</div><div class="text-left font-bold text-lg text-primary">ราคา ฿${r[3]||0}</div>`; }
-            Swal.fire({ title: title, html: html, confirmButtonText: 'ปิดหน้าต่าง', confirmButtonColor: '#dc2626' });
+            if (type === 'news') { let r = appData.news.find(x => String(x[0])===String(id)); title = `<span class="uppercase tracking-widest font-black text-primary">${r[1]||''}</span>`; imgTag = r[3] ? `<img src="${fixImg(r[3])}" class="w-full rounded-xl mb-4 border border-white/10 shadow-[0_0_15px_rgba(0,0,0,0.5)]">` : ''; html = `${imgTag}<div class="text-left text-sm text-neutral-300 whitespace-pre-line leading-relaxed">${r[2]||''}</div>`; } else if (type === 'event') { let r = appData.events.find(x => String(x[0])===String(id)); title = `<span class="uppercase tracking-widest font-black text-primary">${r[1]||''}</span>`; imgTag = r[6] ? `<img src="${fixImg(r[6])}" class="w-full rounded-xl mb-4 border border-white/10 shadow-[0_0_15px_rgba(0,0,0,0.5)]">` : ''; let dateStr = r[2] ? new Date(r[2]).toLocaleString('th-TH') : ''; html = `${imgTag}<div class="text-left text-sm text-neutral-300 whitespace-pre-line leading-relaxed"><b class="text-white uppercase tracking-wider">Location:</b> ${r[3]||''}<br><b class="text-white uppercase tracking-wider">Time:</b> ${dateStr}<br><br><div class="p-3 bg-black/40 border border-white/10 rounded-xl">${r[7]||'No additional data.'}</div></div>`; } else if (type === 'shop') { let r = appData.shop.find(x => String(x[0])===String(id)); title = `<span class="uppercase tracking-widest font-black text-primary drop-shadow-[0_0_5px_var(--theme-glow)]">${r[1]||''}</span>`; imgTag = r[4] ? `<img src="${fixImg(r[4])}" class="w-full rounded-xl mb-4 border border-white/10 shadow-[0_0_15px_rgba(0,0,0,0.5)]">` : ''; html = `${imgTag}<div class="text-left text-sm text-neutral-300 whitespace-pre-line mb-4 leading-relaxed">${r[2]||'No specs available.'}</div><div class="text-left font-black text-2xl text-primary drop-shadow-[0_0_8px_var(--theme-glow)]">฿${r[3]||0}</div>`; }
+            Swal.fire({ title: title, html: html, confirmButtonText: 'CLOSE DATA', customClass: { confirmButton: 'bg-white/10 border border-white/20 hover:bg-white/20 text-white px-6 py-2 rounded-lg font-bold tracking-widest uppercase transition-all' } });
         }
 
         async function postComment(newsId) { if(!checkAuth()) return; const text = v(`cmt-${newsId}`); if(!text) return; document.getElementById(`cmt-${newsId}`).value = ''; if(!appData.comments) appData.comments = []; appData.comments.push([new Date().getTime(), newsId, userPhone, userName, text, 'Just now', userImg]); renderFeed(); await fetch(GAS_URL, {method:'POST', mode:'no-cors', body: JSON.stringify({action:'addComment', newsId:newsId, phone:userPhone, name:userName, text:text, profileImg:userImg})}); }
-        async function editComment(commentId, oldText) { const { value: newText } = await Swal.fire({ title: 'แก้ไขข้อความ', input: 'text', inputValue: oldText }); if(newText && newText !== oldText) { appData.comments.find(c => String(c[0])===String(commentId))[4] = newText; renderFeed(); await fetch(GAS_URL, {method:'POST', mode:'no-cors', body: JSON.stringify({action:'editComment', commentId:commentId, text:newText})}); } }
+        async function editComment(commentId, oldText) { const { value: newText } = await Swal.fire({ title: '<span class="uppercase tracking-widest font-bold">EDIT LOG</span>', input: 'text', inputValue: oldText, customClass: { confirmButton: 'btn-neon px-6 py-2 rounded-lg' } }); if(newText && newText !== oldText) { appData.comments.find(c => String(c[0])===String(commentId))[4] = newText; renderFeed(); await fetch(GAS_URL, {method:'POST', mode:'no-cors', body: JSON.stringify({action:'editComment', commentId:commentId, text:newText})}); } }
 
         function initMap(lat, lng, title) { if(!map) { map = L.map('map').setView([lat, lng], 15); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map); } pinMap(lat, lng, title); }
-        function pinMap(lat, lng, title) { if(!map || !lat || !lng) return; if(marker) map.removeLayer(marker); map.setView([lat, lng], 15); marker = L.marker([lat, lng]).addTo(map).bindPopup(`<b>${title}</b>`).openPopup(); }
+        function pinMap(lat, lng, title) { if(!map || !lat || !lng) return; if(marker) map.removeLayer(marker); map.setView([lat, lng], 15); marker = L.marker([lat, lng]).addTo(map).bindPopup(`<b class="uppercase tracking-widest">${title}</b>`).openPopup(); }
 
         function addCart(id, name, price) { if(!checkAuth()) return; if(cart[id]) cart[id].qty++; else cart[id] = { name, price, qty: 1 }; let qty = Object.values(cart).reduce((s, i) => s + i.qty, 0); document.getElementById('cartCount').innerText = qty; document.getElementById('cartBtn').style.display = qty > 0 ? 'flex' : 'none'; }
         
         async function viewCart() {
-            let total = 0, html = `<div class="text-left text-sm max-h-60 overflow-y-auto mb-4 border-b pb-2">`;
+            let total = 0, html = `<div class="text-left text-sm max-h-60 overflow-y-auto mb-5 border-b border-white/10 pb-3 custom-scrollbar">`;
             for(let id in cart) {
                 let item = cart[id]; total += (item.price * item.qty);
-                html += `<div class="flex justify-between items-center pb-2"><div><b>${item.name}</b><br>฿${item.price}</div><div class="flex items-center gap-2"><button onclick="cart['${id}'].qty--; if(cart['${id}'].qty<=0) delete cart['${id}']; Swal.close(); viewCart();" class="bg-gray-200 px-2 rounded text-black">-</button><span>${item.qty}</span><button onclick="cart['${id}'].qty++; Swal.close(); viewCart();" class="bg-gray-200 px-2 rounded text-black">+</button></div></div>`;
+                html += `<div class="flex justify-between items-center bg-black/30 p-2 rounded-xl border border-white/5 mb-2"><div class="pl-1"><b class="uppercase tracking-wide text-white drop-shadow-md">${item.name}</b><br><span class="text-primary font-bold">฿${item.price}</span></div><div class="flex items-center gap-3 bg-black/50 px-2 py-1 rounded-lg border border-white/10"><button onclick="cart['${id}'].qty--; if(cart['${id}'].qty<=0) delete cart['${id}']; Swal.close(); viewCart();" class="text-white hover:text-primary font-bold px-1 transition-colors">-</button><span class="font-mono font-bold">${item.qty}</span><button onclick="cart['${id}'].qty++; Swal.close(); viewCart();" class="text-white hover:text-primary font-bold px-1 transition-colors">+</button></div></div>`;
             }
-            html += `</div><h3 class="font-bold text-lg text-primary mb-2">ยอดชำระ: ฿${total}</h3>`;
+            html += `</div><div class="flex justify-between items-center"><h3 class="font-bold text-sm tracking-widest text-neutral-400 uppercase">Total Amount</h3><h3 class="font-black text-2xl text-primary drop-shadow-[0_0_10px_var(--theme-glow)]">฿${total}</h3></div>`;
             
             let payInfo = '';
             if (appData.config.QRCodeImg && appData.config.QRCodeImg.trim() !== '') {
-                payInfo = `โอนเงินเข้าบัญชี:<br><b class="text-red-500 whitespace-pre-line">${appData.config.BankAccount || ''}</b><br><img src="${fixImg(appData.config.QRCodeImg)}" class="mx-auto max-w-full h-auto mt-2 rounded border border-gray-300">`;
+                payInfo = `<div class="bg-black/40 border border-white/10 p-3 rounded-xl"><div class="uppercase tracking-widest font-bold mb-1 text-white">BANK TRANSFER:</div><b class="text-primary text-sm whitespace-pre-line drop-shadow-md">${appData.config.BankAccount || ''}</b><br><img src="${fixImg(appData.config.QRCodeImg)}" class="mx-auto w-48 h-auto mt-3 rounded-xl border border-white/20 shadow-[0_0_15px_rgba(255,255,255,0.1)]"></div>`;
             } else if (appData.config.PromptPay) {
-                payInfo = `สแกนพร้อมเพย์:<br><b class="text-red-500 whitespace-pre-line">${appData.config.BankAccount || ''}</b><br><img src="https://promptpay.io/${appData.config.PromptPay}/${total}.png" class="mx-auto w-40 rounded mt-2">`;
-            } else { payInfo = 'ชำระที่หน้างาน'; }
+                payInfo = `<div class="bg-black/40 border border-white/10 p-3 rounded-xl"><div class="uppercase tracking-widest font-bold mb-1 text-white">PROMPTPAY SCAN:</div><b class="text-primary text-sm whitespace-pre-line drop-shadow-md">${appData.config.BankAccount || ''}</b><br><img src="https://promptpay.io/${appData.config.PromptPay}/${total}.png" class="mx-auto w-40 rounded-xl mt-3 border border-white/20"></div>`;
+            } else { payInfo = '<div class="bg-black/40 border border-white/10 p-3 rounded-xl font-bold uppercase tracking-widest text-primary">Pay at Location</div>'; }
 
-            const { value, isConfirmed } = await Swal.fire({ title: '🛒 สั่งซื้อสินค้า', html: html + `<div class="text-xs text-gray-600 my-3">${payInfo}</div>`, input: 'file', confirmButtonText: 'โอนเงินและส่งออเดอร์', showCancelButton: true, preConfirm: () => { return Swal.getInput()?.files[0]; } });
-            if (isConfirmed) { if(!value) return Swal.fire('ผิดพลาด', 'กรุณาแนบสลิปการโอนเงิน', 'warning'); Swal.fire({title:'กำลังประมวลผล...', didOpen:()=>Swal.showLoading()}); const proc = (b64) => { fetch(GAS_URL, {method:'POST', mode:'no-cors', body: JSON.stringify({ action:'checkout', phone:userPhone, cart:cart, total:total, slipBase64:b64 })}).then(() => { cart = {}; document.getElementById('cartBtn').style.display='none'; Swal.fire('สำเร็จ', 'ส่งออเดอร์เรียบร้อย', 'success'); }); }; const r = new FileReader(); r.onload = (e) => proc(e.target.result); r.readAsDataURL(value); }
+            const { value, isConfirmed } = await Swal.fire({ title: '<span class="uppercase tracking-widest font-black text-white">CART / CHECKOUT</span>', html: html + `<div class="text-xs text-neutral-300 mt-4">${payInfo}</div><div class="mt-4 text-left"><label class="text-[10px] font-bold text-primary tracking-widest uppercase">ATTACH TRANSFER SLIP</label></div>`, input: 'file', confirmButtonText: 'CONFIRM PAYMENT', showCancelButton: true, customClass: { confirmButton: 'btn-neon px-6 py-2 rounded-lg font-bold tracking-widest', cancelButton: 'bg-transparent border border-white/20 px-6 py-2 rounded-lg font-bold' }, preConfirm: () => { return Swal.getInput()?.files[0]; } });
+            if (isConfirmed) { if(!value) return Swal.fire({title: 'ERROR', text: 'Transfer slip required.', icon: 'warning', customClass: { confirmButton: 'btn-neon px-6 py-2 rounded-lg' }}); Swal.fire({title:'PROCESSING...', didOpen:()=>Swal.showLoading()}); const proc = (b64) => { fetch(GAS_URL, {method:'POST', mode:'no-cors', body: JSON.stringify({ action:'checkout', phone:userPhone, cart:cart, total:total, slipBase64:b64 })}).then(() => { cart = {}; document.getElementById('cartBtn').style.display='none'; Swal.fire({title: 'ORDER TRANSMITTED', icon: 'success', customClass: { confirmButton: 'btn-neon px-6 py-2 rounded-lg' }}); }); }; const r = new FileReader(); r.onload = (e) => proc(e.target.result); r.readAsDataURL(value); }
         }
 
         function v(id) { return document.getElementById(id) ? document.getElementById(id).value : ''; }
