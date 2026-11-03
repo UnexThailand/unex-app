@@ -156,6 +156,19 @@
                 }
 
                 renderFeed(); renderBoard(); renderMembers(); renderEvents(); renderShop();
+                // --- ระบบแสดง Popup ข่าวสาร (ถ้ามีและแอดมินติ๊กไว้) ---
+                let popupNews = (appData.news || []).filter(n => n[5] === 'true').reverse()[0]; // ดึงข่าวล่าสุดที่ตั้งเป็น popup
+                if (popupNews && !sessionStorage.getItem('seenPopup_' + popupNews[0])) {
+                    sessionStorage.setItem('seenPopup_' + popupNews[0], 'true'); // บันทึกไว้ว่าดูแล้ว จะได้ไม่เด้งซ้ำรบกวนจนกว่าจะปิดเบราว์เซอร์
+                    let imgTag = popupNews[3] ? `<img src="${fixImg(popupNews[3])}" class="w-full rounded-lg mb-3">` : '';
+                    Swal.fire({
+                        title: '📢 ' + popupNews[1],
+                        html: `${imgTag}<div class="text-left text-sm text-gray-800 whitespace-pre-line">${popupNews[2]}</div>`,
+                        confirmButtonText: 'รับทราบ',
+                        confirmButtonColor: 'var(--theme-primary)'
+                    });
+                }
+                // ---------------------------------------------------
             } catch(e) { console.log("Init Error:", e); }
         }
 
